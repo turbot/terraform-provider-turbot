@@ -5,7 +5,6 @@ import (
 	"github.com/go-yaml/yaml"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
-	"log"
 )
 
 func resourceTurbotPolicySetting() *schema.Resource {
@@ -72,7 +71,6 @@ func resourceTurbotPolicySetting() *schema.Resource {
 func resourceTurbotPolicySettingExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
 	// Exists - This is called to verify a resource still exists. It is called prior to Read,
 	// and lowers the burden of Read to be able to assume the resource exists.
-	log.Println("resourceTurbotPolicySettingExists")
 	client := meta.(*apiclient.Client)
 	id := d.Id()
 
@@ -87,7 +85,6 @@ func resourceTurbotPolicySettingExists(d *schema.ResourceData, meta interface{})
 }
 
 func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{}) error {
-	log.Println("resourceTurbotPolicySettingCreate")
 	client := meta.(*apiclient.Client)
 	policyTypeUri := d.Get("policy_type").(string)
 	resourceAka := d.Get("resource").(string)
@@ -127,7 +124,6 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceTurbotPolicySettingRead(d *schema.ResourceData, meta interface{}) error {
-	log.Println("resourceTurbotPolicySettingRead")
 	client := meta.(*apiclient.Client)
 	id := d.Id()
 
@@ -160,7 +156,6 @@ func resourceTurbotPolicySettingRead(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceTurbotPolicySettingUpdate(d *schema.ResourceData, meta interface{}) error {
-	log.Println("resourceTurbotPolicySettingUpdate")
 	client := meta.(*apiclient.Client)
 	id := d.Id()
 

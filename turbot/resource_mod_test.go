@@ -26,19 +26,19 @@ func TestAccMod(t *testing.T) {
 						"turbot_mod.logs", "version", "5.0.0-beta.3"),
 				),
 			},
-			//{
-			//	Config: testAccCheckModUpdateConfig(),
-			//	Check: resource.ComposeTestCheckFunc(
-			//		testAccCheckExampleModExists("turbot_mod.backup"),
-			//		testAccCheckExampleModExists("turbot_mod.logs"),
-			//		resource.TestCheckResourceAttr(
-			//			"turbot_mod.logs", "org", "turbot"),
-			//		resource.TestCheckResourceAttr(
-			//			"turbot_mod.logs", "mod", "aws-logs"),
-			//		resource.TestCheckResourceAttr(
-			//			"turbot_mod.logs", "version", "5.0.0-beta.3"),
-			//	),
-			//},
+			{
+				Config: testAccCheckModUpdateConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExampleModExists("turbot_mod.backup"),
+					testAccCheckExampleModExists("turbot_mod.logs"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.logs", "org", "turbot"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.logs", "mod", "aws-logs"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.logs", "version", "5.0.0-beta.4"),
+				),
+			},
 		},
 	})
 }

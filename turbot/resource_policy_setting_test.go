@@ -10,7 +10,7 @@ import (
 
 // region
 var regionResourceAka = "arn:aws::eu-west-2:650022101893"
-var policyTypeUri = "tmod:@turbot/aws#/policy/types/regionStack"
+var policyTypeUri = "tmod:@turbot/aws#/policy/types/accountStack"
 
 func TestAccPolicySetting_String(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -44,6 +44,17 @@ func TestAccPolicySetting_String(t *testing.T) {
 					testAccCheckExamplePolicySettingExists("turbot_policy_setting.test_policy"),
 					resource.TestCheckResourceAttr(
 						"turbot_policy_setting.test_policy", "value", "Check: Configured"),
+					resource.TestCheckResourceAttr(
+						"turbot_policy_setting.test_policy", "precedence", "should"),
+				),
+			}, {
+				Config: testAccCheckPolicySettingStringUpdateTemplateConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExamplePolicySettingExists("turbot_policy_setting.test_policy"),
+					resource.TestCheckResourceAttr(
+						"turbot_policy_setting.test_policy", "template", `{% if $.account.Id == "650022101893" %}Skip{% else %}Check: Configured{% endif %}`),
+					resource.TestCheckResourceAttr(
+						"turbot_policy_setting.test_policy", "template_input", "{ account{ Id } }"),
 					resource.TestCheckResourceAttr(
 						"turbot_policy_setting.test_policy", "precedence", "should"),
 				),
@@ -141,6 +152,19 @@ resource "turbot_policy_setting" "test_policy" {
   precedence = "should"
 }
 `, regionResourceAka, policyTypeUri)
+}
+
+func testAccCheckPolicySettingStringUpdateTemplateConfig() string {
+	template := `"{% if $.account.Id == "650022101893" %}Skip{% else %}'Check: Configured'{% endif %}"`
+	return fmt.Sprintf(`
+resource "turbot_policy_setting" "test_policy" {
+  resource = "%s"
+  policy_type = "%s"
+  template_input = "{ account{ Id } }"
+  template = %s
+  precedence = "should"
+}
+`, regionResourceAka, policyTypeUri, template)
 }
 
 func testAccCheckExamplePolicySettingExists(resource string) resource.TestCheckFunc {

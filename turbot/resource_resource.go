@@ -47,7 +47,6 @@ func resourceTurbotResource() *schema.Resource {
 func resourceTurbotResourceExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
 	// Exists - This is called to verify a resource still exists. It is called prior to Read,
 	// and lowers the burden of Read to be able to assume the resource exists.
-	log.Println("resourceTurbotResourceExists")
 	client := meta.(*apiclient.Client)
 	id := d.Id()
 
@@ -62,7 +61,6 @@ func resourceTurbotResourceExists(d *schema.ResourceData, meta interface{}) (b b
 }
 
 func resourceTurbotResourceCreate(d *schema.ResourceData, meta interface{}) error {
-	log.Println("resourceTurbotResourceCreate")
 	client := meta.(*apiclient.Client)
 	parent := d.Get("parent").(string)
 	resourceType := d.Get("type").(string)
@@ -86,7 +84,6 @@ func resourceTurbotResourceCreate(d *schema.ResourceData, meta interface{}) erro
 }
 
 func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error {
-	log.Println("resourceTurbotResourceRead")
 	client := meta.(*apiclient.Client)
 	id := d.Id()
 

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/mitchellh/mapstructure"
-	"log"
 )
 
 func (client *Client) CreateResource(typeAka, parentAka, payload string) (*TurbotMetadata, error) {
@@ -26,16 +25,10 @@ func (client *Client) CreateResource(typeAka, parentAka, payload string) (*Turbo
 		},
 	}
 
-	log.Println("CreateResource")
-	log.Println("parentAka", parentAka)
-	log.Println("commandPayload", commandPayload)
-	log.Println("query:", query)
-
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error creating folder: %s", err.Error())
 	}
-	log.Println("DoRequest returned:", responseData)
 	return &responseData.Resource.Turbot, nil
 }
 
@@ -43,16 +36,11 @@ func (client *Client) ReadResource(id string, properties map[string]string) (*Re
 	query := readResourceQuery(id, properties)
 	var responseData = &ReadResourceResponse{}
 
-	log.Println("ReadFolder")
-	log.Println("id", id)
-	log.Print("Query:", query)
-
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
 		return nil, fmt.Errorf("error reading policy: %s", err.Error())
 	}
 
-	log.Println("DoRequest returned:", responseData)
 	resource := client.AssignResourceResults(responseData.Resource, properties)
 	return &resource, nil
 }
@@ -72,14 +60,10 @@ func (client *Client) DeleteResource(aka string) error {
 		},
 	}
 
-	log.Println("DeleteResource")
-	log.Println("Resource aka", aka)
-	log.Println("Query:", query)
 	// execute api call
 	if err := client.doRequest(query, variables, &responseData); err != nil {
 		return fmt.Errorf("error deleting folder: %s", err.Error())
 	}
-	log.Println("DoRequest returned:", responseData)
 	return nil
 }
 
@@ -94,8 +78,9 @@ func (client *Client) GetResourceAkas(id string) ([]string, error) {
 // assign the ReadResource results into a Resource object, based on the 'properties' map
 func (client *Client) AssignResourceResults(responseData interface{}, properties map[string]string) Resource {
 	var resource Resource
+	// initialise map
+	resource.Data = make(map[string]interface{})
 	// convert turbot property to structure
-
 	mapstructure.Decode(responseData.(map[string]interface{})["turbot"], &resource.Turbot)
 	if properties != nil {
 		for p := range properties {

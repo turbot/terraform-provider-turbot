@@ -1,16 +1,19 @@
 package turbot
 
 import (
+	"errors"
+	"github.com/Masterminds/semver"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
 	"log"
+	"time"
 )
 
 func resourceTurbotMod() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceTurbotModInstall,
 		Read:   resourceTurbotModRead,
-		Update: resourceTurbotModInstall,
+		Update: resourceTurbotModUpdate,
 		Delete: resourceTurbotModUninstall,
 		Exists: resourceTurbotModExists,
 		Importer: &schema.ResourceImporter{
@@ -60,7 +63,6 @@ func resourceTurbotMod() *schema.Resource {
 func resourceTurbotModExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
 	// Exists - This is called to verify a resource still exists. It is called prior to Read,
 	// and lowers the burden of Read to be able to assume the resource exists.
-	log.Println("resourceTurbotModExists")
 	client := meta.(*apiclient.Client)
 	id := d.Id()
 
@@ -75,30 +77,60 @@ func resourceTurbotModExists(d *schema.ResourceData, meta interface{}) (b bool, 
 }
 
 func resourceTurbotModInstall(d *schema.ResourceData, meta interface{}) error {
+	// install should only be called if the mod is not already installed
+	// TODO add funciton to load mod by aka
+	//exists, err := resourceTurbotModExists(d, meta)
+	//if err != nil {
+	//	return err
+	//}
+	//if (exists){
+	//	return fmt.Errorf("Cannot install mod as it already exists. ")
+	//}
+	return modInstall(d, meta)
+}
+func resourceTurbotModUpdate(d *schema.ResourceData, meta interface{}) error {
+	return modInstall(d, meta)
+}
+
+// do tha eactual mode insatallation
+func modInstall(d *schema.ResourceData, meta interface{}) error {
+
 	client := meta.(*apiclient.Client)
 	parentAka := d.Get("parent").(string)
 	org := d.Get("org").(string)
 	modName := d.Get("mod").(string)
 	version := d.Get("version").(string)
 
-	// install mod returns turbot resource metadata containing the id
-	turbotMetadata, err := client.InstallMod(parentAka, org, modName, version)
+	// now determine latest compatible version
+	targetVersion, err := getLatestCompatibleVersion(d, meta)
 	if err != nil {
 		return err
 	}
+
+	// install mod returns turbot resource metadata containing the id
+	mod, err := client.InstallMod(parentAka, org, modName, version)
+	if err != nil {
+		log.Println("[ERROR] Turbot mod installation failed...", err)
+		return err
+	}
+
+	modId := mod.Turbot.Id
+
+	// now poll the mod resource to wait for the correct version
+	waitForInstallation(modId, targetVersion, client)
 
 	// set parent_akas property by loading parent resource and fetching the akas
 	if err = setParentAkas(d, meta); err != nil {
 		return err
 	}
 	// assign the id
-	d.SetId(turbotMetadata.Id)
+	d.SetId(modId)
+	d.Set("latest_compatible_version", targetVersion)
 
 	return nil
 }
 
 func resourceTurbotModRead(d *schema.ResourceData, meta interface{}) error {
-	log.Println("resourceTurbotModRead")
 	client := meta.(*apiclient.Client)
 	id := d.Id()
 
@@ -110,7 +142,11 @@ func resourceTurbotModRead(d *schema.ResourceData, meta interface{}) error {
 		}
 		return err
 	}
-	// now load latest compatible version
+	// now determine latest compatible version
+	targetVersion, err := getLatestCompatibleVersion(d, meta)
+	if err != nil {
+		return err
+	}
 
 	// assign results back into ResourceData
 
@@ -122,13 +158,12 @@ func resourceTurbotModRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("org", mod.Org)
 	d.Set("mod", mod.Mod)
 	d.Set("version", mod.Version)
+	d.Set("latest_compatible_version", targetVersion)
 
 	return nil
 }
 
 func resourceTurbotModUninstall(d *schema.ResourceData, meta interface{}) error {
-	log.Println("resourceTurbotModUninstall")
-
 	client := meta.(*apiclient.Client)
 	id := d.Id()
 	err := client.UninstallMod(id)
@@ -147,6 +182,81 @@ func resourceTurbotModImport(d *schema.ResourceData, meta interface{}) ([]*schem
 		return nil, err
 	}
 	return []*schema.ResourceData{d}, nil
+}
+
+func waitForInstallation(modId, targetVersion string, client *apiclient.Client) error {
+	retryCount := 0
+	// retry for 15 minutes
+	maxRetries := 40
+	sleep := 20 * time.Second
+	log.Printf("[DEBUG] Wait for mod installation, targetVersion: %s", targetVersion)
+
+	for retryCount < maxRetries {
+		installedVersion, err := getInstalledModVersion(modId, client)
+		if err != nil {
+			return err
+		}
+		log.Println("[DEBUG] Installed version: %s", installedVersion)
+		if installedVersion == targetVersion {
+			log.Println("[DEBUG] Installed version = target version - mod is installed", installedVersion)
+			// success
+			return nil
+		}
+		log.Println("[DEBUG] Installed version != target version - sleep and retry", installedVersion, retryCount)
+		time.Sleep(sleep)
+		retryCount++
+	}
+
+	return errors.New("Turbot mod installation timed out")
+}
+
+func getInstalledModVersion(modId string, client *apiclient.Client) (string, error) {
+	properties := map[string]string{
+		"version": "turbot.custom.installedVersion",
+	}
+
+	resource, err := client.ReadResource(modId, properties)
+	if err != nil {
+		return "", err
+	}
+	if resource.Data["version"] == nil {
+		return "", nil
+	}
+
+	return resource.Data["version"].(string), nil
+}
+
+func getLatestCompatibleVersion(d *schema.ResourceData, meta interface{}) (string, error) {
+	client := meta.(*apiclient.Client)
+	org := d.Get("org").(string)
+	modName := d.Get("mod").(string)
+	version := d.Get("version").(string)
+	modVersions, err := client.GetModVersions(org, modName)
+	if err != nil {
+		return "", err
+	}
+
+	c, err := semver.NewConstraint(version)
+	if err != nil {
+		return "", err
+	}
+
+	// now get latest version
+	latestCompatibleVersion := ""
+	for _, modVersion := range modVersions {
+		if modVersion.Status == "available" {
+			v, err := semver.NewVersion(modVersion.Version)
+			if err != nil {
+				return "", err
+			}
+			// does this version meet the requirement
+			if c.Check(v) {
+				latestCompatibleVersion = modVersion.Version
+			}
+		}
+	}
+	return latestCompatibleVersion, nil
+
 }
 
 // the version in the config is a semver so may be a range. The version in the state file will be a specific version

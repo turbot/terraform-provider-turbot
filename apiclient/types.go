@@ -61,9 +61,11 @@ type PolicyValue struct {
 
 // InstallModResponse: must be consistent with with fields defined in installModMutation
 type InstallModResponse struct {
-	Mod struct {
-		Turbot TurbotMetadata
-	}
+	Mod InstallModData
+}
+
+type InstallModData struct {
+	Turbot TurbotMetadata
 }
 
 type ReadModResponse struct {
@@ -72,6 +74,16 @@ type ReadModResponse struct {
 		Uri     string
 		Parent  string
 		Version string
+	}
+}
+
+type ModVersion struct {
+	Status  string
+	Version string
+}
+type ModVersionResponse struct {
+	Versions struct {
+		Items []ModVersion
 	}
 }
 

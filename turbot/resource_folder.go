@@ -3,7 +3,6 @@ package turbot
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
-	"log"
 )
 
 func resourceTurbotFolder() *schema.Resource {
@@ -81,7 +80,6 @@ func resourceTurbotFolderCreate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceTurbotFolderRead(d *schema.ResourceData, meta interface{}) error {
-	log.Println("resourceTurbotFolderRead")
 	client := meta.(*apiclient.Client)
 	id := d.Id()
 

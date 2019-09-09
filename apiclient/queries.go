@@ -145,6 +145,18 @@ func uninstallModMutation() string {
 }`
 }
 
+// get mod versions
+func modVersionsQuery(org, mod string) string {
+	return fmt.Sprintf(`{
+  versions: modVersionList(orgName: "%s", modName: "%s") {
+    items {
+      status
+      version
+    }
+  }
+}`, org, mod)
+}
+
 // read mod
 func readModQuery(modId string) string {
 	return fmt.Sprintf(`{
