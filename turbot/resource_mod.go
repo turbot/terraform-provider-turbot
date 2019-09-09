@@ -2,6 +2,7 @@ package turbot
 
 import (
 	"errors"
+	"fmt"
 	"github.com/Masterminds/semver"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
@@ -27,6 +28,7 @@ func resourceTurbotMod() *schema.Resource {
 				// when doing a diff, the state file will contain the id of the parent bu tthe config contains the aka,
 				// so we need custom diff code
 				DiffSuppressFunc: supressIfParentAkaMatches,
+				ForceNew:         true,
 			},
 			// when doing a read, fetch the parent akas to use in supressIfParentAkaMatches()
 			"parent_akas": {
@@ -39,10 +41,12 @@ func resourceTurbotMod() *schema.Resource {
 			"org": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"mod": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"version": {
 				Type:     schema.TypeString,
@@ -51,7 +55,7 @@ func resourceTurbotMod() *schema.Resource {
 				Default:          "*",
 				DiffSuppressFunc: supressIfLatestCompatibleVersionInstalled,
 			},
-			// TODO
+			// store latest version which satisfies the version requirement
 			"latest_compatible_version": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -61,31 +65,28 @@ func resourceTurbotMod() *schema.Resource {
 }
 
 func resourceTurbotModExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
-	// Exists - This is called to verify a resource still exists. It is called prior to Read,
-	// and lowers the burden of Read to be able to assume the resource exists.
 	client := meta.(*apiclient.Client)
 	id := d.Id()
-
-	_, err := client.ReadMod(id)
-	if err != nil {
-		if apiclient.NotFoundError(err) {
-			return false, nil
-		}
-		return false, err
-	}
-	return true, nil
+	return client.ResourceExists(id)
 }
 
 func resourceTurbotModInstall(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*apiclient.Client)
+	org := d.Get("org").(string)
+	modName := d.Get("mod").(string)
+	modAka := buildModAka(org, modName)
+
 	// install should only be called if the mod is not already installed
-	// TODO add funciton to load mod by aka
-	//exists, err := resourceTurbotModExists(d, meta)
-	//if err != nil {
-	//	return err
-	//}
-	//if (exists){
-	//	return fmt.Errorf("Cannot install mod as it already exists. ")
-	//}
+	mod, err := client.ReadResource(modAka, nil)
+	if err != nil {
+		return err
+	}
+	id := mod.Turbot.Id
+	if id != "" {
+		// TODO extract terraform name
+		return fmt.Errorf("Cannot install mod %s as it is already installed. To manange this mod using Terraform, import the mod using command 'terraform import <resource_address> %s'", modAka, id)
+	}
+
 	return modInstall(d, meta)
 }
 func resourceTurbotModUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -117,7 +118,9 @@ func modInstall(d *schema.ResourceData, meta interface{}) error {
 	modId := mod.Turbot.Id
 
 	// now poll the mod resource to wait for the correct version
-	waitForInstallation(modId, targetVersion, client)
+	if err = waitForInstallation(modId, targetVersion, client); err != nil {
+		return err
+	}
 
 	// set parent_akas property by loading parent resource and fetching the akas
 	if err = setParentAkas(d, meta); err != nil {
@@ -184,6 +187,9 @@ func resourceTurbotModImport(d *schema.ResourceData, meta interface{}) ([]*schem
 	return []*schema.ResourceData{d}, nil
 }
 
+func buildModAka(org, mod string) string {
+	return fmt.Sprintf("tmod:@%s/%s", org, mod)
+}
 func waitForInstallation(modId, targetVersion string, client *apiclient.Client) error {
 	retryCount := 0
 	// retry for 15 minutes
@@ -196,13 +202,13 @@ func waitForInstallation(modId, targetVersion string, client *apiclient.Client) 
 		if err != nil {
 			return err
 		}
-		log.Println("[DEBUG] Installed version: %s", installedVersion)
+		log.Println("[DEBUG] Installed version: ", installedVersion)
 		if installedVersion == targetVersion {
-			log.Println("[DEBUG] Installed version = target version - mod is installed", installedVersion)
+			log.Printf("[DEBUG] Installed version: %s, target version: %s, mod is installed!", installedVersion, targetVersion)
 			// success
 			return nil
 		}
-		log.Println("[DEBUG] Installed version != target version - sleep and retry", installedVersion, retryCount)
+		log.Printf("[DEBUG] Installed version: %s, target version: %s, retrying!", installedVersion, targetVersion)
 		time.Sleep(sleep)
 		retryCount++
 	}

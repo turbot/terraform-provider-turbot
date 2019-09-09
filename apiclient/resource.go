@@ -41,8 +41,12 @@ func (client *Client) ReadResource(id string, properties map[string]string) (*Re
 		return nil, fmt.Errorf("error reading policy: %s", err.Error())
 	}
 
-	resource := client.AssignResourceResults(responseData.Resource, properties)
-	return &resource, nil
+	resource, err := client.AssignResourceResults(responseData.Resource, properties)
+	if err != nil {
+		return nil, err
+	}
+
+	return resource, nil
 }
 
 func (client *Client) DeleteResource(aka string) error {
@@ -67,6 +71,15 @@ func (client *Client) DeleteResource(aka string) error {
 	return nil
 }
 
+func (client *Client) ResourceExists(id string) (bool, error) {
+	resource, err := client.ReadResource(id, nil)
+	if err != nil {
+		return false, err
+	}
+	exists := resource.Turbot.Id != ""
+	return exists, nil
+}
+
 func (client *Client) GetResourceAkas(id string) ([]string, error) {
 	resource, err := client.ReadResource(id, nil)
 	if err != nil {
@@ -76,17 +89,19 @@ func (client *Client) GetResourceAkas(id string) ([]string, error) {
 }
 
 // assign the ReadResource results into a Resource object, based on the 'properties' map
-func (client *Client) AssignResourceResults(responseData interface{}, properties map[string]string) Resource {
+func (client *Client) AssignResourceResults(responseData interface{}, properties map[string]string) (*Resource, error) {
 	var resource Resource
 	// initialise map
 	resource.Data = make(map[string]interface{})
 	// convert turbot property to structure
-	mapstructure.Decode(responseData.(map[string]interface{})["turbot"], &resource.Turbot)
+	if err := mapstructure.Decode(responseData.(map[string]interface{})["turbot"], &resource.Turbot); err != nil {
+		return nil, err
+	}
 	if properties != nil {
 		for p := range properties {
 			resource.Data[p] = responseData.(map[string]interface{})[p]
 		}
 	}
-	return resource
+	return &resource, nil
 
 }

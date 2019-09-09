@@ -49,15 +49,7 @@ func resourceTurbotResourceExists(d *schema.ResourceData, meta interface{}) (b b
 	// and lowers the burden of Read to be able to assume the resource exists.
 	client := meta.(*apiclient.Client)
 	id := d.Id()
-
-	_, err := client.ReadResource(id, nil)
-	if err != nil {
-		if apiclient.NotFoundError(err) {
-			return false, nil
-		}
-		return false, err
-	}
-	return true, nil
+	return client.ResourceExists(id)
 }
 
 func resourceTurbotResourceCreate(d *schema.ResourceData, meta interface{}) error {

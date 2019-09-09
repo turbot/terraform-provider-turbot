@@ -47,15 +47,7 @@ func resourceTurbotFolder() *schema.Resource {
 func resourceTurbotFolderExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
 	client := meta.(*apiclient.Client)
 	id := d.Id()
-
-	_, err := client.ReadFolder(id)
-	if err != nil {
-		if apiclient.NotFoundError(err) {
-			return false, nil
-		}
-		return false, err
-	}
-	return true, nil
+	return client.ResourceExists(id)
 }
 
 func resourceTurbotFolderCreate(d *schema.ResourceData, meta interface{}) error {

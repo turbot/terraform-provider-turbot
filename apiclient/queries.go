@@ -201,11 +201,7 @@ func readResourceQuery(aka string, properties map[string]string) string {
 	return fmt.Sprintf(`{
   resource(id:"%s") {
 %s
-    turbot {
-      id
-      parentId
-      akas
-    }   
+    turbot: get(path:"turbot")
   }
 }`, aka, propertiesString.String())
 }

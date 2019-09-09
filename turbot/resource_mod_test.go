@@ -17,26 +17,26 @@ func TestAccMod(t *testing.T) {
 			{
 				Config: testAccCheckModConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckExampleModExists("turbot_mod.logs"),
+					testAccCheckExampleModExists("turbot_mod.test"),
 					resource.TestCheckResourceAttr(
-						"turbot_mod.logs", "org", "turbot"),
+						"turbot_mod.test", "org", "turbot"),
 					resource.TestCheckResourceAttr(
-						"turbot_mod.logs", "mod", "aws-logs"),
+						"turbot_mod.test", "mod", "structure-test"),
 					resource.TestCheckResourceAttr(
-						"turbot_mod.logs", "version", "5.0.0-beta.3"),
+						"turbot_mod.test", "version", "5.0.0-beta.3"),
 				),
 			},
 			{
 				Config: testAccCheckModUpdateConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckExampleModExists("turbot_mod.backup"),
-					testAccCheckExampleModExists("turbot_mod.logs"),
+					testAccCheckExampleModExists("turbot_mod.test"),
+					testAccCheckExampleModExists("turbot_mod.test"),
 					resource.TestCheckResourceAttr(
-						"turbot_mod.logs", "org", "turbot"),
+						"turbot_mod.test", "org", "turbot"),
 					resource.TestCheckResourceAttr(
-						"turbot_mod.logs", "mod", "aws-logs"),
+						"turbot_mod.test", "mod", "structure-test"),
 					resource.TestCheckResourceAttr(
-						"turbot_mod.logs", "version", "5.0.0-beta.4"),
+						"turbot_mod.test", "version", "5.0.0-beta.4"),
 				),
 			},
 		},
@@ -63,22 +63,22 @@ func testAccCheckModDestroy(s *terraform.State) error {
 
 func testAccCheckModConfig() string {
 	return `
-resource "turbot_mod" "logs" {
+resource "turbot_mod" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	org = "turbot"
-	mod = "aws-logs"
-	version = "5.0.0-beta.3"
+	mod = "structure-test"
+	version = "5.0.0"
 }
 `
 }
 
 func testAccCheckModUpdateConfig() string {
 	return `
-resource "turbot_mod" "logs" {
+resource "turbot_mod" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	org = "turbot"
-	mod = "aws-logs"
-	version = "5.0.0-beta.4"
+	mod = "structure-test"
+	version = ">=5.0.0"
 }
 `
 }
