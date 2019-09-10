@@ -33,7 +33,7 @@ func createPolicySettingMutation() string {
 		validFromTimestamp
 		validToTimestamp
 		turbot {
-			id
+		  id
 		}
 	}
 }`
@@ -54,7 +54,7 @@ func readPolicySettingQuery(policySettingId string) string {
 		validFromTimestamp
 		validToTimestamp
 		turbot {
-			id
+		  id
 		}
 	}
 }`, policySettingId)
@@ -74,7 +74,7 @@ func updatePolicySettingMutation() string {
 		validFromTimestamp
 		validToTimestamp
 		turbot {
-			id
+		  id
 		}
 	}
 }`
@@ -95,11 +95,33 @@ func deletePolicySettingMutation() string {
 		validFromTimestamp
 		validToTimestamp
 		turbot {
-			id
+		  id
 		}
 	}
 }`
 
+}
+
+func findPolicySettingQuery(policyTypeUri, resourceAka string) string {
+	return fmt.Sprintf(`{
+  policySettings: policySettingList(filter: "policyType:%s resource:%s") {
+    items {
+      value
+		valueSource
+		template
+		precedence
+		templateInput
+		input
+		note
+		validFromTimestamp
+		validToTimestamp
+		turbot {
+		  id
+		}
+    }
+  }
+}
+`, policyTypeUri, resourceAka)
 }
 
 // read policyValue
@@ -112,10 +134,10 @@ func readPolicyValueQuery(policyTypeUri string, resourceId string) string {
         reason
         details
         setting {
-			valueSource
-            turbot {
-                id
-            }
+		  valueSource
+          turbot {	
+            id
+          }
         }
 		turbot {
 			id
@@ -131,6 +153,8 @@ func installModMutation() string {
  	mod: modInstall(command: $command) {
 		turbot {
 		  id
+          parentId
+          akas
 		}
 	}
 }`
@@ -174,6 +198,21 @@ func createResourceMutation() string {
  	resource: resourceCreate(command: $command) {
 		turbot {
 		  id
+          parentId
+          akas
+		}
+	}
+}`
+}
+
+// update resource
+func updateResourceMutation() string {
+	return `mutation UpsertResource($command: ResourceCommandInput) {
+ 	resource: resourceUpsert(command: $command) {
+		turbot {
+		  id
+		  parentId
+          akas
 		}
 	}
 }`
@@ -204,4 +243,19 @@ func readResourceQuery(aka string, properties map[string]string) string {
     turbot: get(path:"turbot")
   }
 }`, aka, propertiesString.String())
+}
+
+// find folder
+func findFolderQuery(title, parentId string) string {
+	return fmt.Sprintf(`{
+  folders: resourceList(filter: "resourceType:folder title:%s parentId:%s") {
+    items {
+      title: get(path:"title"),
+      parent: get(path:"turbot.parentId"),
+      description: get(path: "description"),
+      turbot: get(path:"turbot")      
+    }
+  }
+}
+`, title, parentId)
 }

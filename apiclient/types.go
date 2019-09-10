@@ -27,6 +27,12 @@ type PolicySettingResponse struct {
 	PolicySetting PolicySetting
 }
 
+type FindPolicySettingResponse struct {
+	PolicySettings struct {
+		Items []PolicySetting
+	}
+}
+
 type PolicySetting struct {
 	Value              interface{}
 	ValueSource        string
@@ -39,6 +45,7 @@ type PolicySetting struct {
 	ValidToTimestamp   string
 	Turbot             TurbotMetadata
 }
+
 type TurbotMetadata struct {
 	Id       string
 	ParentId string
@@ -49,6 +56,7 @@ type TurbotMetadata struct {
 type PolicyValueResponse struct {
 	PolicyValue PolicyValue
 }
+
 type PolicyValue struct {
 	Value      interface{}
 	Precedence string
@@ -106,15 +114,10 @@ type CreateResourceResponse struct {
 	}
 }
 
-type ReadFolderResponse struct {
-	Resource Folder
-}
-
-type Folder struct {
-	Turbot      TurbotMetadata
-	Title       string
-	Description string
-	Parent      string
+type UpdateResourceResponse struct {
+	Resource struct {
+		Turbot TurbotMetadata
+	}
 }
 
 // note: the Resource property is just an interface{} - this is mapped manually into a Resource object,
@@ -126,4 +129,21 @@ type ReadResourceResponse struct {
 type Resource struct {
 	Turbot TurbotMetadata
 	Data   map[string]interface{}
+}
+
+type ReadFolderResponse struct {
+	Resource Folder
+}
+
+type FindFolderResponse struct {
+	Folders struct {
+		Items []Folder
+	}
+}
+
+type Folder struct {
+	Turbot      TurbotMetadata
+	Title       string
+	Description string
+	Parent      string
 }

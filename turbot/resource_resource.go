@@ -65,7 +65,7 @@ func resourceTurbotResourceCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(d, meta); err != nil {
+	if err = setParentAkas(turbotMetadata.ParentId, d, meta); err != nil {
 		return err
 	}
 
@@ -96,7 +96,7 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 	// assign results back into ResourceData
 
 	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(d, meta); err != nil {
+	if err = setParentAkas(resource.Turbot.ParentId, d, meta); err != nil {
 		return err
 	}
 
@@ -127,16 +127,21 @@ func resourceTurbotResourceImport(d *schema.ResourceData, meta interface{}) ([]*
 	return []*schema.ResourceData{d}, nil
 }
 
-func setParentAkas(d *schema.ResourceData, meta interface{}) error {
+func setParentAkas(parentId string, d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
-	parentAka := d.Get("parent").(string)
 
 	// load parent resource to get parent_akas
-	parent, err := client.ReadResource(parentAka, nil)
+	parent, err := client.ReadResource(parentId, nil)
 	if err != nil {
 		log.Printf("[ERROR] Failed to load parentAka resource; %s", err)
 		return err
 	}
+	parentAkas := parent.Turbot.Akas
+	// if this resource has no akas, just use the id
+	if parentAkas == nil {
+		parentAkas = []string{parentId}
+	}
+
 	// assign parent_akas
 	d.Set("parent_akas", parent.Turbot.Akas)
 	return nil

@@ -84,7 +84,7 @@ func resourceTurbotModInstall(d *schema.ResourceData, meta interface{}) error {
 	id := mod.Turbot.Id
 	if id != "" {
 		// TODO extract terraform name
-		return fmt.Errorf("Cannot install mod %s as it is already installed. To manange this mod using Terraform, import the mod using command 'terraform import <resource_address> %s'", modAka, id)
+		return fmt.Errorf("Cannot install mod %s as it is already installed, with id: %s. To manange this mod using Terraform, import the mod using command 'terraform import <resource_address> <id>'", modAka, id)
 	}
 
 	return modInstall(d, meta)
@@ -93,7 +93,7 @@ func resourceTurbotModUpdate(d *schema.ResourceData, meta interface{}) error {
 	return modInstall(d, meta)
 }
 
-// do tha eactual mode insatallation
+// do the actual mode installation
 func modInstall(d *schema.ResourceData, meta interface{}) error {
 
 	client := meta.(*apiclient.Client)
@@ -123,7 +123,7 @@ func modInstall(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(d, meta); err != nil {
+	if err = setParentAkas(mod.Turbot.ParentId, d, meta); err != nil {
 		return err
 	}
 	// assign the id
@@ -146,15 +146,22 @@ func resourceTurbotModRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	// now determine latest compatible version
-	targetVersion, err := getLatestCompatibleVersion(d, meta)
-	if err != nil {
-		return err
+	var targetVersion string
+	// if 'version' is set in resourceData, fetch the latest version which satisfies this requirement
+	if d.Get("version").(string) != "" {
+		targetVersion, err = getLatestCompatibleVersion(d, meta)
+		if err != nil {
+			return err
+		}
+	} else {
+		// if version is NOT set (e.g. for an import), just use the actual mod version as target version
+		targetVersion = mod.Version
 	}
 
 	// assign results back into ResourceData
 
 	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(d, meta); err != nil {
+	if err = setParentAkas(mod.Parent, d, meta); err != nil {
 		return err
 	}
 	d.Set("parent", mod.Parent)

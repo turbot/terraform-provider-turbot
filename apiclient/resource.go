@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/mitchellh/mapstructure"
+	"log"
 )
 
 func (client *Client) CreateResource(typeAka, parentAka, payload string) (*TurbotMetadata, error) {
@@ -33,12 +34,13 @@ func (client *Client) CreateResource(typeAka, parentAka, payload string) (*Turbo
 }
 
 func (client *Client) ReadResource(id string, properties map[string]string) (*Resource, error) {
+	log.Println("[INFO] ReadResource", id)
 	query := readResourceQuery(id, properties)
 	var responseData = &ReadResourceResponse{}
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, fmt.Errorf("error reading policy: %s", err.Error())
+		return nil, fmt.Errorf("error reading resource: %s", err.Error())
 	}
 
 	resource, err := client.AssignResourceResults(responseData.Resource, properties)
@@ -69,6 +71,36 @@ func (client *Client) DeleteResource(aka string) error {
 		return fmt.Errorf("error deleting folder: %s", err.Error())
 	}
 	return nil
+}
+
+func (client *Client) UpdateResource(id, parent, title, description string) (*TurbotMetadata, error) {
+	query := updateResourceMutation()
+	responseData := &UpdateResourceResponse{}
+	var commandPayload = map[string]map[string]interface{}{
+		"data": {
+			"title":       title,
+			"description": description,
+		},
+		"turbotData": {
+			"akas": []string{id},
+		},
+	}
+	commandMeta := map[string]interface{}{
+		"typeAka":   "tmod:@turbot/turbot#/resource/types/folder",
+		"parentAka": parent,
+	}
+	variables := map[string]interface{}{
+		"command": map[string]interface{}{
+			"payload": commandPayload,
+			"meta":    commandMeta,
+		},
+	}
+
+	// execute api call
+	if err := client.doRequest(query, variables, responseData); err != nil {
+		return nil, fmt.Errorf("error creating folder: %s", err.Error())
+	}
+	return &responseData.Resource.Turbot, nil
 }
 
 func (client *Client) ResourceExists(id string) (bool, error) {

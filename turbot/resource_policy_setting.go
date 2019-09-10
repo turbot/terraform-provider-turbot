@@ -89,6 +89,16 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 	policyTypeUri := d.Get("policy_type").(string)
 	resourceAka := d.Get("resource").(string)
 
+	// first check if the folder exists - search by parent and foldere title
+	existingSetting, err := client.FindPolicySetting(policyTypeUri, resourceAka)
+	if err != nil {
+		return err
+	}
+	if len(existingSetting) > 0 {
+		return fmt.Errorf("Cannot create policy setting for policy type: '%s', resource: '%s' as a setting already exists, with id: %s. To manage the existing setting using Terraform, import it using command 'terraform import <resource_address> <id>'",
+			policyTypeUri, resourceAka, existingSetting[0].Turbot.Id)
+	}
+
 	// NOTE:  turbot policy settings have a value and a valueSource property
 	// - value is the type property value, with the type dependent on the policy schema
 	// - valueSource is the yaml representation of the policy.
@@ -140,7 +150,7 @@ func resourceTurbotPolicySettingRead(d *schema.ResourceData, meta interface{}) e
 
 	// NOTE: turbot policy settings have a value and a valueSource property
 	// - value is the type property value, with the type dependent on the policy schema
-	// - vaueSource is the yaml representation of the policy.
+	// - valueSource is the yaml representation of the policy.
 	//
 	d.Set("value", fmt.Sprintf("%v", setting.Value))
 	d.Set("value_source", setting.ValueSource)

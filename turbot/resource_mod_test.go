@@ -8,6 +8,7 @@ import (
 	"testing"
 )
 
+// test suites
 func TestAccMod(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -17,7 +18,7 @@ func TestAccMod(t *testing.T) {
 			{
 				Config: testAccCheckModConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckExampleModExists("turbot_mod.test"),
+					testAccCheckModExists("turbot_mod.test"),
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "org", "turbot"),
 					resource.TestCheckResourceAttr(
@@ -29,8 +30,8 @@ func TestAccMod(t *testing.T) {
 			{
 				Config: testAccCheckModUpdateConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckExampleModExists("turbot_mod.test"),
-					testAccCheckExampleModExists("turbot_mod.test"),
+					testAccCheckModExists("turbot_mod.test"),
+					testAccCheckModExists("turbot_mod.test"),
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "org", "turbot"),
 					resource.TestCheckResourceAttr(
@@ -43,24 +44,7 @@ func TestAccMod(t *testing.T) {
 	})
 }
 
-func testAccCheckModDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*apiclient.Client)
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "mod" {
-			continue
-		}
-		_, err := client.ReadMod(rs.Primary.ID)
-		if err == nil {
-			return fmt.Errorf("Alert still exists")
-		}
-		if !apiclient.NotFoundError(err) {
-			return fmt.Errorf("expected 'not found' error, got %s", err)
-		}
-	}
-
-	return nil
-}
-
+// configs
 func testAccCheckModConfig() string {
 	return `
 resource "turbot_mod" "test" {
@@ -83,7 +67,8 @@ resource "turbot_mod" "test" {
 `
 }
 
-func testAccCheckExampleModExists(resource string) resource.TestCheckFunc {
+// helper functions
+func testAccCheckModExists(resource string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[resource]
 		if !ok {
@@ -99,4 +84,22 @@ func testAccCheckExampleModExists(resource string) resource.TestCheckFunc {
 		}
 		return nil
 	}
+}
+
+func testAccCheckModDestroy(s *terraform.State) error {
+	client := testAccProvider.Meta().(*apiclient.Client)
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "mod" {
+			continue
+		}
+		_, err := client.ReadMod(rs.Primary.ID)
+		if err == nil {
+			return fmt.Errorf("Alert still exists")
+		}
+		if !apiclient.NotFoundError(err) {
+			return fmt.Errorf("expected 'not found' error, got %s", err)
+		}
+	}
+
+	return nil
 }

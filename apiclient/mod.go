@@ -34,7 +34,7 @@ func (client *Client) ReadMod(id string) (*Mod, error) {
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, fmt.Errorf("error reading policy: %s", err.Error())
+		return nil, fmt.Errorf("error reading mod: %s", err.Error())
 	}
 	// convert uri into org and mod
 	org, mod := ParseModUri(responseData.Mod.Uri)
