@@ -68,6 +68,7 @@ func resourceTurbotPolicySetting() *schema.Resource {
 		},
 	}
 }
+
 func resourceTurbotPolicySettingExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
 	// Exists - This is called to verify a resource still exists. It is called prior to Read,
 	// and lowers the burden of Read to be able to assume the resource exists.
@@ -95,7 +96,7 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 		return err
 	}
 	if len(existingSetting) > 0 {
-		return fmt.Errorf("Cannot create policy setting for policy type: '%s', resource: '%s' as a setting already exists, with id: %s. To manage the existing setting using Terraform, import it using command 'terraform import <resource_address> <id>'",
+		return fmt.Errorf("A policy setting for policy type: '%s', resource: '%s' already exists ( id: %s ). To manage the existing setting using Terraform, import it using command 'terraform import <resource_address> <id>'",
 			policyTypeUri, resourceAka, existingSetting[0].Turbot.Id)
 	}
 
@@ -152,8 +153,9 @@ func resourceTurbotPolicySettingRead(d *schema.ResourceData, meta interface{}) e
 	// - value is the type property value, with the type dependent on the policy schema
 	// - valueSource is the yaml representation of the policy.
 	//
-	d.Set("value", fmt.Sprintf("%v", setting.Value))
-	d.Set("value_source", setting.ValueSource)
+	if setting.Value != nil {
+		d.Set("value", fmt.Sprintf("%v", setting.Value))
+	}
 	d.Set("id", id)
 	d.Set("precedence", setting.Precedence)
 	d.Set("template", setting.Template)
@@ -248,8 +250,8 @@ func buildPayload(d *schema.ResourceData) map[string]string {
 	return commandPayload
 }
 
-// If valueeSource was used, supress diff if value source matches
-func supressIfValueSourceMatches(k, old, new string, d *schema.ResourceData) bool {
+// If valueSource was used, suppress diff if value source matches
+func supressIfValueSourceMatches(_, old, new string, d *schema.ResourceData) bool {
 	// Return true if the diff should be suppressed, false to retain it.
 	if d.Get("value_source_used").(bool) {
 		old = d.Get("value_source").(string)

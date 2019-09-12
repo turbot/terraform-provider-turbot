@@ -24,7 +24,6 @@ func (client *Client) InstallMod(parent, org, mod, version string) (*InstallModD
 	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error installing mod: %s", err.Error())
 	}
-
 	return &responseData.Mod, nil
 }
 
@@ -36,16 +35,12 @@ func (client *Client) ReadMod(id string) (*Mod, error) {
 	if err := client.doRequest(query, nil, responseData); err != nil {
 		return nil, fmt.Errorf("error reading mod: %s", err.Error())
 	}
+
 	// convert uri into org and mod
 	org, mod := ParseModUri(responseData.Mod.Uri)
-	var result = &Mod{
-		Org:     org,
-		Mod:     mod,
-		Version: responseData.Mod.Version,
-		Parent:  responseData.Mod.Parent,
-	}
-
-	return result, nil
+	responseData.Mod.Org = org
+	responseData.Mod.Mod = mod
+	return &responseData.Mod, nil
 }
 
 func ParseModUri(uri string) (org, mod string) {
@@ -85,7 +80,7 @@ func (client *Client) UninstallMod(modId string) error {
 	return nil
 }
 
-func (client *Client) GetModVersions(org, mod string) ([]ModVersion, error) {
+func (client *Client) GetModVersions(org, mod string) ([]ModRegistryVersion, error) {
 	query := modVersionsQuery(org, mod)
 	responseData := &ModVersionResponse{}
 

@@ -63,7 +63,3 @@ In order to run the full suite of Acceptance tests, run `make testacc`.
 ```sh
 $ make testacc
 ```
-
-terraform import turbot_policy.test_policy "tmod:@turbot/aws-sqs#/policy/types/queueApprovedUsage_147429135920940"
-
-ª

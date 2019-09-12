@@ -1,12 +1,11 @@
 package turbot
 
 import (
+	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	apiClient "github.com/terraform-providers/terraform-provider-turbot/apiclient"
 	"log"
-	"net/url"
-	"path"
 )
 
 func Provider() terraform.ResourceProvider {
@@ -43,20 +42,16 @@ func Provider() terraform.ResourceProvider {
 }
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
-	// build api url
-	u, err := url.Parse(d.Get("workspace").(string))
-	u.Path = path.Join(u.Path, "api/v5/graphql")
-	apiUrl := u.String()
-
-	client := apiClient.CreateClient(
+	client, err := apiClient.CreateClient(
 		d.Get("access_key_id").(string),
 		d.Get("secret_access_key").(string),
-		apiUrl)
-
-	log.Println("[INFO] Turbot API client initialized, now validating...", client)
-	err = client.Validate()
+		d.Get("workspace").(string))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create client: %s", err.Error())
+	}
+	log.Println("[INFO] Turbot API client initialized, now validating...", client)
+	if err = client.Validate(); err != nil {
+		return nil, fmt.Errorf("failed to validate client: %s", err.Error())
 	}
 	return client, nil
 }

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
-	"log"
 )
 
 func dataSourceTurbotPolicy() *schema.Resource {
@@ -52,7 +51,6 @@ func dataSourceTurbotPolicy() *schema.Resource {
 	}
 }
 func resourceTurbotPolicyValueRead(d *schema.ResourceData, meta interface{}) error {
-	log.Println("resourceTurbotPolicySettingRead")
 	client := meta.(*apiclient.Client)
 	policyTypeUri := d.Get("policy_type").(string)
 	resourceAka := d.Get("resource").(string)

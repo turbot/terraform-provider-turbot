@@ -4,7 +4,10 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"github.com/machinebox/graphql"
+	"net/url"
+	"path"
 )
 
 // Turbot API Client
@@ -13,15 +16,26 @@ type Client struct {
 	Graphql                      *graphql.Client
 }
 
-func CreateClient(accessKeyId, secretAccessKey, baseUrl string) *Client {
+func CreateClient(accessKeyId, secretAccessKey, workspace string) (*Client, error) {
+	// build api url
+	u, err := url.Parse(workspace)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create client - could not parse workspace url %s, error %s", workspace, err.Error())
+	}
+	if u.Path == "invalid" {
+		return nil, fmt.Errorf("failed to create client - could not parse workspace url '%s'", workspace)
+	}
+	u.Path = path.Join(u.Path, "api/v5/graphql")
+	baseUrl := u.String()
+
 	return &Client{
 		AccessKeyId:     accessKeyId,
 		SecretAccessKey: secretAccessKey,
 		Graphql:         graphql.NewClient(baseUrl),
-	}
+	}, nil
 }
 
-// Validate checks if the API host URL and credentials are valid.
+// Validate checks if the API workspace URL and credentials are valid.
 func (client *Client) Validate() error {
 	query, responseObject := validationQuery()
 	err := client.doRequest(query, nil, &responseObject)

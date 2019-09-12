@@ -24,7 +24,7 @@ func TestAccMod(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "mod", "structure-test"),
 					resource.TestCheckResourceAttr(
-						"turbot_mod.test", "version", "5.0.0-beta.3"),
+						"turbot_mod.test", "version", "5.0.0-beta.40"),
 				),
 			},
 			{
@@ -37,7 +37,19 @@ func TestAccMod(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "mod", "structure-test"),
 					resource.TestCheckResourceAttr(
-						"turbot_mod.test", "version", "5.0.0-beta.4"),
+						"turbot_mod.test", "version", "5.0.0-beta.59"),
+				),
+			},
+			{
+				Config: testAccCheckModConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckModExists("turbot_mod.test"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "org", "turbot"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "mod", "structure-test"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "version", "5.0.0-beta.40"),
 				),
 			},
 		},
@@ -51,7 +63,7 @@ resource "turbot_mod" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	org = "turbot"
 	mod = "structure-test"
-	version = "5.0.0"
+	version = "5.0.0-beta.40"
 }
 `
 }
@@ -62,7 +74,7 @@ resource "turbot_mod" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	org = "turbot"
 	mod = "structure-test"
-	version = ">=5.0.0"
+	version = "5.0.0-beta.59"
 }
 `
 }

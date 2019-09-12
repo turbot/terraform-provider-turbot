@@ -156,6 +156,7 @@ func installModMutation() string {
           parentId
           akas
 		}
+		build
 	}
 }`
 }

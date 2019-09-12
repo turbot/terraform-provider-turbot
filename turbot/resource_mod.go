@@ -38,6 +38,10 @@ func resourceTurbotMod() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"uri": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"org": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -54,6 +58,14 @@ func resourceTurbotMod() *schema.Resource {
 				// default the version to any version
 				Default:          "*",
 				DiffSuppressFunc: supressIfLatestCompatibleVersionInstalled,
+			},
+			// store the version or version range specified in the config
+			// this is necessary as if the config specifies a version range, the "version" field will contain the actual
+			// installed version
+			// we need to store the range in case a new version is released which satisfies the requirement
+			"version_range": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			// store latest version which satisfies the version requirement
 			"latest_compatible_version": {
@@ -84,32 +96,26 @@ func resourceTurbotModInstall(d *schema.ResourceData, meta interface{}) error {
 	id := mod.Turbot.Id
 	if id != "" {
 		// TODO extract terraform name
-		return fmt.Errorf("Cannot install mod %s as it is already installed, with id: %s. To manange this mod using Terraform, import the mod using command 'terraform import <resource_address> <id>'", modAka, id)
+		return fmt.Errorf("Mod %s is already installed ( id: %s ). To manage this mod using Terraform, import the mod using command 'terraform import <resource_address> <id>'", modAka, id)
 	}
 
 	return modInstall(d, meta)
 }
+
 func resourceTurbotModUpdate(d *schema.ResourceData, meta interface{}) error {
 	return modInstall(d, meta)
 }
 
 // do the actual mode installation
 func modInstall(d *schema.ResourceData, meta interface{}) error {
-
 	client := meta.(*apiclient.Client)
 	parentAka := d.Get("parent").(string)
 	org := d.Get("org").(string)
 	modName := d.Get("mod").(string)
-	version := d.Get("version").(string)
-
-	// now determine latest compatible version
-	targetVersion, err := getLatestCompatibleVersion(d, meta)
-	if err != nil {
-		return err
-	}
+	versionRange := d.Get("version").(string)
 
 	// install mod returns turbot resource metadata containing the id
-	mod, err := client.InstallMod(parentAka, org, modName, version)
+	mod, err := client.InstallMod(parentAka, org, modName, versionRange)
 	if err != nil {
 		log.Println("[ERROR] Turbot mod installation failed...", err)
 		return err
@@ -118,7 +124,8 @@ func modInstall(d *schema.ResourceData, meta interface{}) error {
 	modId := mod.Turbot.Id
 
 	// now poll the mod resource to wait for the correct version
-	if err = waitForInstallation(modId, targetVersion, client); err != nil {
+	installedVersion, err := waitForInstallation(modId, mod.Build, client)
+	if err != nil {
 		return err
 	}
 
@@ -128,8 +135,9 @@ func modInstall(d *schema.ResourceData, meta interface{}) error {
 	}
 	// assign the id
 	d.SetId(modId)
-	d.Set("latest_compatible_version", targetVersion)
-
+	d.Set("latest_compatible_version", installedVersion)
+	d.Set("version_range", versionRange)
+	d.Set("uri", mod.Turbot.Akas[0])
 	return nil
 }
 
@@ -149,11 +157,14 @@ func resourceTurbotModRead(d *schema.ResourceData, meta interface{}) error {
 	var targetVersion string
 	// if 'version' is set in resourceData, fetch the latest version which satisfies this requirement
 	if d.Get("version").(string) != "" {
+
 		targetVersion, err = getLatestCompatibleVersion(d, meta)
+		log.Printf("resourceTurbotModRead config version %s mod version %s latest %s", d.Get("version").(string), mod.Version, targetVersion)
 		if err != nil {
 			return err
 		}
 	} else {
+		log.Printf("resourceTurbotModRead no version in resource data mod.Version %s", mod.Version)
 		// if version is NOT set (e.g. for an import), just use the actual mod version as target version
 		targetVersion = mod.Version
 	}
@@ -169,6 +180,7 @@ func resourceTurbotModRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("mod", mod.Mod)
 	d.Set("version", mod.Version)
 	d.Set("latest_compatible_version", targetVersion)
+	d.Set("uri", mod.Uri)
 
 	return nil
 }
@@ -197,46 +209,49 @@ func resourceTurbotModImport(d *schema.ResourceData, meta interface{}) ([]*schem
 func buildModAka(org, mod string) string {
 	return fmt.Sprintf("tmod:@%s/%s", org, mod)
 }
-func waitForInstallation(modId, targetVersion string, client *apiclient.Client) error {
+
+func waitForInstallation(modId, targetBuild string, client *apiclient.Client) (string, error) {
 	retryCount := 0
 	// retry for 15 minutes
 	maxRetries := 40
 	sleep := 20 * time.Second
-	log.Printf("[DEBUG] Wait for mod installation, targetVersion: %s", targetVersion)
+	log.Printf("Wait for mod installation, targetBuild: %s", targetBuild)
 
 	for retryCount < maxRetries {
-		installedVersion, err := getInstalledModVersion(modId, client)
+		installedVersion, installedBuild, err := getInstalledModVersion(modId, client)
 		if err != nil {
-			return err
+			return "", err
 		}
-		log.Println("[DEBUG] Installed version: ", installedVersion)
-		if installedVersion == targetVersion {
-			log.Printf("[DEBUG] Installed version: %s, target version: %s, mod is installed!", installedVersion, targetVersion)
+		if installedBuild == targetBuild {
+			log.Printf("installed build: %s, target build: %s, mod is installed!", installedBuild, targetBuild)
 			// success
-			return nil
+			return installedVersion, nil
 		}
-		log.Printf("[DEBUG] Installed version: %s, target version: %s, retrying!", installedVersion, targetVersion)
+		log.Printf("installed build: %s, target build: %s, retrying!", installedBuild, targetBuild)
 		time.Sleep(sleep)
 		retryCount++
 	}
-
-	return errors.New("Turbot mod installation timed out")
+	return "", errors.New("Turbot mod installation timed out")
 }
 
-func getInstalledModVersion(modId string, client *apiclient.Client) (string, error) {
+func getInstalledModVersion(modId string, client *apiclient.Client) (version, build string, err error) {
 	properties := map[string]string{
-		"version": "turbot.custom.installedVersion",
+		"version": "version",
+		"build":   "build",
 	}
 
 	resource, err := client.ReadResource(modId, properties)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-	if resource.Data["version"] == nil {
-		return "", nil
+	versionData := resource.Data["version"]
+	buildData := resource.Data["build"]
+	if (versionData == nil) || (buildData == nil) {
+		return "", "", nil
 	}
-
-	return resource.Data["version"].(string), nil
+	version = versionData.(string)
+	build = buildData.(string)
+	return
 }
 
 func getLatestCompatibleVersion(d *schema.ResourceData, meta interface{}) (string, error) {
@@ -273,10 +288,30 @@ func getLatestCompatibleVersion(d *schema.ResourceData, meta interface{}) (strin
 }
 
 // the version in the config is a semver so may be a range. The version in the state file will be a specific version
-// this will cause diffs to be identified
-// supress diff if the latest compatible version is installed
-func supressIfLatestCompatibleVersionInstalled(k, old, new string, d *schema.ResourceData) bool {
-	return false
-	//latestCompatibleVersion := d.Get("latest_compatible_version").(string)
-	//return new == latestCompatibleVersion
+// this may cause incorrect diffs to be identified
+//
+// supress diff if:
+// - the current version ('old') is the latest compatible version,
+// 	AND
+// - the latest compatible version satisfies the new version requirements
+//
+// where
+//   'old' is the currently installed version
+//   'new' is the version field in the config
+//   'latestCompatibleVersion' is the latest version which satisfies the _old_ config version  requirement
+func supressIfLatestCompatibleVersionInstalled(_, old, new string, d *schema.ResourceData) bool {
+
+	// latest compatible version is based on the old version parameter - if the new version has changed it is not valie
+	latestCompatibleVersion := d.Get("latest_compatible_version").(string)
+	log.Printf("supressIfLatestCompatibleVersionInstalled old: %s, new: %s, latestCompatibleVersion: %s", old, new, latestCompatibleVersion)
+	c, err := semver.NewConstraint(new)
+	if err != nil {
+		return false
+	}
+	v, err := semver.NewVersion(latestCompatibleVersion)
+	if err != nil {
+		return false
+	}
+
+	return old == latestCompatibleVersion && c.Check(v)
 }

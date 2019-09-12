@@ -1,10 +1,11 @@
 package turbot
 
 import (
-	"fmt"
 	"github.com/hashicorp/terraform/helper/resource"
 	"testing"
 )
+
+// todo test more policy formats: array, templated, calculated (e.g. stack source)
 
 func TestAccPolicyValueDataSource_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -12,15 +13,12 @@ func TestAccPolicyValueDataSource_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckPolicySettingStringConfig(),
-			},
-			{
 				Config: testAccCheckPolicyValueConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"turbot_policy_value.test_policy", "value", "Skip"),
+						"data.turbot_policy_value.test_policy", "value", "alpha.turbot.com"),
 					resource.TestCheckResourceAttr(
-						"turbot_policy_value.test_policy", "precedence", "must"),
+						"data.turbot_policy_value.test_policy", "precedence", "must"),
 				),
 			},
 		},
@@ -28,10 +26,10 @@ func TestAccPolicyValueDataSource_Basic(t *testing.T) {
 
 }
 func testAccCheckPolicyValueConfig() string {
-	return fmt.Sprintf(`
+	return `
 data "turbot_policy_value" "test_policy" {
-  resource = "%s"
-  policy_type = "tmod:@turbot/ssl-check#/policy/types/sslCheck"
+  resource = "tmod:@turbot/turbot#/"
+  policy_type = "tmod:@turbot/turbot#/policy/types/domainName"
 }
-`, regionResourceAka)
+`
 }

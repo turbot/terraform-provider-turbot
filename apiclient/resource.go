@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/mitchellh/mapstructure"
-	"log"
 )
 
 func (client *Client) CreateResource(typeAka, parentAka, payload string) (*TurbotMetadata, error) {
@@ -12,7 +11,9 @@ func (client *Client) CreateResource(typeAka, parentAka, payload string) (*Turbo
 	responseData := &CreateResourceResponse{}
 
 	commandPayload := map[string]string{}
-	json.Unmarshal([]byte(payload), &commandPayload)
+	if err := json.Unmarshal([]byte(payload), &commandPayload); err != nil {
+		return nil, fmt.Errorf("error creating resource: %s", err.Error())
+	}
 
 	commandMeta := map[string]string{
 		"typeAka":   typeAka,
@@ -34,7 +35,6 @@ func (client *Client) CreateResource(typeAka, parentAka, payload string) (*Turbo
 }
 
 func (client *Client) ReadResource(id string, properties map[string]string) (*Resource, error) {
-	log.Println("[INFO] ReadResource", id)
 	query := readResourceQuery(id, properties)
 	var responseData = &ReadResourceResponse{}
 
@@ -129,6 +129,7 @@ func (client *Client) AssignResourceResults(responseData interface{}, properties
 	if err := mapstructure.Decode(responseData.(map[string]interface{})["turbot"], &resource.Turbot); err != nil {
 		return nil, err
 	}
+	// write properties into a map
 	if properties != nil {
 		for p := range properties {
 			resource.Data[p] = responseData.(map[string]interface{})[p]

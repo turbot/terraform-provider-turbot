@@ -2,7 +2,6 @@ package apiclient
 
 import (
 	"fmt"
-	"log"
 )
 
 func (client *Client) CreateFolder(parent, title, description string) (*TurbotMetadata, error) {
@@ -42,7 +41,6 @@ func (client *Client) ReadFolder(id string) (*Folder, error) {
 	query := readResourceQuery(id, properties)
 	responseData := &ReadFolderResponse{}
 
-	log.Println("[INFO] client.ReadFolder query: ", query)
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
 		return nil, fmt.Errorf("error reading folder: %s", err.Error())
@@ -52,8 +50,6 @@ func (client *Client) ReadFolder(id string) (*Folder, error) {
 
 func (client *Client) FindFolder(title, parentAka string) ([]Folder, error) {
 	responseData := &FindFolderResponse{}
-
-	log.Println("[INFO] FindFolder ", title, parentAka)
 	// convert parentAka into an id
 	parent, err := client.ReadResource(parentAka, nil)
 	if err != nil {

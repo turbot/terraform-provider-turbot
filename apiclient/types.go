@@ -73,25 +73,22 @@ type InstallModResponse struct {
 }
 
 type InstallModData struct {
+	Build  string
 	Turbot TurbotMetadata
 }
 
 type ReadModResponse struct {
-	Mod struct {
-		Object  interface{}
-		Uri     string
-		Parent  string
-		Version string
-	}
+	Mod Mod
 }
 
-type ModVersion struct {
+type ModRegistryVersion struct {
 	Status  string
 	Version string
 }
+
 type ModVersionResponse struct {
 	Versions struct {
-		Items []ModVersion
+		Items []ModRegistryVersion
 	}
 }
 
@@ -106,6 +103,7 @@ type Mod struct {
 	Mod     string
 	Version string
 	Parent  string
+	Uri     string
 }
 
 type CreateResourceResponse struct {
