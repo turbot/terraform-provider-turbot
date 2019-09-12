@@ -1,9 +1,27 @@
-#  Local .terraform directories
-**/.terraform/*
-
-# .tfstate files
+turbot-cli*
+.*.swo
+.*.swp
+*.tgz
+*.zip
+.DS_Store
+.idea
+.nyc_output
+.serverless
+.swo
+.swp
+.terraform
+__pycache__
+dist
+**/dist/*
+node_modules
+*.log
+**/env/integration/.*
+**/env/integration/*-alpha*
+*.code-workspace
+/coverage/*
+codebuild_artifacts
+*.backup
 *.tfstate
-*.tfstate.*
-
-# .tfvars files
-*.tfvars
+*.log
+.terraform/**
+terraform-provider-turbot
