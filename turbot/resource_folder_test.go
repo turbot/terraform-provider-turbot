@@ -49,37 +49,6 @@ func TestAccFolder(t *testing.T) {
 	})
 }
 
-// configs
-func testAccFolderConfig() string {
-	return `
-resource "turbot_folder" "test" {
-	parent = "tmod:@turbot/turbot#/"
-	title = "provider_test"
-	description = "test folder"
-}
-`
-}
-
-func testAccFolderUpdateDescConfig() string {
-	return `
-resource "turbot_folder" "test" {
-	parent = "tmod:@turbot/turbot#/"
-	title = "provider_test"
-	description = "test folder for turbot terraform provider"
-}
-`
-}
-
-func testAccFolderUpdateTitleConfig() string {
-	return `
-resource "turbot_folder" "test" {
-	parent = "tmod:@turbot/turbot#/"
-	title = "provider_test_upd"
-	description = "test folder for turbot terraform provider"
-}
-`
-}
-
 func TestAccFolderWithDependencies(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -133,6 +102,37 @@ func TestAccFolderWithDependencies(t *testing.T) {
 			},
 		},
 	})
+}
+
+// configs
+func testAccFolderConfig() string {
+	return `
+resource "turbot_folder" "test" {
+	parent = "tmod:@turbot/turbot#/"
+	title = "provider_test"
+	description = "test folder"
+}
+`
+}
+
+func testAccFolderUpdateDescConfig() string {
+	return `
+resource "turbot_folder" "test" {
+	parent = "tmod:@turbot/turbot#/"
+	title = "provider_test"
+	description = "test folder for turbot terraform provider"
+}
+`
+}
+
+func testAccFolderUpdateTitleConfig() string {
+	return `
+resource "turbot_folder" "test" {
+	parent = "tmod:@turbot/turbot#/"
+	title = "provider_test_upd"
+	description = "test folder for turbot terraform provider"
+}
+`
 }
 
 func testAccFolderWithDependenciesConfig() string {

@@ -1,6 +1,8 @@
 package turbot
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
 	"log"
@@ -33,20 +35,21 @@ func resourceTurbotResource() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"resourceType": {
+			"type": {
 				Type:     schema.TypeString,
 				Required: true,
-			}, "payload": {
-				Type:     schema.TypeString,
-				Required: true,
+				ForceNew: true,
+			},
+			"payload": {
+				Type:             schema.TypeString,
+				Required:         true,
+				DiffSuppressFunc: suppressIfPayloadMatches,
 			},
 		},
 	}
 }
 
 func resourceTurbotResourceExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
-	// Exists - This is called to verify a resource still exists. It is called prior to Read,
-	// and lowers the burden of Read to be able to assume the resource exists.
 	client := meta.(*apiclient.Client)
 	id := d.Id()
 	return client.ResourceExists(id)
@@ -71,6 +74,8 @@ func resourceTurbotResourceCreate(d *schema.ResourceData, meta interface{}) erro
 
 	// assign the id
 	d.SetId(turbotMetadata.Id)
+	// save formatted version of the payload for consistency
+	d.Set("payload", formatPayload(payload))
 
 	return nil
 }
@@ -79,9 +84,13 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 	client := meta.(*apiclient.Client)
 	id := d.Id()
 
-	// todo build required properties from payload
+	// build required properties from payload
+	properties, err := propertiesFromPayload(d.Get("payload").(string))
+	if err != nil {
+		return fmt.Errorf("error retrieving properties from resource payload: %s", err.Error())
+	}
 
-	resource, err := client.ReadResource(id, nil)
+	resource, err := client.ReadResource(id, properties)
 	if err != nil {
 		if apiclient.NotFoundError(err) {
 			// resource was not found - clear id
@@ -90,8 +99,11 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 
-	// todo rebuild payload from properties
-	payload := ""
+	// rebuild payload from the resource
+	payload, err := payloadFromResource(resource.Data)
+	if err != nil {
+		return fmt.Errorf("error building resource payload: %s", err.Error())
+	}
 
 	// assign results back into ResourceData
 
@@ -99,11 +111,32 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 	if err = setParentAkas(resource.Turbot.ParentId, d, meta); err != nil {
 		return err
 	}
-
 	d.Set("parent", resource.Turbot.ParentId)
 	d.Set("payload", payload)
 
 	return nil
+}
+
+// given a json string, unmarshal into a map and return a map of alias ->  propertyName
+func propertiesFromPayload(payload string) (map[string]string, error) {
+	data := map[string]interface{}{}
+	if err := json.Unmarshal([]byte(payload), &data); err != nil {
+		return nil, err
+	}
+	var properties = map[string]string{}
+	for k := range data {
+		properties[k] = k
+	}
+	return properties, nil
+}
+
+// given a map of resource properties, marshal into a json string
+func payloadFromResource(d map[string]interface{}) (string, error) {
+	payload, err := json.MarshalIndent(d, "", " ")
+	if err != nil {
+		return "", err
+	}
+	return string(payload), nil
 }
 
 func resourceTurbotResourceDelete(d *schema.ResourceData, meta interface{}) error {
@@ -149,7 +182,7 @@ func setParentAkas(parentId string, d *schema.ResourceData, meta interface{}) er
 
 // the 'parent' in the config is an aka - however the state file will have an id.
 // to perform a diff we also store parent_akas in state file, which is the list of akas for the parent
-// if the new value of parent existists in parent_akas, then suppress diff
+// if the new value of parent existts in parent_akas, then suppress diff
 func supressIfParentAkaMatches(k, old, new string, d *schema.ResourceData) bool {
 	parentAkasProperty, parentAkasSet := d.GetOk("parent_akas")
 	// if parent_id has not been set yet, do not suppress the diff
@@ -168,4 +201,29 @@ func supressIfParentAkaMatches(k, old, new string, d *schema.ResourceData) bool 
 		}
 	}
 	return false
+}
+
+// payload is a json string
+// apply standard formatting to old and new payloads then compare
+func suppressIfPayloadMatches(k, old, new string, d *schema.ResourceData) bool {
+	if old == "" || new == "" {
+		return false
+	}
+	return formatPayload(old) == formatPayload(new)
+}
+
+// apply standard formatting to the json payload to enable easy diffing
+func formatPayload(payload string) string {
+	data := map[string]interface{}{}
+	if err := json.Unmarshal([]byte(payload), &data); err != nil {
+		// ignore error and just return original payload
+		return payload
+	}
+	payload, err := payloadFromResource(data)
+	if err != nil {
+		// ignore error and just return original payload
+		return payload
+	}
+	return payload
+
 }

@@ -56,24 +56,48 @@ func resourceTurbotMod() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				// default the version to any version
-				Default:          "*",
-				DiffSuppressFunc: supressIfLatestCompatibleVersionInstalled,
+				Default: "*",
 			},
-			// store the version or version range specified in the config
-			// this is necessary as if the config specifies a version range, the "version" field will contain the actual
-			// installed version
-			// we need to store the range in case a new version is released which satisfies the requirement
-			"version_range": {
+			// store the version currently installed (as the 'version' property may be a range)
+			"version_current": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 			// store latest version which satisfies the version requirement
-			"latest_compatible_version": {
+			"version_latest": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 		},
+		CustomizeDiff: resourceTurbotModCustomizeDiff,
 	}
+}
+func resourceTurbotModCustomizeDiff(d *schema.ResourceDiff, meta interface{}) error {
+
+	versionCurrent := d.Get("version_current").(string)
+	var versionLatest string
+	// if the version has changed, re-fetch the latest compatible version to detect if we need to change the installed version
+	if d.HasChange("version") {
+		var err error
+		org := d.Get("org").(string)
+		modName := d.Get("mod").(string)
+		version := d.Get("version").(string)
+		versionLatest, err = getLatestCompatibleVersion(org, modName, version, meta)
+		if err != nil {
+			return err
+		}
+
+	} else {
+		// otherwise if version has not changed, use the saved value of version_latest
+		versionLatest = d.Get("version_latest").(string)
+	}
+	// if the current version is not the latest which satisfied the version requirements, raise a diff
+	if versionCurrent != versionLatest {
+		if err := d.SetNew("version_current", versionLatest); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func resourceTurbotModExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
@@ -135,8 +159,8 @@ func modInstall(d *schema.ResourceData, meta interface{}) error {
 	}
 	// assign the id
 	d.SetId(modId)
-	d.Set("latest_compatible_version", installedVersion)
-	d.Set("version_range", versionRange)
+	d.Set("version_latest", installedVersion)
+	d.Set("version_current", installedVersion)
 	d.Set("uri", mod.Turbot.Akas[0])
 	return nil
 }
@@ -144,7 +168,6 @@ func modInstall(d *schema.ResourceData, meta interface{}) error {
 func resourceTurbotModRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
 	id := d.Id()
-
 	mod, err := client.ReadMod(id)
 	if err != nil {
 		if apiclient.NotFoundError(err) {
@@ -156,16 +179,17 @@ func resourceTurbotModRead(d *schema.ResourceData, meta interface{}) error {
 	// now determine latest compatible version
 	var targetVersion string
 	// if 'version' is set in resourceData, fetch the latest version which satisfies this requirement
-	if d.Get("version").(string) != "" {
-
-		targetVersion, err = getLatestCompatibleVersion(d, meta)
-		log.Printf("resourceTurbotModRead config version %s mod version %s latest %s", d.Get("version").(string), mod.Version, targetVersion)
+	if version := d.Get("version").(string); version != "" {
+		org := d.Get("org").(string)
+		modName := d.Get("mod").(string)
+		targetVersion, err = getLatestCompatibleVersion(org, modName, version, meta)
+		log.Printf("resourceTurbotModRead config version %s installed version %s latest version%s", version, mod.Version, targetVersion)
 		if err != nil {
 			return err
 		}
 	} else {
 		log.Printf("resourceTurbotModRead no version in resource data mod.Version %s", mod.Version)
-		// if version is NOT set (e.g. for an import), just use the actual mod version as target version
+		// if version is NOT set in resource data (e.g. for an import), just use the actual mod version and targetVersion
 		targetVersion = mod.Version
 	}
 
@@ -178,8 +202,8 @@ func resourceTurbotModRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("parent", mod.Parent)
 	d.Set("org", mod.Org)
 	d.Set("mod", mod.Mod)
-	d.Set("version", mod.Version)
-	d.Set("latest_compatible_version", targetVersion)
+	d.Set("version_current", mod.Version)
+	d.Set("version_latest", targetVersion)
 	d.Set("uri", mod.Uri)
 
 	return nil
@@ -254,64 +278,38 @@ func getInstalledModVersion(modId string, client *apiclient.Client) (version, bu
 	return
 }
 
-func getLatestCompatibleVersion(d *schema.ResourceData, meta interface{}) (string, error) {
+func getLatestCompatibleVersion(org, modName, version string, meta interface{}) (string, error) {
 	client := meta.(*apiclient.Client)
-	org := d.Get("org").(string)
-	modName := d.Get("mod").(string)
-	version := d.Get("version").(string)
 	modVersions, err := client.GetModVersions(org, modName)
 	if err != nil {
 		return "", err
 	}
 
+	// create semver constraint from required version range
 	c, err := semver.NewConstraint(version)
 	if err != nil {
 		return "", err
 	}
 
 	// now get latest version
-	latestCompatibleVersion := ""
+	var latestVersion *semver.Version
 	for _, modVersion := range modVersions {
 		if modVersion.Status == "available" {
+			// create semver version from this version
 			v, err := semver.NewVersion(modVersion.Version)
 			if err != nil {
 				return "", err
 			}
 			// does this version meet the requirement
-			if c.Check(v) {
-				latestCompatibleVersion = modVersion.Version
+			if c.Check(v) && (latestVersion == nil || v.GreaterThan(latestVersion)) {
+				latestVersion = v
 			}
 		}
 	}
-	return latestCompatibleVersion, nil
-
-}
-
-// the version in the config is a semver so may be a range. The version in the state file will be a specific version
-// this may cause incorrect diffs to be identified
-//
-// supress diff if:
-// - the current version ('old') is the latest compatible version,
-// 	AND
-// - the latest compatible version satisfies the new version requirements
-//
-// where
-//   'old' is the currently installed version
-//   'new' is the version field in the config
-//   'latestCompatibleVersion' is the latest version which satisfies the _old_ config version  requirement
-func supressIfLatestCompatibleVersionInstalled(_, old, new string, d *schema.ResourceData) bool {
-
-	// latest compatible version is based on the old version parameter - if the new version has changed it is not valie
-	latestCompatibleVersion := d.Get("latest_compatible_version").(string)
-	log.Printf("supressIfLatestCompatibleVersionInstalled old: %s, new: %s, latestCompatibleVersion: %s", old, new, latestCompatibleVersion)
-	c, err := semver.NewConstraint(new)
-	if err != nil {
-		return false
+	latestVersionString := ""
+	if latestVersion != nil {
+		latestVersionString = latestVersion.String()
 	}
-	v, err := semver.NewVersion(latestCompatibleVersion)
-	if err != nil {
-		return false
-	}
+	return latestVersionString, nil
 
-	return old == latestCompatibleVersion && c.Check(v)
 }

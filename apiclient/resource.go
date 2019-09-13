@@ -10,10 +10,12 @@ func (client *Client) CreateResource(typeAka, parentAka, payload string) (*Turbo
 	query := createResourceMutation()
 	responseData := &CreateResourceResponse{}
 
-	commandPayload := map[string]string{}
-	if err := json.Unmarshal([]byte(payload), &commandPayload); err != nil {
-		return nil, fmt.Errorf("error creating resource: %s", err.Error())
+	data := map[string]interface{}{}
+	if err := json.Unmarshal([]byte(payload), &data); err != nil {
+		return nil, fmt.Errorf("error creating resource: %s", payload, err.Error())
 	}
+
+	// todo extract turbotData
 
 	commandMeta := map[string]string{
 		"typeAka":   typeAka,
@@ -22,8 +24,10 @@ func (client *Client) CreateResource(typeAka, parentAka, payload string) (*Turbo
 
 	variables := map[string]interface{}{
 		"command": map[string]interface{}{
-			"payload": commandPayload,
-			"meta":    commandMeta,
+			"payload": map[string]interface{}{
+				"data": data,
+			},
+			"meta": commandMeta,
 		},
 	}
 
