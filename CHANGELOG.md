@@ -1,3 +1,16 @@
+## 1.0.0-beta.1 (September 13, 2019)
+
+
+ENHANCEMENTS:
+
+* resource/turbot_mod: support version ranges, plan shows changes if a new version has been published ([#6](https://github.com/turbotio/terraform-provider-turbot/issues/6))
+
+
+FEATURES:
+
+* **New Resource:** `turbot_resource` ([#7](https://github.com/turbotio/terraform-provider-turbot/issues/7))
+
+
 ## 1.0.0-beta.0 (September 12, 2019)
 
 FEATURES:
