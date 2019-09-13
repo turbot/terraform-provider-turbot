@@ -9,40 +9,93 @@ import (
 )
 
 // test suites
-func TestAccFolder(t *testing.T) {
+// TODO these fail currently - awaiting a mod update
+//func TestAccResourceAwsAccount(t *testing.T) {
+//	resource.Test(t, resource.TestCase{
+//		PreCheck:     func() { testAccPreCheck(t) },
+//		Providers:    testAccProviders,
+//		CheckDestroy: testAccCheckResourceDestroy,
+//		Steps: []resource.TestStep{
+//			{
+//				Config: testAccResourceConfig(awsAccountType, awsAccountPayload),
+//				Check: resource.ComposeTestCheckFunc(
+//					testAccCheckResourceExists("turbot_resource.test"),
+//					resource.TestCheckResourceAttr(
+//						"turbot_resource.test", "type", awsAccountType),
+//					resource.TestCheckResourceAttr(
+//						"turbot_resource.test", "payload", formatPayload(awsAccountPayload)),
+//				),
+//			},
+//			{
+//				Config: testAccResourceConfig(awsAccountType, awsAccountPayloadUpdateId),
+//				Check: resource.ComposeTestCheckFunc(
+//					testAccCheckResourceExists("turbot_resource.test"),
+//					resource.TestCheckResourceAttr(
+//						"turbot_resource.test", "type", awsAccountType),
+//					resource.TestCheckResourceAttr(
+//						"turbot_resource.test", "payload", formatPayload(awsAccountPayloadUpdateId)),
+//				),
+//			},
+//			{
+//				Config: testAccResourceConfig(awsAccountType, awsAccountPayloadUpdateEmail),
+//				Check: resource.ComposeTestCheckFunc(
+//					testAccCheckResourceExists("turbot_resource.test"),
+//					resource.TestCheckResourceAttr(
+//						"turbot_resource.test", "type", awsAccountType),
+//					resource.TestCheckResourceAttr(
+//						"turbot_resource.test", "payload", formatPayload(awsAccountPayloadUpdateEmail)),
+//				),
+//			},
+//			{
+//				Config: testAccResourceConfig(awsAccountType, awsAccountPayloadUpdateName),
+//				Check: resource.ComposeTestCheckFunc(
+//					testAccCheckResourceExists("turbot_resource.test"),
+//					resource.TestCheckResourceAttr(
+//						"turbot_resource.test", "type", awsAccountType),
+//					resource.TestCheckResourceAttr(
+//						"turbot_resource.test", "payload", formatPayload(awsAccountPayloadUpdateName)),
+//				),
+//			},
+//		},
+//	})
+//}
+
+func TestAccResourceFolder(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckFolderDestroy,
+		CheckDestroy: testAccCheckResourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFolderConfig(),
+				Config: testAccResourceConfig(folderType, folderPayload),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckFolderExists("turbot_folder.test"),
+					testAccCheckResourceExists("turbot_resource.test"),
 					resource.TestCheckResourceAttr(
-						"turbot_folder.test", "title", "provider_test"),
+						"turbot_resource.test", "type", folderType),
 					resource.TestCheckResourceAttr(
-						"turbot_folder.test", "description", "test folder"),
+						"turbot_resource.test", "payload", formatPayload(folderPayload)),
+				),
+			},
+
+			{
+				Config: testAccResourceConfig(folderType, folderPayloadUpdatedDescription),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("turbot_resource.test"),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.test", "type", folderType),
+					//
+					resource.TestCheckResourceAttr(
+						"turbot_resource.test", "payload", formatPayload(folderPayloadUpdatedDescription)),
 				),
 			},
 			{
-				Config: testAccFolderUpdateDescConfig(),
+				Config: testAccResourceConfig(folderType, folderPayloadUpdatedTitle),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckFolderExists("turbot_folder.test"),
+					testAccCheckResourceExists("turbot_resource.test"),
 					resource.TestCheckResourceAttr(
-						"turbot_folder.test", "title", "provider_test"),
+						"turbot_resource.test", "type", folderType),
 					resource.TestCheckResourceAttr(
-						"turbot_folder.test", "description", "test folder for turbot terraform provider"),
-				),
-			},
-			{
-				Config: testAccFolderUpdateTitleConfig(),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckFolderExists("turbot_folder.test"),
-					resource.TestCheckResourceAttr(
-						"turbot_folder.test", "title", "provider_test_upd"),
-					resource.TestCheckResourceAttr(
-						"turbot_folder.test", "description", "test folder for turbot terraform provider"),
+						"turbot_resource.test", "payload", formatPayload(folderPayloadUpdatedTitle)),
 				),
 			},
 		},
@@ -50,137 +103,57 @@ func TestAccFolder(t *testing.T) {
 }
 
 // configs
-func testAccFolderConfig() string {
-	return `
-resource "turbot_folder" "test" {
-	parent = "tmod:@turbot/turbot#/"
-	title = "provider_test"
-	description = "test folder"
+var folderType = `tmod:@turbot/turbot#/resource/types/folder`
+var folderPayload = `{
+  "title": "provider_test",
+  "description": "test resource"
 }
 `
-}
-
-func testAccFolderUpdateDescConfig() string {
-	return `
-resource "turbot_folder" "test" {
-	parent = "tmod:@turbot/turbot#/"
-	title = "provider_test"
-	description = "test folder for turbot terraform provider"
+var folderPayloadUpdatedTitle = `{
+  "title": "provider_test_",
+  "description": "test resource"
 }
 `
-}
-
-func testAccFolderUpdateTitleConfig() string {
-	return `
-resource "turbot_folder" "test" {
-	parent = "tmod:@turbot/turbot#/"
-	title = "provider_test_upd"
-	description = "test folder for turbot terraform provider"
+var folderPayloadUpdatedDescription = `{
+  "title": "provider_test_",
+  "description": "test resource"
 }
 `
-}
 
-func TestAccFolderWithDependencies(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckFolderDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccFolderWithDependenciesConfig(),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckFolderExists("turbot_folder.parent"),
-					testAccCheckFolderExists("turbot_folder.child"),
-					resource.TestCheckResourceAttr(
-						"turbot_folder.parent", "title", "provider_test_parent"),
-					resource.TestCheckResourceAttr(
-						"turbot_folder.parent", "description", "parent"),
-					resource.TestCheckResourceAttr(
-						"turbot_folder.child", "title", "provider_test_child"),
-					resource.TestCheckResourceAttr(
-						"turbot_folder.child", "description", "child"),
-				),
-			},
-			{
-				Config: testAccFolderWithDependenciesUpdateDescConfig(),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckFolderExists("turbot_folder.parent"),
-					testAccCheckFolderExists("turbot_folder.child"),
-					resource.TestCheckResourceAttr(
-						"turbot_folder.parent", "title", "provider_test_parent"),
-					resource.TestCheckResourceAttr(
-						"turbot_folder.parent", "description", "PARENT"),
-					resource.TestCheckResourceAttr(
-						"turbot_folder.child", "title", "provider_test_child"),
-					resource.TestCheckResourceAttr(
-						"turbot_folder.child", "description", "CHILD"),
-				),
-			},
-			{
-				Config: testAccFolderWithDependenciesUpdateTitleConfig(),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckFolderExists("turbot_folder.parent"),
-					testAccCheckFolderExists("turbot_folder.child"),
-					resource.TestCheckResourceAttr(
-						"turbot_folder.parent", "title", "PROVIDER_TEST_PARENT"),
-					resource.TestCheckResourceAttr(
-						"turbot_folder.parent", "description", "PARENT"),
-					resource.TestCheckResourceAttr(
-						"turbot_folder.child", "title", "PROVIDER_TEST_CHILD"),
-					resource.TestCheckResourceAttr(
-						"turbot_folder.child", "description", "CHILD"),
-				),
-			},
-		},
-	})
-}
+//
+//var awsAccountType = `tmod:@turbot/aws#/resource/types/account`
+//var awsAccountPayload = `{
+//  "Id": "123456789999"
+//}
+//`
+//var awsAccountPayloadUpdateId = `{
+//  "Id": "123456781111"
+//}
+//`
+//var awsAccountPayloadUpdateEmail = `{
+//  "Id": "123456789999",
+//  "Email": "kai@turbot.com"
+//}
+//`
+//var awsAccountPayloadUpdateName = `{
+//  "Id": "123456789999",
+//  "Name": "kai"
+//}
+//`
 
-func testAccFolderWithDependenciesConfig() string {
-	return `
-resource "turbot_folder" "parent" {
+func testAccResourceConfig(resourceType, payload string) string {
+	return fmt.Sprintf(`
+resource "turbot_resource" "test" {
   parent = "tmod:@turbot/turbot#/"
-  title = "provider_test_parent"
-  description = "parent"
+  type = "%s"	
+  payload =  <<EOF
+%sEOF	
 }
-resource "turbot_folder" "child" {
-  parent = "${turbot_folder.parent.id}"
-  title = "provider_test_child"
-  description = "child"
-}`
-}
-
-func testAccFolderWithDependenciesUpdateDescConfig() string {
-	return `
-resource "turbot_folder" "parent" {
-  parent = "tmod:@turbot/turbot#/"
-  title = "provider_test_parent"
-  description = "PARENT"
-}
-resource "turbot_folder" "child" {
-  parent = "${turbot_folder.parent.id}"
-  title = "provider_test_child"
-  description = "CHILD"
-}
-`
-}
-
-func testAccFolderWithDependenciesUpdateTitleConfig() string {
-	return `
-resource "turbot_folder" "parent" {
-  parent = "tmod:@turbot/turbot#/"
-  title = "PROVIDER_TEST_PARENT"
-  description = "PARENT"
-}
-resource "turbot_folder" "child" {
-  parent = "${turbot_folder.parent.id}"
-  title = "PROVIDER_TEST_CHILD"
-  description = "CHILD"
-}
-`
+`, resourceType, payload)
 }
 
 // helper functions
-func testAccCheckFolderExists(resource string) resource.TestCheckFunc {
+func testAccCheckResourceExists(resource string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[resource]
 		if !ok {
@@ -190,7 +163,7 @@ func testAccCheckFolderExists(resource string) resource.TestCheckFunc {
 			return fmt.Errorf("No Record ID is set")
 		}
 		client := testAccProvider.Meta().(*apiclient.Client)
-		_, err := client.ReadFolder(rs.Primary.ID)
+		_, err := client.ReadResource(rs.Primary.ID, nil)
 		if err != nil {
 			return fmt.Errorf("error fetching item with resource %s. %s", resource, err)
 		}
@@ -198,13 +171,13 @@ func testAccCheckFolderExists(resource string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckFolderDestroy(s *terraform.State) error {
+func testAccCheckResourceDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*apiclient.Client)
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "folder" {
+		if rs.Type != "resource" {
 			continue
 		}
-		_, err := client.ReadFolder(rs.Primary.ID)
+		_, err := client.ReadResource(rs.Primary.ID, nil)
 		if err == nil {
 			return fmt.Errorf("Alert still exists")
 		}

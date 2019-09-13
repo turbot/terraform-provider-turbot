@@ -13,7 +13,7 @@ func TestAccPolicyValueDataSource_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckPolicyValueConfig(),
+				Config: testAccPolicyValueConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.turbot_policy_value.test_policy", "value", "alpha.turbot.com"),
@@ -25,7 +25,7 @@ func TestAccPolicyValueDataSource_Basic(t *testing.T) {
 	})
 
 }
-func testAccCheckPolicyValueConfig() string {
+func testAccPolicyValueConfig() string {
 	return `
 data "turbot_policy_value" "test_policy" {
   resource = "tmod:@turbot/turbot#/"

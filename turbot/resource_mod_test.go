@@ -15,12 +15,12 @@ func TestAccMod(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckModDestroy,
+		CheckDestroy: testAccModDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMod_v5_0_0_Config(),
+				Config: testAccMod_v5_0_0_Config(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckModExists("turbot_mod.test"),
+					testAccModExists("turbot_mod.test"),
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "org", "turbot"),
 					resource.TestCheckResourceAttr(
@@ -30,9 +30,9 @@ func TestAccMod(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckMod_ge_v5_0_0_Config(),
+				Config: testAccMod_ge_v5_0_0_Config(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckModExists("turbot_mod.test"),
+					testAccModExists("turbot_mod.test"),
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "org", "turbot"),
 					resource.TestCheckResourceAttr(
@@ -42,10 +42,10 @@ func TestAccMod(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckMod_v5_0_1_Config(),
+				Config: testAccMod_v5_0_1_Config(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckModExists("turbot_mod.test"),
-					testAccCheckModExists("turbot_mod.test"),
+					testAccModExists("turbot_mod.test"),
+					testAccModExists("turbot_mod.test"),
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "org", "turbot"),
 					resource.TestCheckResourceAttr(
@@ -55,10 +55,10 @@ func TestAccMod(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckModWildCardConfig(),
+				Config: testAccModWildCardConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckModExists("turbot_mod.test"),
-					testAccCheckModExists("turbot_mod.test"),
+					testAccModExists("turbot_mod.test"),
+					testAccModExists("turbot_mod.test"),
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "org", "turbot"),
 					resource.TestCheckResourceAttr(
@@ -68,10 +68,10 @@ func TestAccMod(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckModWildCardConfig2(),
+				Config: testAccModWildCardConfig2(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckModExists("turbot_mod.test"),
-					testAccCheckModExists("turbot_mod.test"),
+					testAccModExists("turbot_mod.test"),
+					testAccModExists("turbot_mod.test"),
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "org", "turbot"),
 					resource.TestCheckResourceAttr(
@@ -81,10 +81,10 @@ func TestAccMod(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckMod_lt_v5_0_3_Config(),
+				Config: testAccMod_lt_v5_0_3_Config(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckModExists("turbot_mod.test"),
-					testAccCheckModExists("turbot_mod.test"),
+					testAccModExists("turbot_mod.test"),
+					testAccModExists("turbot_mod.test"),
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "org", "turbot"),
 					resource.TestCheckResourceAttr(
@@ -94,10 +94,10 @@ func TestAccMod(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckModNoVersionConfig(),
+				Config: testAccModNoVersionConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckModExists("turbot_mod.test"),
-					testAccCheckModExists("turbot_mod.test"),
+					testAccModExists("turbot_mod.test"),
+					testAccModExists("turbot_mod.test"),
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "org", "turbot"),
 					resource.TestCheckResourceAttr(
@@ -111,7 +111,7 @@ func TestAccMod(t *testing.T) {
 }
 
 // configs
-func testAccCheckMod_v5_0_0_Config() string {
+func testAccMod_v5_0_0_Config() string {
 	return `
 resource "turbot_mod" "test" {
 	parent = "tmod:@turbot/turbot#/"
@@ -122,7 +122,7 @@ resource "turbot_mod" "test" {
 `
 }
 
-func testAccCheckMod_v5_0_1_Config() string {
+func testAccMod_v5_0_1_Config() string {
 	return `
 resource "turbot_mod" "test" {
 	parent = "tmod:@turbot/turbot#/"
@@ -133,7 +133,7 @@ resource "turbot_mod" "test" {
 `
 }
 
-func testAccCheckMod_ge_v5_0_0_Config() string {
+func testAccMod_ge_v5_0_0_Config() string {
 	return `
 resource "turbot_mod" "test" {
 	parent = "tmod:@turbot/turbot#/"
@@ -143,7 +143,8 @@ resource "turbot_mod" "test" {
 }
 `
 }
-func testAccCheckMod_lt_v5_0_3_Config() string {
+
+func testAccMod_lt_v5_0_3_Config() string {
 	return `
 resource "turbot_mod" "test" {
 	parent = "tmod:@turbot/turbot#/"
@@ -154,7 +155,7 @@ resource "turbot_mod" "test" {
 `
 }
 
-func testAccCheckModWildCardConfig() string {
+func testAccModWildCardConfig() string {
 	return `
 resource "turbot_mod" "test" {
 	parent = "tmod:@turbot/turbot#/"
@@ -165,7 +166,7 @@ resource "turbot_mod" "test" {
 `
 }
 
-func testAccCheckModWildCardConfig2() string {
+func testAccModWildCardConfig2() string {
 	return `
 resource "turbot_mod" "test" {
 	parent = "tmod:@turbot/turbot#/"
@@ -175,7 +176,8 @@ resource "turbot_mod" "test" {
 }
 `
 }
-func testAccCheckModNoVersionConfig() string {
+
+func testAccModNoVersionConfig() string {
 	return `
 resource "turbot_mod" "test" {
 	parent = "tmod:@turbot/turbot#/"
@@ -186,7 +188,7 @@ resource "turbot_mod" "test" {
 }
 
 // helper functions
-func testAccCheckModExists(resource string) resource.TestCheckFunc {
+func testAccModExists(resource string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[resource]
 		if !ok {
@@ -204,7 +206,7 @@ func testAccCheckModExists(resource string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckModDestroy(s *terraform.State) error {
+func testAccModDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*apiclient.Client)
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "mod" {
