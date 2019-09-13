@@ -9,47 +9,101 @@ import (
 )
 
 // test suites
+
 func TestAccMod(t *testing.T) {
+	latestProviderTestVersion := "5.0.3"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckModDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckModConfig(),
+				Config: testAccCheckMod_v5_0_0_Config(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckModExists("turbot_mod.test"),
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "org", "turbot"),
 					resource.TestCheckResourceAttr(
-						"turbot_mod.test", "mod", "structure-test"),
+						"turbot_mod.test", "mod", "provider-test"),
 					resource.TestCheckResourceAttr(
-						"turbot_mod.test", "version", "5.0.0-beta.40"),
+						"turbot_mod.test", "version_current", "5.0.0"),
 				),
 			},
 			{
-				Config: testAccCheckModUpdateConfig(),
+				Config: testAccCheckMod_ge_v5_0_0_Config(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckModExists("turbot_mod.test"),
 					testAccCheckModExists("turbot_mod.test"),
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "org", "turbot"),
 					resource.TestCheckResourceAttr(
-						"turbot_mod.test", "mod", "structure-test"),
+						"turbot_mod.test", "mod", "provider-test"),
 					resource.TestCheckResourceAttr(
-						"turbot_mod.test", "version", "5.0.0-beta.59"),
+						"turbot_mod.test", "version_current", latestProviderTestVersion),
 				),
 			},
 			{
-				Config: testAccCheckModConfig(),
+				Config: testAccCheckMod_v5_0_1_Config(),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckModExists("turbot_mod.test"),
 					testAccCheckModExists("turbot_mod.test"),
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "org", "turbot"),
 					resource.TestCheckResourceAttr(
-						"turbot_mod.test", "mod", "structure-test"),
+						"turbot_mod.test", "mod", "provider-test"),
 					resource.TestCheckResourceAttr(
-						"turbot_mod.test", "version", "5.0.0-beta.40"),
+						"turbot_mod.test", "version_current", "5.0.1"),
+				),
+			},
+			{
+				Config: testAccCheckModWildCardConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckModExists("turbot_mod.test"),
+					testAccCheckModExists("turbot_mod.test"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "org", "turbot"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "mod", "provider-test"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "version_current", latestProviderTestVersion),
+				),
+			},
+			{
+				Config: testAccCheckModWildCardConfig2(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckModExists("turbot_mod.test"),
+					testAccCheckModExists("turbot_mod.test"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "org", "turbot"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "mod", "provider-test"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "version_current", latestProviderTestVersion),
+				),
+			},
+			{
+				Config: testAccCheckMod_lt_v5_0_3_Config(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckModExists("turbot_mod.test"),
+					testAccCheckModExists("turbot_mod.test"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "org", "turbot"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "mod", "provider-test"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "version_current", "5.0.2"),
+				),
+			},
+			{
+				Config: testAccCheckModNoVersionConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckModExists("turbot_mod.test"),
+					testAccCheckModExists("turbot_mod.test"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "org", "turbot"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "mod", "provider-test"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "version_current", "5.0.3"),
 				),
 			},
 		},
@@ -57,24 +111,76 @@ func TestAccMod(t *testing.T) {
 }
 
 // configs
-func testAccCheckModConfig() string {
+func testAccCheckMod_v5_0_0_Config() string {
 	return `
 resource "turbot_mod" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	org = "turbot"
-	mod = "structure-test"
-	version = "5.0.0-beta.40"
+	mod = "provider-test"
+	version = "5.0.0"
 }
 `
 }
 
-func testAccCheckModUpdateConfig() string {
+func testAccCheckMod_v5_0_1_Config() string {
 	return `
 resource "turbot_mod" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	org = "turbot"
-	mod = "structure-test"
-	version = "5.0.0-beta.59"
+	mod = "provider-test"
+	version = "5.0.1"
+}
+`
+}
+
+func testAccCheckMod_ge_v5_0_0_Config() string {
+	return `
+resource "turbot_mod" "test" {
+	parent = "tmod:@turbot/turbot#/"
+	org = "turbot"
+	mod = "provider-test"
+	version = ">=5.0.0"
+}
+`
+}
+func testAccCheckMod_lt_v5_0_3_Config() string {
+	return `
+resource "turbot_mod" "test" {
+	parent = "tmod:@turbot/turbot#/"
+	org = "turbot"
+	mod = "provider-test"
+	version = "<5.0.3"
+}
+`
+}
+
+func testAccCheckModWildCardConfig() string {
+	return `
+resource "turbot_mod" "test" {
+	parent = "tmod:@turbot/turbot#/"
+	org = "turbot"
+	mod = "provider-test"
+	version = "*"
+}
+`
+}
+
+func testAccCheckModWildCardConfig2() string {
+	return `
+resource "turbot_mod" "test" {
+	parent = "tmod:@turbot/turbot#/"
+	org = "turbot"
+	mod = "provider-test"
+	version = "5.0.*"
+}
+`
+}
+func testAccCheckModNoVersionConfig() string {
+	return `
+resource "turbot_mod" "test" {
+	parent = "tmod:@turbot/turbot#/"
+	org = "turbot"
+	mod = "provider-test"
 }
 `
 }
