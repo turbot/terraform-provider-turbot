@@ -72,6 +72,7 @@ func resourceTurbotMod() *schema.Resource {
 		CustomizeDiff: resourceTurbotModCustomizeDiff,
 	}
 }
+
 func resourceTurbotModCustomizeDiff(d *schema.ResourceDiff, meta interface{}) error {
 
 	versionCurrent := d.Get("version_current").(string)

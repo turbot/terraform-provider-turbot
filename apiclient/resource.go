@@ -12,7 +12,7 @@ func (client *Client) CreateResource(typeAka, parentAka, payload string) (*Turbo
 
 	data := map[string]interface{}{}
 	if err := json.Unmarshal([]byte(payload), &data); err != nil {
-		return nil, fmt.Errorf("error creating resource: %s", payload, err.Error())
+		return nil, fmt.Errorf("error creating resource: %s", err.Error())
 	}
 
 	// todo extract turbotData
