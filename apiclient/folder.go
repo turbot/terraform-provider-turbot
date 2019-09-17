@@ -77,21 +77,3 @@ func (client *Client) UpdateFolder(id, parent, title, description string) (*Turb
 	}
 	return &responseData.Resource.Turbot, nil
 }
-
-func (client *Client) FindFolder(title, parentAka string) ([]Folder, error) {
-	responseData := &FindFolderResponse{}
-	// convert parentAka into an id
-	parent, err := client.ReadResource(parentAka, nil)
-	if err != nil {
-		return nil, err
-	}
-	parentId := parent.Turbot.Id
-	query := findFolderQuery(title, parentId)
-
-	// execute api call
-	if err := client.doRequest(query, nil, &responseData); err != nil {
-		return nil, fmt.Errorf("error reading folder: %s", err.Error())
-	}
-
-	return responseData.Folders.Items, nil
-}

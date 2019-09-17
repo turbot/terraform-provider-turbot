@@ -59,15 +59,6 @@ func resourceTurbotFolderCreate(d *schema.ResourceData, meta interface{}) error 
 	title := d.Get("title").(string)
 	description := d.Get("description").(string)
 
-	// first check if the folder exists - search by parent and foldere title
-	existingFolders, err := client.FindFolder(title, parentAka)
-	if err != nil {
-		return err
-	}
-	if len(existingFolders) > 0 {
-		return existingFolderError(existingFolders, title, parentAka)
-	}
-
 	// create folder returns turbot resource metadata containing the id
 	turbotMetadata, err := client.CreateFolder(parentAka, title, description)
 	if err != nil {
