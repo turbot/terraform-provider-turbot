@@ -36,6 +36,7 @@ type FindPolicySettingResponse struct {
 type PolicySetting struct {
 	Value              interface{}
 	ValueSource        string
+	Default            bool
 	Precedence         string
 	Template           string
 	TemplateInput      string

@@ -47,6 +47,7 @@ func readPolicySettingQuery(policySettingId string) string {
 		value
 		valueSource
 		template
+        default
 		precedence
 		templateInput
 		input

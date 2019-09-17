@@ -95,9 +95,9 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return err
 	}
-	if len(existingSetting) > 0 {
+	if existingSetting.Value != nil {
 		return fmt.Errorf("A policy setting for policy type: '%s', resource: '%s' already exists ( id: %s ). To manage the existing setting using Terraform, import it using command 'terraform import <resource_address> <id>'",
-			policyTypeUri, resourceAka, existingSetting[0].Turbot.Id)
+			policyTypeUri, resourceAka, existingSetting.Turbot.Id)
 	}
 
 	// NOTE:  turbot policy settings have a value and a valueSource property

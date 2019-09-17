@@ -75,15 +75,20 @@ func (client *Client) DeletePolicySetting(id string) error {
 	return nil
 }
 
-func (client *Client) FindPolicySetting(policyTypeUri, resourceAka string) ([]PolicySetting, error) {
+func (client *Client) FindPolicySetting(policyTypeUri, resourceAka string) (PolicySetting, error) {
 	responseData := &FindPolicySettingResponse{}
 
 	query := findPolicySettingQuery(policyTypeUri, resourceAka)
 
 	// execute api call
 	if err := client.doRequest(query, nil, &responseData); err != nil {
-		return nil, fmt.Errorf("error reading folder: %s", err.Error())
+		return PolicySetting{}, fmt.Errorf("error reading folder: %s", err.Error())
 	}
 
-	return responseData.PolicySettings.Items, nil
+	for _, setting := range responseData.PolicySettings.Items {
+		if setting.Default {
+			return setting, nil
+		}
+	}
+	return PolicySetting{}, nil
 }
