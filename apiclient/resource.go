@@ -77,26 +77,27 @@ func (client *Client) DeleteResource(aka string) error {
 	return nil
 }
 
-func (client *Client) UpdateResource(id, parent, title, description string) (*TurbotMetadata, error) {
+func (client *Client) UpdateResource(id, typeAka, parentAka, payload string) (*TurbotMetadata, error) {
 	query := updateResourceMutation()
 	responseData := &UpdateResourceResponse{}
-	var commandPayload = map[string]map[string]interface{}{
-		"data": {
-			"title":       title,
-			"description": description,
-		},
-		"turbotData": {
-			"akas": []string{id},
-		},
+	data := map[string]interface{}{}
+	if err := json.Unmarshal([]byte(payload), &data); err != nil {
+		return nil, fmt.Errorf("error updating resource: %s", err.Error())
 	}
-	commandMeta := map[string]interface{}{
-		"typeAka":   "tmod:@turbot/turbot#/resource/types/folder",
-		"parentAka": parent,
+
+	// todo extract turbotData
+
+	commandMeta := map[string]string{
+		"typeAka":   typeAka,
+		"parentAka": parentAka,
 	}
+
 	variables := map[string]interface{}{
 		"command": map[string]interface{}{
-			"payload": commandPayload,
-			"meta":    commandMeta,
+			"payload": map[string]interface{}{
+				"data": data,
+			},
+			"meta": commandMeta,
 		},
 	}
 

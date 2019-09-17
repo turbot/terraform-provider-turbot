@@ -116,7 +116,7 @@ func resourceTurbotFolderUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	log.Println("[INFO} resourceTurbotFolderUpdate", id, parentAka)
 	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.UpdateResource(id, parentAka, title, description)
+	turbotMetadata, err := client.UpdateFolder(id, parentAka, title, description)
 	if err != nil {
 		return err
 	}
