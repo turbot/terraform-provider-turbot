@@ -39,7 +39,8 @@ func resourceTurbotPolicySetting() *schema.Resource {
 			},
 			"precedence": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
+				Default:  "required",
 			},
 			"template": {
 				Type:     schema.TypeString,

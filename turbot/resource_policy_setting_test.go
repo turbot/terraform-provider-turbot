@@ -111,7 +111,6 @@ resource "turbot_policy_setting" "test_policy" {
   resource = "%s"
   policy_type = "%s"
   value = "Skip"
-  precedence = "must"
 }
 `, regionResourceAka, policyTypeUri)
 }
