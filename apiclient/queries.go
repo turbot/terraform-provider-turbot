@@ -135,7 +135,7 @@ func readPolicyValueQuery(policyTypeUri string, resourceId string) string {
         details
         setting {
 		  valueSource
-          turbot {	
+          turbot {
             id
           }
         }
@@ -186,7 +186,7 @@ func modVersionsQuery(org, mod string) string {
 func readModQuery(modId string) string {
 	return fmt.Sprintf(`{
   mod: resource(id:"%s") {
-	uri: get(path: "turbot.akas.0")
+	  uri: get(path: "turbot.akas.0")
     parent: get(path: "turbot.parentId")
     version: get(path: "version")
   }
@@ -254,7 +254,7 @@ func findFolderQuery(title, parentId string) string {
       title: get(path:"title"),
       parent: get(path:"turbot.parentId"),
       description: get(path: "description"),
-      turbot: get(path:"turbot")      
+      turbot: get(path:"turbot")
     }
   }
 }

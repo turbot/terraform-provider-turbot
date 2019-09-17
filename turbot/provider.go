@@ -33,6 +33,7 @@ func Provider() terraform.ResourceProvider {
 			"turbot_mod":            resourceTurbotMod(),
 			"turbot_folder":         resourceTurbotFolder(),
 			"turbot_resource":       resourceTurbotResource(),
+			"turbot_profile":        resourceTurbotProfile(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"turbot_policy_value": dataSourceTurbotPolicy(),

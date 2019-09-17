@@ -1,9 +1,10 @@
-resource "turbot_resource" "test" {
-  parent = "tmod:@turbot/turbot#/"
-  type = "tmod:@turbot/turbot#/resource/types/folder"
-  payload = <<EOF
-  {
-  "title": "provider_test2",
-  "description": "test resource2"
-}EOF
+resource "turbot_profile" "test" {
+  "parent" = "tmod:@turbot/turbot#/",
+  "title" = "Harry Potter",
+  "display_name" = "Serius Black poter",
+  "email" = "harry.gryffindor@hogwards.com",
+  "given_name" = "Harry Potter",
+  "family_name" = "Potter",
+  "directory_pool_id" = "harrypotter",
+  "status" = "Active"
 }
