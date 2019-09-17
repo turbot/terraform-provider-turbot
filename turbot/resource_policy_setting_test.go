@@ -5,14 +5,11 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
-	"log"
 	"testing"
 )
 
 // test suites
 func TestAccPolicySetting_String(t *testing.T) {
-	a := testAccCheckPolicySettingStringUpdateTemplateConfig()
-	log.Println(a)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

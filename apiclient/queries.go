@@ -187,7 +187,7 @@ func modVersionsQuery(org, mod string) string {
 func readModQuery(modId string) string {
 	return fmt.Sprintf(`{
   mod: resource(id:"%s") {
-	uri: get(path: "turbot.akas.0")
+    uri: get(path: "turbot.akas.0")
     parent: get(path: "turbot.parentId")
     version: get(path: "version")
   }
@@ -197,13 +197,13 @@ func readModQuery(modId string) string {
 // create resource
 func createResourceMutation() string {
 	return `mutation CreateResource($command: ResourceCommandInput) {
- 	resource: resourceCreate(command: $command) {
-		turbot {
-		  id
-          parentId
-          akas
-		}
-	}
+  resource: resourceCreate(command: $command) {
+    turbot {
+      id
+      parentId
+      akas
+    }
+  }
 }`
 }
 

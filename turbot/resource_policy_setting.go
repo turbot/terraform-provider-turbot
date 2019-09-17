@@ -114,8 +114,7 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 			d.SetId("")
 			return err
 		}
-		// so we have a data validation error
-		// TODO update d.value with yaml.safeLoad(d.value)
+		// so we have a data validation error, try the value source
 		commandPayload["valueSource"] = commandPayload["value"]
 		delete(commandPayload, "value")
 		// try again
