@@ -146,3 +146,17 @@ type Folder struct {
 	Description string
 	Parent      string
 }
+
+type ReadLocalDirectoryResponse struct {
+	Resource LocalDirectory
+}
+
+type LocalDirectory struct {
+	Turbot            TurbotMetadata
+	Title             string
+	Description       string
+	Parent            string
+	Status            string
+	DirectoryType     string
+	ProfileIdTemplate string
+}
