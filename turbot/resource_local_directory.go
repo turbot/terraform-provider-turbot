@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 // these are the properties which must be passed to a create/update call
-var localDirectoryProperties = []string{"title", "profile_id_template"}
+var localDirectoryProperties = []string{"title", "profile_id_template","description"}
 
 func resourceTurbotLocalDirectory() *schema.Resource {
 	return &schema.Resource{
