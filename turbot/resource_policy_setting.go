@@ -39,7 +39,8 @@ func resourceTurbotPolicySetting() *schema.Resource {
 			},
 			"precedence": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
+				Default:  "required",
 			},
 			"template": {
 				Type:     schema.TypeString,
@@ -95,9 +96,9 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return err
 	}
-	if len(existingSetting) > 0 {
+	if existingSetting.Value != nil {
 		return fmt.Errorf("A policy setting for policy type: '%s', resource: '%s' already exists ( id: %s ). To manage the existing setting using Terraform, import it using command 'terraform import <resource_address> <id>'",
-			policyTypeUri, resourceAka, existingSetting[0].Turbot.Id)
+			policyTypeUri, resourceAka, existingSetting.Turbot.Id)
 	}
 
 	// NOTE:  turbot policy settings have a value and a valueSource property
@@ -114,8 +115,7 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 			d.SetId("")
 			return err
 		}
-		// so we have a data validation error
-		// TODO update d.value with yaml.safeLoad(d.value)
+		// so we have a data validation error, try the value source
 		commandPayload["valueSource"] = commandPayload["value"]
 		delete(commandPayload, "value")
 		// try again

@@ -1,12 +1,12 @@
 package turbot
 
 import (
-	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
-	"log"
-	"strings"
 )
+
+// these are the properties which must be passed to a create/update call
+var folderProperties = []string{"title", "description"}
 
 func resourceTurbotFolder() *schema.Resource {
 	return &schema.Resource{
@@ -56,20 +56,10 @@ func resourceTurbotFolderExists(d *schema.ResourceData, meta interface{}) (b boo
 func resourceTurbotFolderCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
 	parentAka := d.Get("parent").(string)
-	title := d.Get("title").(string)
-	description := d.Get("description").(string)
-
-	// first check if the folder exists - search by parent and foldere title
-	existingFolders, err := client.FindFolder(title, parentAka)
-	if err != nil {
-		return err
-	}
-	if len(existingFolders) > 0 {
-		return existingFolderError(existingFolders, title, parentAka)
-	}
-
+	// build map of folder properties
+	data := mapFromResourceData(d, folderProperties)
 	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.CreateFolder(parentAka, title, description)
+	turbotMetadata, err := client.CreateFolder(parentAka, data)
 	if err != nil {
 		return err
 	}
@@ -85,38 +75,16 @@ func resourceTurbotFolderCreate(d *schema.ResourceData, meta interface{}) error 
 	return nil
 }
 
-func existingFolderError(existingFolders []apiclient.Folder, title, parentAka string) error {
-	// build array of existing folder ids
-	var ids []string
-	for _, f := range existingFolders {
-		if f.Turbot.Id != "" {
-			ids = append(ids, f.Turbot.Id)
-		}
-	}
-	// TODO extract terraform name
-	var folderString, idString string
-
-	if len(ids) > 1 {
-		folderString = "folders"
-		idString = "ids"
-	} else {
-		folderString = "a folder"
-		idString = "id"
-	}
-	return fmt.Errorf("Cannot create folder '%s' with parent '%s' as %s of that name already exists in that location, with %s: %s. To manage an existing Turbot folder using Terraform, import it using command 'terraform import <resource_address> <id>'",
-		title, parentAka, folderString, idString, strings.Join(ids, ","))
-}
-
 func resourceTurbotFolderUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
 	parentAka := d.Get("parent").(string)
-	title := d.Get("title").(string)
-	description := d.Get("description").(string)
 	id := d.Id()
 
-	log.Println("[INFO} resourceTurbotFolderUpdate", id, parentAka)
+	// build map of folder properties
+	data := mapFromResourceData(d, folderProperties)
+
 	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.UpdateResource(id, parentAka, title, description)
+	turbotMetadata, err := client.UpdateFolder(id, parentAka, data)
 	if err != nil {
 		return err
 	}

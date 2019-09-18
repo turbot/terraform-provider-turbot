@@ -12,7 +12,7 @@ func resourceTurbotResource() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceTurbotResourceCreate,
 		Read:   resourceTurbotResourceRead,
-		Update: resourceTurbotResourceCreate,
+		Update: resourceTurbotResourceUpdate,
 		Delete: resourceTurbotResourceDelete,
 		Exists: resourceTurbotResourceExists,
 		Importer: &schema.ResourceImporter{
@@ -117,26 +117,22 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 	return nil
 }
 
-// given a json string, unmarshal into a map and return a map of alias ->  propertyName
-func propertiesFromPayload(payload string) (map[string]string, error) {
-	data := map[string]interface{}{}
-	if err := json.Unmarshal([]byte(payload), &data); err != nil {
-		return nil, err
-	}
-	var properties = map[string]string{}
-	for k := range data {
-		properties[k] = k
-	}
-	return properties, nil
-}
-
-// given a map of resource properties, marshal into a json string
-func payloadFromResource(d map[string]interface{}) (string, error) {
-	payload, err := json.MarshalIndent(d, "", " ")
+func resourceTurbotResourceUpdate(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*apiclient.Client)
+	payload := d.Get("payload").(string)
+	parent := d.Get("parent").(string)
+	resourceType := d.Get("type").(string)
+	id := d.Id()
+	// create folder returns turbot resource metadata containing the id
+	turbotMetadata, err := client.UpdateResource(id, parent, resourceType, payload)
 	if err != nil {
-		return "", err
+		return err
 	}
-	return string(payload), nil
+	// set parent_akas property by loading parent resource and fetching the akas
+	if err = setParentAkas(turbotMetadata.ParentId, d, meta); err != nil {
+		return err
+	}
+	return nil
 }
 
 func resourceTurbotResourceDelete(d *schema.ResourceData, meta interface{}) error {
@@ -158,6 +154,28 @@ func resourceTurbotResourceImport(d *schema.ResourceData, meta interface{}) ([]*
 		return nil, err
 	}
 	return []*schema.ResourceData{d}, nil
+}
+
+// given a json string, unmarshal into a map and return a map of alias ->  propertyName
+func propertiesFromPayload(payload string) (map[string]string, error) {
+	data := map[string]interface{}{}
+	if err := json.Unmarshal([]byte(payload), &data); err != nil {
+		return nil, err
+	}
+	var properties = map[string]string{}
+	for k := range data {
+		properties[k] = k
+	}
+	return properties, nil
+}
+
+// given a map of resource properties, marshal into a json string
+func payloadFromResource(d map[string]interface{}) (string, error) {
+	payload, err := json.MarshalIndent(d, "", " ")
+	if err != nil {
+		return "", err
+	}
+	return string(payload), nil
 }
 
 func setParentAkas(parentId string, d *schema.ResourceData, meta interface{}) error {
@@ -226,4 +244,16 @@ func formatPayload(payload string) string {
 	}
 	return payload
 
+}
+
+func mapFromResourceData(d *schema.ResourceData, properties []string)map[string]interface{}{
+	var propertyMap = map[string]interface{}{}
+	for _, p := range properties {
+		// get schema for property
+		value := d.Get(p)
+		if value != nil {
+			propertyMap[p] = value;
+		}
+	}
+	return propertyMap
 }

@@ -10,55 +10,55 @@ import (
 
 // test suites
 // TODO these fail currently - awaiting a mod update
-//func TestAccResourceAwsAccount(t *testing.T) {
-//	resource.Test(t, resource.TestCase{
-//		PreCheck:     func() { testAccPreCheck(t) },
-//		Providers:    testAccProviders,
-//		CheckDestroy: testAccCheckResourceDestroy,
-//		Steps: []resource.TestStep{
-//			{
-//				Config: testAccResourceConfig(awsAccountType, awsAccountPayload),
-//				Check: resource.ComposeTestCheckFunc(
-//					testAccCheckResourceExists("turbot_resource.test"),
-//					resource.TestCheckResourceAttr(
-//						"turbot_resource.test", "type", awsAccountType),
-//					resource.TestCheckResourceAttr(
-//						"turbot_resource.test", "payload", formatPayload(awsAccountPayload)),
-//				),
-//			},
-//			{
-//				Config: testAccResourceConfig(awsAccountType, awsAccountPayloadUpdateId),
-//				Check: resource.ComposeTestCheckFunc(
-//					testAccCheckResourceExists("turbot_resource.test"),
-//					resource.TestCheckResourceAttr(
-//						"turbot_resource.test", "type", awsAccountType),
-//					resource.TestCheckResourceAttr(
-//						"turbot_resource.test", "payload", formatPayload(awsAccountPayloadUpdateId)),
-//				),
-//			},
-//			{
-//				Config: testAccResourceConfig(awsAccountType, awsAccountPayloadUpdateEmail),
-//				Check: resource.ComposeTestCheckFunc(
-//					testAccCheckResourceExists("turbot_resource.test"),
-//					resource.TestCheckResourceAttr(
-//						"turbot_resource.test", "type", awsAccountType),
-//					resource.TestCheckResourceAttr(
-//						"turbot_resource.test", "payload", formatPayload(awsAccountPayloadUpdateEmail)),
-//				),
-//			},
-//			{
-//				Config: testAccResourceConfig(awsAccountType, awsAccountPayloadUpdateName),
-//				Check: resource.ComposeTestCheckFunc(
-//					testAccCheckResourceExists("turbot_resource.test"),
-//					resource.TestCheckResourceAttr(
-//						"turbot_resource.test", "type", awsAccountType),
-//					resource.TestCheckResourceAttr(
-//						"turbot_resource.test", "payload", formatPayload(awsAccountPayloadUpdateName)),
-//				),
-//			},
-//		},
-//	})
-//}
+func TestAccResourceAwsAccount(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckResourceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccResourceConfig(awsAccountType, awsAccountPayload),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("turbot_resource.test"),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.test", "type", awsAccountType),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.test", "payload", formatPayload(awsAccountPayload)),
+				),
+			},
+			{
+				Config: testAccResourceConfig(awsAccountType, awsAccountPayloadUpdateId),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("turbot_resource.test"),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.test", "type", awsAccountType),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.test", "payload", formatPayload(awsAccountPayloadUpdateId)),
+				),
+			},
+			{
+				Config: testAccResourceConfig(awsAccountType, awsAccountPayloadUpdateEmail),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("turbot_resource.test"),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.test", "type", awsAccountType),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.test", "payload", formatPayload(awsAccountPayloadUpdateEmail)),
+				),
+			},
+			{
+				Config: testAccResourceConfig(awsAccountType, awsAccountPayloadUpdateName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("turbot_resource.test"),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.test", "type", awsAccountType),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.test", "payload", formatPayload(awsAccountPayloadUpdateName)),
+				),
+			},
+		},
+	})
+}
 
 func TestAccResourceFolder(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -120,26 +120,25 @@ var folderPayloadUpdatedDescription = `{
 }
 `
 
-//
-//var awsAccountType = `tmod:@turbot/aws#/resource/types/account`
-//var awsAccountPayload = `{
-//  "Id": "123456789999"
-//}
-//`
-//var awsAccountPayloadUpdateId = `{
-//  "Id": "123456781111"
-//}
-//`
-//var awsAccountPayloadUpdateEmail = `{
-//  "Id": "123456789999",
-//  "Email": "kai@turbot.com"
-//}
-//`
-//var awsAccountPayloadUpdateName = `{
-//  "Id": "123456789999",
-//  "Name": "kai"
-//}
-//`
+var awsAccountType = `tmod:@turbot/aws#/resource/types/account`
+var awsAccountPayload = `{
+ "Id": "123456789999"
+}
+`
+var awsAccountPayloadUpdateId = `{
+ "Id": "123456781111"
+}
+`
+var awsAccountPayloadUpdateEmail = `{
+ "Id": "123456789999",
+ "Email": "kai@turbot.com"
+}
+`
+var awsAccountPayloadUpdateName = `{
+ "Id": "123456789999",
+ "Name": "kai"
+}
+`
 
 func testAccResourceConfig(resourceType, payload string) string {
 	return fmt.Sprintf(`

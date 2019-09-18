@@ -5,14 +5,11 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
-	"log"
 	"testing"
 )
 
 // test suites
 func TestAccPolicySetting_String(t *testing.T) {
-	a := testAccCheckPolicySettingStringUpdateTemplateConfig()
-	log.Println(a)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -114,7 +111,6 @@ resource "turbot_policy_setting" "test_policy" {
   resource = "%s"
   policy_type = "%s"
   value = "Skip"
-  precedence = "must"
 }
 `, regionResourceAka, policyTypeUri)
 }

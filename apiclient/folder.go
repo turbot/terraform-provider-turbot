@@ -4,15 +4,13 @@ import (
 	"fmt"
 )
 
-func (client *Client) CreateFolder(parent, title, description string) (*TurbotMetadata, error) {
+func (client *Client) CreateFolder(parent string, data map[string]interface{}) (*TurbotMetadata, error) {
 	query := createResourceMutation()
 	responseData := &CreateResourceResponse{}
-	var commandPayload = map[string]map[string]string{
-		"data": {
-			"title":       title,
-			"description": description,
-		},
+	var commandPayload = map[string]interface{}{
+		"data": data,
 	}
+
 	commandMeta := map[string]string{
 		"typeAka":   "tmod:@turbot/turbot#/resource/types/folder",
 		"parentAka": parent,
@@ -48,20 +46,29 @@ func (client *Client) ReadFolder(id string) (*Folder, error) {
 	return &responseData.Resource, nil
 }
 
-func (client *Client) FindFolder(title, parentAka string) ([]Folder, error) {
-	responseData := &FindFolderResponse{}
-	// convert parentAka into an id
-	parent, err := client.ReadResource(parentAka, nil)
-	if err != nil {
-		return nil, err
+func (client *Client) UpdateFolder( id, parent string, data map[string]interface{}) (*TurbotMetadata, error) {
+	query := updateResourceMutation()
+	responseData := &UpdateResourceResponse{}
+	var commandPayload = map[string]map[string]interface{}{
+		"data": data,
+		"turbotData": {
+			"akas": []string{id},
+		},
 	}
-	parentId := parent.Turbot.Id
-	query := findFolderQuery(title, parentId)
+	commandMeta := map[string]interface{}{
+		"typeAka":   "tmod:@turbot/turbot#/resource/types/folder",
+		"parentAka": parent,
+	}
+	variables := map[string]interface{}{
+		"command": map[string]interface{}{
+			"payload": commandPayload,
+			"meta":    commandMeta,
+		},
+	}
 
 	// execute api call
-	if err := client.doRequest(query, nil, &responseData); err != nil {
-		return nil, fmt.Errorf("error reading folder: %s", err.Error())
+	if err := client.doRequest(query, variables, responseData); err != nil {
+		return nil, fmt.Errorf("error creating folder: %s", err.Error())
 	}
-
-	return responseData.Folders.Items, nil
+	return &responseData.Resource.Turbot, nil
 }

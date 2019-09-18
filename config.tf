@@ -7,5 +7,5 @@ resource "turbot_profile" "test" {
   "family_name" = "Snape",
   "directory_pool_id" = "snapeseverus",
   "status" = "Active",
-  "profile_id" = "170759063660234"
+  "profile_id" = "170759063660234",
 }
