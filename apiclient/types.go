@@ -143,6 +143,23 @@ type ReadFolderResponse struct {
 	Resource Folder
 }
 
+type Profile struct {
+	Turbot          TurbotMetadata
+	Title           string
+	Parent          string
+	Status          string
+	Email           string
+	GivenName       string
+	DisplayName     string
+	FamilyName      string
+	DirectoryPoolId string
+	ProfileId       string
+}
+
+type ReadProfileResponse struct {
+	Resource Profile
+}
+
 type FindFolderResponse struct {
 	Folders struct {
 		Items []Folder
