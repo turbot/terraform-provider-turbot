@@ -4,17 +4,11 @@ import (
 	"fmt"
 )
 
-func (client *Client) CreateLocalDirectory(parent, title, description string, profileId string, status string, directoryType string) (*TurbotMetadata, error) {
+func (client *Client) CreateLocalDirectory(parent string, data map[string]interface {}) (*TurbotMetadata, error) {
 	query := createResourceMutation()
 	responseData := &CreateResourceResponse{}
-	var commandPayload = map[string]map[string]string{
-		"data": {
-			"title":             title,
-			"description":       description,
-			"profileIdTemplate": profileId,
-			"status":            status,
-			"directoryType":     directoryType,
-		},
+	var commandPayload = map[string]interface{}{
+		"data": data,
 	}
 	commandMeta := map[string]string{
 		"typeAka":   "tmod:@turbot/turbot-iam#/resource/types/localDirectory",
@@ -54,20 +48,17 @@ func (client *Client) ReadLocalDirectory(id string) (*LocalDirectory, error) {
 	return &responseData.Resource, nil
 }
 
-func (client *Client) UpdateDirectory(id, parent, title, description string) (*TurbotMetadata, error) {
+func (client *Client) UpdateDirectory(id, parent string , data map[string] interface{} ) (*TurbotMetadata, error) {
 	query := updateResourceMutation()
 	responseData := &UpdateResourceResponse{}
 	var commandPayload = map[string]map[string]interface{}{
-		"data": {
-			"title":       title,
-			"description": description,
-		},
+		"data": data,
 		"turbotData": {
 			"akas": []string{id},
 		},
 	}
 	commandMeta := map[string]interface{}{
-		"typeAka":   "tmod:@turbot/turbot#/resource/types/folder",
+		"typeAka":   "tmod:@turbot/turbot-iam#/resource/types/localDirectory",
 		"parentAka": parent,
 	}
 	variables := map[string]interface{}{

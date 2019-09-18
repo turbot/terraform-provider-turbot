@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+var localDirectoryProperties = []string{"title", "profile_id_template"}
+
 func resourceTurbotLocalDirectory() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceTurbotLocalDirectoryCreate,
@@ -68,22 +70,11 @@ func resourceTurbotLocalDirectoryExists(d *schema.ResourceData, meta interface{}
 func resourceTurbotLocalDirectoryCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
 	parentAka := d.Get("parent").(string)
-	title := d.Get("title").(string)
-	description := d.Get("description").(string)
-	profileId := d.Get("profile_id_template").(string)
-	// first check if the folder exists - search by parent and  title
-	// existingDirectories, err := client.FindDirectory(title, parentAka)
-	// if err != nil {
-	// 	return err
-	// }
-	// if len(existingDirectories > 0) {
-	// 	return existingDirectoryError(existingDirectories, title, parentAka)
-	// }
-
-	// create folder returns turbot resource metadata containing the id
-	status := "New"
-	directoryType := "local"
-	turbotMetadata, err := client.CreateLocalDirectory(parentAka, title, description, profileId, status, directoryType)
+	// build map of local directory properties
+	data := mapFromResourceData(d, localDirectoryProperties)
+	data["status"] = "New"
+	data["directoryType"] = "local"
+	turbotMetadata, err := client.CreateLocalDirectory(parentAka, data)
 	if err != nil {
 		return err
 	}
@@ -95,8 +86,8 @@ func resourceTurbotLocalDirectoryCreate(d *schema.ResourceData, meta interface{}
 
 	// assign the id
 	d.SetId(turbotMetadata.Id)
-	d.Set("status", status)
-	d.Set("directoryType", directoryType)
+	d.Set("status", data["status"])
+	d.Set("directoryType", data["directoryType"])
 	return nil
 }
 
@@ -125,13 +116,13 @@ func existingLocalDirectoryError(existingLocalDirectories []apiclient.LocalDirec
 func resourceTurbotLocalDirectoryUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
 	parentAka := d.Get("parent").(string)
-	title := d.Get("title").(string)
-	description := d.Get("description").(string)
 	id := d.Id()
 
+	// build map of local directory properties
+	data := mapFromResourceData(d, folderProperties)
 	log.Println("[INFO} resourceTurbotLocalDirectoryUpdate", id, parentAka)
 	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.UpdateDirectory(id, parentAka, title, description)
+	turbotMetadata, err := client.UpdateDirectory(id, parentAka, data)
 	if err != nil {
 		return err
 	}
@@ -149,7 +140,7 @@ func resourceTurbotLocalDirectoryRead(d *schema.ResourceData, meta interface{}) 
 	localDirectory, err := client.ReadLocalDirectory(id)
 	if err != nil {
 		if apiclient.NotFoundError(err) {
-			// folder was not found - clear id
+			// local directoery was not found - clear id
 			d.SetId("")
 		}
 		return err
@@ -163,8 +154,6 @@ func resourceTurbotLocalDirectoryRead(d *schema.ResourceData, meta interface{}) 
 	}
 	d.Set("parent", localDirectory.Parent)
 	d.Set("title", localDirectory.Title)
-	d.Set("description", localDirectory.Description)
-
 	return nil
 }
 

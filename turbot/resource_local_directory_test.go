@@ -25,10 +25,29 @@ func TestAccLocalDirectory(t *testing.T) {
 						"turbot_local_directory.test", "description", "test Directory"),
 				),
 			},
+			{
+				Config: testAccDirectoryUpdateTitleConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLocalDirectoryExists("turbot_local_directory.test"),
+					resource.TestCheckResourceAttr(
+						"turbot_local_directory.test", "title", "provider_test_refactor"),
+					resource.TestCheckResourceAttr(
+						"turbot_local_directory.test", "description", "test Directory"),
+				),
+			},
+			{
+				Config: testAccLocalDirectoryUpdateDescConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLocalDirectoryExists("turbot_local_directory.test"),
+					resource.TestCheckResourceAttr(
+						"turbot_local_directory.test", "title", "provider_test"),
+					resource.TestCheckResourceAttr(
+						"turbot_local_directory.test", "description", "test Directory for turbot terraform provider"),
+				),
+			},
 		},
 	})
 }
-
 
 // configs
 func testAccLocalDirectoryConfig() string {
@@ -57,8 +76,8 @@ func testAccDirectoryUpdateTitleConfig() string {
 	return `
 resource "turbot_local_directory" "test" {
 	parent = "tmod:@turbot/turbot#/"
-	title = "provider_test_upd"
-	description = "test Directory for turbot terraform provider"
+	title = "provider_test_refactor"
+	description = "test Directory"
 	profile_id_template = "{{profile.email}}"
 }
 `
