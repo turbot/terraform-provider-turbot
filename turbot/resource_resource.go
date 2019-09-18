@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/iancoleman/strcase"
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
 	"log"
-	"github.com/iancoleman/strcase"
 )
 
 func resourceTurbotResource() *schema.Resource {

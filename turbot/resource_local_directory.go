@@ -1,14 +1,12 @@
 package turbot
 
 import (
-	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
-	"log"
-	"strings"
 )
+
 // these are the properties which must be passed to a create/update call
-var localDirectoryProperties = []string{"title", "profile_id_template","description"}
+var localDirectoryProperties = []string{"title", "profile_id_template", "description"}
 
 func resourceTurbotLocalDirectory() *schema.Resource {
 	return &schema.Resource{
