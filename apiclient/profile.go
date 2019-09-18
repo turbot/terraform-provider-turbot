@@ -78,7 +78,7 @@ func (client *Client) UpdateProfile(id string, payload *ProfilePayload) (*Turbot
 		},
 	}
 	commandMeta := map[string]interface{}{
-		"typeAka":   "tmod:@turbot/turbot#/resource/types/folder",
+		"typeAka":   "tmod:@turbot/turbot-iam#/resource/types/profile",
 		"parentAka": payload.Parent,
 	}
 	variables := map[string]interface{}{
@@ -90,7 +90,7 @@ func (client *Client) UpdateProfile(id string, payload *ProfilePayload) (*Turbot
 	log.Println("[INFO} resourceTurbotProfileUpdate", variables)
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating folder: %s", err.Error())
+		return nil, fmt.Errorf("error creating profile: %s", err.Error())
 	}
 	return &responseData.Resource.Turbot, nil
 }

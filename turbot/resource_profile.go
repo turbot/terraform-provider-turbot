@@ -136,6 +136,7 @@ func resourceTurbotProfileUpdate(d *schema.ResourceData, meta interface{}) error
 		FamilyName:      d.Get("family_name").(string),
 		Email:           d.Get("email").(string),
 		DirectoryPoolId: d.Get("directory_pool_id").(string),
+		ProfileId:       d.Get("profile_id").(string),
 	}
 	id := d.Id()
 
