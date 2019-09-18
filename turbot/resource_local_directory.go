@@ -7,7 +7,7 @@ import (
 	"log"
 	"strings"
 )
-// local directory properties to be mapped to turbot properties
+// these are the properties which must be passed to a create/update call
 var localDirectoryProperties = []string{"title", "profile_id_template"}
 
 func resourceTurbotLocalDirectory() *schema.Resource {
