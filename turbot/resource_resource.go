@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
 	"log"
+	"github.com/iancoleman/strcase"
 )
 
 func resourceTurbotResource() *schema.Resource {
@@ -251,8 +252,10 @@ func mapFromResourceData(d *schema.ResourceData, properties []string)map[string]
 	for _, p := range properties {
 		// get schema for property
 		value := d.Get(p)
+		// converted Terraform attribute(snake case) to lowerCamelCase.
+		var turbotAttribute = strcase.ToLowerCamel(p)
 		if value != nil {
-			propertyMap[p] = value;
+			propertyMap[turbotAttribute] = value;
 		}
 	}
 	return propertyMap
