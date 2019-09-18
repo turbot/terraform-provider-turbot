@@ -6,7 +6,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
 )
 
-func dataSourceTurbotPolicy() *schema.Resource {
+func dataSourceTurbotPolicyValue() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceTurbotPolicyValueRead,
 

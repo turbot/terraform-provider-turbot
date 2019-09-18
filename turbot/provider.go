@@ -35,7 +35,8 @@ func Provider() terraform.ResourceProvider {
 			"turbot_resource":       resourceTurbotResource(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"turbot_policy_value": dataSourceTurbotPolicy(),
+			"turbot_policy_value": dataSourceTurbotPolicyValue(),
+			"turbot_resource":     dataSourceTurbotResource(),
 		},
 
 		ConfigureFunc: providerConfigure,
