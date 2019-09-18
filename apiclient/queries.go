@@ -263,7 +263,6 @@ func findFolderQuery(title, parentId string) string {
 }
 
 // find directory
-
 func findDirectoryQuery(title, parentId string) string {
 	return fmt.Sprintf(`{
 	directories: resourceList(filter: "resourceType:directory") {

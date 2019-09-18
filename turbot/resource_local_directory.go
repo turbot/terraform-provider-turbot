@@ -7,7 +7,7 @@ import (
 	"log"
 	"strings"
 )
-
+// local directory properties to be mapped to turbot properties
 var localDirectoryProperties = []string{"title", "profile_id_template"}
 
 func resourceTurbotLocalDirectory() *schema.Resource {
@@ -91,28 +91,6 @@ func resourceTurbotLocalDirectoryCreate(d *schema.ResourceData, meta interface{}
 	return nil
 }
 
-func existingLocalDirectoryError(existingLocalDirectories []apiclient.LocalDirectory, title, parentAka string) error {
-	// build array of existing folder ids
-	var ids []string
-	for _, f := range existingLocalDirectories {
-		if f.Turbot.Id != "" {
-			ids = append(ids, f.Turbot.Id)
-		}
-	}
-	// TODO extract terraform name
-	var directoryString, idString string
-
-	if len(ids) > 1 {
-		directoryString = "folders"
-		idString = "ids"
-	} else {
-		directoryString = "a folder"
-		idString = "id"
-	}
-	return fmt.Errorf("Cannot create Local Directory '%s' with parent '%s' as %s of that name already exists in that location, with %s: %s. To manage an existing Turbot local directory using Terraform, import it using command 'terraform import <resource_address> <id>'",
-		title, parentAka, directoryString, idString, strings.Join(ids, ","))
-}
-
 func resourceTurbotLocalDirectoryUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
 	parentAka := d.Get("parent").(string)
@@ -120,7 +98,6 @@ func resourceTurbotLocalDirectoryUpdate(d *schema.ResourceData, meta interface{}
 
 	// build map of local directory properties
 	data := mapFromResourceData(d, folderProperties)
-	log.Println("[INFO} resourceTurbotLocalDirectoryUpdate", id, parentAka)
 	// create folder returns turbot resource metadata containing the id
 	turbotMetadata, err := client.UpdateDirectory(id, parentAka, data)
 	if err != nil {
@@ -167,7 +144,6 @@ func resourceTurbotLocalDirectoryDelete(d *schema.ResourceData, meta interface{}
 
 	// clear the id to show we have deleted
 	d.SetId("")
-
 	return nil
 }
 
