@@ -5,6 +5,7 @@
 
 FEATURES:
 * **New Data Source:** `turbot_policy_value` ([#4](https://github.com/turbotio/terraform-provider-turbot/issues/4))
+* **New Data Source:** `turbot_profile` ([#16](https://github.com/turbotio/terraform-provider-turbot/issues/16))
 
 
 BUGFIXES:
