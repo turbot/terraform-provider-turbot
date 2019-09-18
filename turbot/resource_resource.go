@@ -249,13 +249,13 @@ func formatPayload(payload string) string {
 
 func mapFromResourceData(d *schema.ResourceData, properties []string) map[string]interface{} {
 	var propertyMap = map[string]interface{}{}
-	for _, p := range properties {
+	for _, terraformProperty := range properties {
 		// get schema for property
-		value := d.Get(p)
-		// converted Terraform attribute(snake case) to lowerCamelCase.
-		var turbotAttribute = strcase.ToLowerCamel(p)
-		if value != nil {
-			propertyMap[turbotAttribute] = value;
+		value, propertySet := d.GetOk(terraformProperty)
+		if propertySet {
+			// converted property from snake case (Terraform format) to lowerCamelCase (Turbot format).
+			var turbotProperty = strcase.ToLowerCamel(terraformProperty)
+			propertyMap[turbotProperty] = value
 		}
 	}
 	return propertyMap
