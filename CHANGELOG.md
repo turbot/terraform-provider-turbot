@@ -2,10 +2,9 @@
 
 ## 1.0.0-beta.2 (September 18, 2019)
 
-
 FEATURES:
-* **New Data Source:** `turbot_policy_value` ([#4](https://github.com/turbotio/terraform-provider-turbot/issues/4))
-
+* **New Data Source:** `turbot_policy_value` ([#20](https://github.com/turbotio/terraform-provider-turbot/issues/20))
+* **New Resource:** `turbot_local_directory` ([#14](https://github.com/turbotio/terraform-provider-turbot/issues/14))
 
 BUGFIXES:
 
@@ -16,11 +15,9 @@ ENHANCEMENTS:
 * resource/turbot_policy_setting: add default value of "required" for precedence property.  ([#13](https://github.com/turbotio/terraform-provider-turbot/issues/13))
 ## 1.0.0-beta.1 (September 13, 2019)
 
-
 ENHANCEMENTS:
 
 * resource/turbot_mod: support version ranges, plan shows changes if a new version has been published ([#6](https://github.com/turbotio/terraform-provider-turbot/issues/6))
-
 
 FEATURES:
 
