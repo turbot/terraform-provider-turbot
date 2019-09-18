@@ -8,7 +8,7 @@ import (
 
 func dataSourceTurbotPolicy() *schema.Resource {
 	return &schema.Resource{
-		Read: resourceTurbotPolicyValueRead,
+		Read: dataSourceTurbotPolicyValueRead,
 
 		Schema: map[string]*schema.Schema{
 			"resource": {
@@ -50,7 +50,7 @@ func dataSourceTurbotPolicy() *schema.Resource {
 		},
 	}
 }
-func resourceTurbotPolicyValueRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceTurbotPolicyValueRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
 	policyTypeUri := d.Get("policy_type").(string)
 	resourceAka := d.Get("resource").(string)
