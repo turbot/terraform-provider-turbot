@@ -5,6 +5,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
 )
 
+// properties which must be passed to a create/update call
 var profileProperties = []string{"title", "status", "display_name", "given_name", "family_name", "email", "directory_pool_id", "profile_id"}
 
 func resourceTurbotProfile() *schema.Resource {
@@ -38,30 +39,9 @@ func resourceTurbotProfile() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"external_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
 			"profile_id": {
 				Type:     schema.TypeString,
 				Required: true,
-			},
-			"last_login_timestamp": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"middle_name": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"picture": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"status": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "Active",
 			},
 			"display_name": {
 				Type:     schema.TypeString,
@@ -83,6 +63,27 @@ func resourceTurbotProfile() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"external_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"last_login_timestamp": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"middle_name": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"picture": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"status": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "Active",
+			},
 		},
 	}
 }
@@ -101,7 +102,6 @@ func resourceTurbotProfileCreate(d *schema.ResourceData, meta interface{}) error
 	data := mapFromResourceData(d, profileProperties)
 	// create profile returns turbot resource metadata containing the id
 	turbotMetadata, err := client.CreateProfile(parentAka, data)
-
 	if err != nil {
 		return err
 	}

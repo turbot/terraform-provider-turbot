@@ -156,18 +156,6 @@ type Profile struct {
 	ProfileId       string
 }
 
-type ProfilePayload struct {
-	Title           string
-	Parent          string
-	Status          string
-	DisplayName     string
-	Email           string
-	GivenName       string
-	FamilyName      string
-	DirectoryPoolId string
-	ProfileId       string
-}
-
 type ReadProfileResponse struct {
 	Resource Profile
 }
