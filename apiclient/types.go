@@ -36,6 +36,7 @@ type FindPolicySettingResponse struct {
 type PolicySetting struct {
 	Value              interface{}
 	ValueSource        string
+	Default            bool
 	Precedence         string
 	Template           string
 	TemplateInput      string
@@ -124,9 +125,18 @@ type ReadResourceResponse struct {
 	Resource interface{}
 }
 
+type ReadFullResourceResponse struct {
+	Resource FullResource
+}
+
 type Resource struct {
 	Turbot TurbotMetadata
 	Data   map[string]interface{}
+}
+
+type FullResource struct {
+	Object interface{}
+	Turbot TurbotMetadata
 }
 
 type ReadFolderResponse struct {
@@ -144,4 +154,18 @@ type Folder struct {
 	Title       string
 	Description string
 	Parent      string
+}
+
+type ReadLocalDirectoryResponse struct {
+	Resource LocalDirectory
+}
+
+type LocalDirectory struct {
+	Turbot            TurbotMetadata
+	Title             string
+	Description       string
+	Parent            string
+	Status            string
+	DirectoryType     string
+	ProfileIdTemplate string
 }

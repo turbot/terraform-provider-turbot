@@ -19,7 +19,7 @@ Credentials may be set either using environment variables, or using provider con
 #####Environment Variables
 ```
 export TURBOT_SECRET_ACCESS_KEY=xxxxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx  
-export TURBOT_WORKSPACE=xxxxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+export TURBOT_ACCESS_KEY_ID=xxxxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 export TURBOT_WORKSPACE=https://bananaman-turbot.putney.turbot.io
 ```
 #####Override file

@@ -47,6 +47,7 @@ func readPolicySettingQuery(policySettingId string) string {
 		value
 		valueSource
 		template
+        default
 		precedence
 		templateInput
 		input
@@ -186,7 +187,7 @@ func modVersionsQuery(org, mod string) string {
 func readModQuery(modId string) string {
 	return fmt.Sprintf(`{
   mod: resource(id:"%s") {
-	uri: get(path: "turbot.akas.0")
+    uri: get(path: "turbot.akas.0")
     parent: get(path: "turbot.parentId")
     version: get(path: "version")
   }
@@ -196,13 +197,13 @@ func readModQuery(modId string) string {
 // create resource
 func createResourceMutation() string {
 	return `mutation CreateResource($command: ResourceCommandInput) {
- 	resource: resourceCreate(command: $command) {
-		turbot {
-		  id
-          parentId
-          akas
-		}
-	}
+  resource: resourceCreate(command: $command) {
+    turbot {
+      id
+      parentId
+      akas
+    }
+  }
 }`
 }
 
@@ -246,17 +247,11 @@ func readResourceQuery(aka string, properties map[string]string) string {
 }`, aka, propertiesString.String())
 }
 
-// find folder
-func findFolderQuery(title, parentId string) string {
+func readFullResourceQuery(aka string) string {
 	return fmt.Sprintf(`{
-  folders: resourceList(filter: "resourceType:folder title:%s parentId:%s") {
-    items {
-      title: get(path:"title"),
-      parent: get(path:"turbot.parentId"),
-      description: get(path: "description"),
-      turbot: get(path:"turbot")      
-    }
+  resource(id:"%s") {
+    object
+    turbot: get(path:"turbot")
   }
-}
-`, title, parentId)
+}`, aka)
 }

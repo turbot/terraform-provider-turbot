@@ -1,9 +1,11 @@
 package apiclient
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"log"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -35,7 +37,11 @@ func TestValidateBadWorkspace(t *testing.T) {
 	client, err := CreateClient(accessKeyId, secretAccessKey, workspace+"_invalid")
 	assert.Nil(t, err, "error creating client")
 	err = client.Validate()
-	assert.Equal(t, "Post https://bananaman-turbot.putney.turbot.io_invalid/api/v5/graphql: dial tcp: lookup bananaman-turbot.putney.turbot.io_invalid: no such host", err.Error())
+	workspace := os.Getenv("TURBOT_WORKSPACE")
+	workspaceShort := strings.TrimPrefix(workspace, "https://")
+	expected := fmt.Sprintf("Post %s_invalid/api/v5/graphql: dial tcp: lookup %s_invalid: no such host",
+		workspace, workspaceShort)
+	assert.Equal(t, expected, err.Error())
 }
 
 func TestValidateUnparseableWorkspace(t *testing.T) {

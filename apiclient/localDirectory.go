@@ -4,15 +4,14 @@ import (
 	"fmt"
 )
 
-func (client *Client) CreateFolder(parent string, data map[string]interface{}) (*TurbotMetadata, error) {
+func (client *Client) CreateLocalDirectory(parent string, data map[string]interface{}) (*TurbotMetadata, error) {
 	query := createResourceMutation()
 	responseData := &CreateResourceResponse{}
 	var commandPayload = map[string]interface{}{
 		"data": data,
 	}
-
 	commandMeta := map[string]string{
-		"typeAka":   "tmod:@turbot/turbot#/resource/types/folder",
+		"typeAka":   "tmod:@turbot/turbot-iam#/resource/types/localDirectory",
 		"parentAka": parent,
 	}
 	variables := map[string]interface{}{
@@ -29,15 +28,18 @@ func (client *Client) CreateFolder(parent string, data map[string]interface{}) (
 	return &responseData.Resource.Turbot, nil
 }
 
-func (client *Client) ReadFolder(id string) (*Folder, error) {
+func (client *Client) ReadLocalDirectory(id string) (*LocalDirectory, error) {
 	// create a map of the properties we want the graphql query to return
 	properties := map[string]string{
-		"title":       "title",
-		"parent":      "turbot.parentId",
-		"description": "description",
+		"title":             "title",
+		"parent":            "turbot.parentId",
+		"description":       "description",
+		"status":            "status",
+		"directoryType":     "directoryType",
+		"profileIdTemplate": "profileIdTemplate",
 	}
 	query := readResourceQuery(id, properties)
-	responseData := &ReadFolderResponse{}
+	responseData := &ReadLocalDirectoryResponse{}
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
@@ -46,7 +48,7 @@ func (client *Client) ReadFolder(id string) (*Folder, error) {
 	return &responseData.Resource, nil
 }
 
-func (client *Client) UpdateFolder(id, parent string, data map[string]interface{}) (*TurbotMetadata, error) {
+func (client *Client) UpdateDirectory(id, parent string, data map[string]interface{}) (*TurbotMetadata, error) {
 	query := updateResourceMutation()
 	responseData := &UpdateResourceResponse{}
 	var commandPayload = map[string]map[string]interface{}{
@@ -56,7 +58,7 @@ func (client *Client) UpdateFolder(id, parent string, data map[string]interface{
 		},
 	}
 	commandMeta := map[string]interface{}{
-		"typeAka":   "tmod:@turbot/turbot#/resource/types/folder",
+		"typeAka":   "tmod:@turbot/turbot-iam#/resource/types/localDirectory",
 		"parentAka": parent,
 	}
 	variables := map[string]interface{}{

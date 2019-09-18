@@ -12,7 +12,7 @@ func (client *Client) CreateResource(typeAka, parentAka, payload string) (*Turbo
 
 	data := map[string]interface{}{}
 	if err := json.Unmarshal([]byte(payload), &data); err != nil {
-		return nil, fmt.Errorf("error creating resource: %s", payload, err.Error())
+		return nil, fmt.Errorf("error creating resource: %s", err.Error())
 	}
 
 	// todo extract turbotData
@@ -38,8 +38,8 @@ func (client *Client) CreateResource(typeAka, parentAka, payload string) (*Turbo
 	return &responseData.Resource.Turbot, nil
 }
 
-func (client *Client) ReadResource(id string, properties map[string]string) (*Resource, error) {
-	query := readResourceQuery(id, properties)
+func (client *Client) ReadResource(aka string, properties map[string]string) (*Resource, error) {
+	query := readResourceQuery(aka, properties)
 	var responseData = &ReadResourceResponse{}
 
 	// execute api call
@@ -53,6 +53,18 @@ func (client *Client) ReadResource(id string, properties map[string]string) (*Re
 	}
 
 	return resource, nil
+}
+
+func (client *Client) ReadFullResource(aka string) (*FullResource, error) {
+	query := readFullResourceQuery(aka)
+	var responseData = &ReadFullResourceResponse{}
+
+	// execute api call
+	if err := client.doRequest(query, nil, responseData); err != nil {
+		return nil, fmt.Errorf("error reading resource: %s", err.Error())
+	}
+
+	return &responseData.Resource, nil
 }
 
 func (client *Client) DeleteResource(aka string) error {
@@ -77,26 +89,27 @@ func (client *Client) DeleteResource(aka string) error {
 	return nil
 }
 
-func (client *Client) UpdateResource(id, parent, title, description string) (*TurbotMetadata, error) {
+func (client *Client) UpdateResource(id, typeAka, parentAka, payload string) (*TurbotMetadata, error) {
 	query := updateResourceMutation()
 	responseData := &UpdateResourceResponse{}
-	var commandPayload = map[string]map[string]interface{}{
-		"data": {
-			"title":       title,
-			"description": description,
-		},
-		"turbotData": {
-			"akas": []string{id},
-		},
+	data := map[string]interface{}{}
+	if err := json.Unmarshal([]byte(payload), &data); err != nil {
+		return nil, fmt.Errorf("error updating resource: %s", err.Error())
 	}
-	commandMeta := map[string]interface{}{
-		"typeAka":   "tmod:@turbot/turbot#/resource/types/folder",
-		"parentAka": parent,
+
+	// todo extract turbotData
+
+	commandMeta := map[string]string{
+		"typeAka":   typeAka,
+		"parentAka": parentAka,
 	}
+
 	variables := map[string]interface{}{
 		"command": map[string]interface{}{
-			"payload": commandPayload,
-			"meta":    commandMeta,
+			"payload": map[string]interface{}{
+				"data": data,
+			},
+			"meta": commandMeta,
 		},
 	}
 

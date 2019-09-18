@@ -6,17 +6,17 @@ import (
 )
 
 // these are the properties which must be passed to a create/update call
-var folderProperties = []string{"title", "description"}
+var localDirectoryProperties = []string{"title", "profile_id_template", "description"}
 
-func resourceTurbotFolder() *schema.Resource {
+func resourceTurbotLocalDirectory() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceTurbotFolderCreate,
-		Read:   resourceTurbotFolderRead,
-		Update: resourceTurbotFolderUpdate,
-		Delete: resourceTurbotFolderDelete,
-		Exists: resourceTurbotFolderExists,
+		Create: resourceTurbotLocalDirectoryCreate,
+		Read:   resourceTurbotLocalDirectoryRead,
+		Update: resourceTurbotLocalDirectoryUpdate,
+		Delete: resourceTurbotLocalDirectoryDelete,
+		Exists: resourceTurbotLocalDirectoryExists,
 		Importer: &schema.ResourceImporter{
-			State: resourceTurbotFolderImport,
+			State: resourceTurbotLocalDirectoryImport,
 		},
 		Schema: map[string]*schema.Schema{
 			// aka of the parent resource
@@ -39,27 +39,40 @@ func resourceTurbotFolder() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"description": {
+			"profile_id_template": {
 				Type:     schema.TypeString,
 				Required: true,
+			},
+			"description": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"status": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"directory_type": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
 }
 
-func resourceTurbotFolderExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
+func resourceTurbotLocalDirectoryExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
 	client := meta.(*apiclient.Client)
 	id := d.Id()
 	return client.ResourceExists(id)
 }
 
-func resourceTurbotFolderCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceTurbotLocalDirectoryCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
 	parentAka := d.Get("parent").(string)
-	// build map of folder properties
-	data := mapFromResourceData(d, folderProperties)
-	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.CreateFolder(parentAka, data)
+	// build map of local directory properties
+	data := mapFromResourceData(d, localDirectoryProperties)
+	data["status"] = "New"
+	data["directoryType"] = "local"
+	turbotMetadata, err := client.CreateLocalDirectory(parentAka, data)
 	if err != nil {
 		return err
 	}
@@ -71,20 +84,20 @@ func resourceTurbotFolderCreate(d *schema.ResourceData, meta interface{}) error 
 
 	// assign the id
 	d.SetId(turbotMetadata.Id)
-
+	d.Set("status", data["status"])
+	d.Set("directoryType", data["directoryType"])
 	return nil
 }
 
-func resourceTurbotFolderUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceTurbotLocalDirectoryUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
 	parentAka := d.Get("parent").(string)
 	id := d.Id()
 
-	// build map of folder properties
+	// build map of local directory properties
 	data := mapFromResourceData(d, folderProperties)
-
 	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.UpdateFolder(id, parentAka, data)
+	turbotMetadata, err := client.UpdateDirectory(id, parentAka, data)
 	if err != nil {
 		return err
 	}
@@ -95,14 +108,14 @@ func resourceTurbotFolderUpdate(d *schema.ResourceData, meta interface{}) error 
 	return nil
 }
 
-func resourceTurbotFolderRead(d *schema.ResourceData, meta interface{}) error {
+func resourceTurbotLocalDirectoryRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
 	id := d.Id()
 
-	folder, err := client.ReadFolder(id)
+	localDirectory, err := client.ReadLocalDirectory(id)
 	if err != nil {
 		if apiclient.NotFoundError(err) {
-			// folder was not found - clear id
+			// local directoery was not found - clear id
 			d.SetId("")
 		}
 		return err
@@ -111,17 +124,15 @@ func resourceTurbotFolderRead(d *schema.ResourceData, meta interface{}) error {
 	// assign results back into ResourceData
 
 	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(folder.Turbot.ParentId, d, meta); err != nil {
+	if err = setParentAkas(localDirectory.Turbot.ParentId, d, meta); err != nil {
 		return err
 	}
-	d.Set("parent", folder.Parent)
-	d.Set("title", folder.Title)
-	d.Set("description", folder.Description)
-
+	d.Set("parent", localDirectory.Parent)
+	d.Set("title", localDirectory.Title)
 	return nil
 }
 
-func resourceTurbotFolderDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceTurbotLocalDirectoryDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
 	id := d.Id()
 	err := client.DeleteResource(id)
@@ -131,12 +142,11 @@ func resourceTurbotFolderDelete(d *schema.ResourceData, meta interface{}) error 
 
 	// clear the id to show we have deleted
 	d.SetId("")
-
 	return nil
 }
 
-func resourceTurbotFolderImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-	if err := resourceTurbotFolderRead(d, meta); err != nil {
+func resourceTurbotLocalDirectoryImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	if err := resourceTurbotLocalDirectoryRead(d, meta); err != nil {
 		return nil, err
 	}
 	return []*schema.ResourceData{d}, nil

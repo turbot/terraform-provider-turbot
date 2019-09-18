@@ -29,13 +29,15 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"turbot_policy_setting": resourceTurbotPolicySetting(),
-			"turbot_mod":            resourceTurbotMod(),
-			"turbot_folder":         resourceTurbotFolder(),
-			"turbot_resource":       resourceTurbotResource(),
+			"turbot_policy_setting":  resourceTurbotPolicySetting(),
+			"turbot_mod":             resourceTurbotMod(),
+			"turbot_folder":          resourceTurbotFolder(),
+			"turbot_resource":        resourceTurbotResource(),
+			"turbot_local_directory": resourceTurbotLocalDirectory(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"turbot_policy_value": dataSourceTurbotPolicy(),
+			"turbot_policy_value": dataSourceTurbotPolicyValue(),
+			"turbot_resource":     dataSourceTurbotResource(),
 		},
 
 		ConfigureFunc: providerConfigure,

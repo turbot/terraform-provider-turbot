@@ -5,14 +5,11 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
-	"log"
 	"testing"
 )
 
 // test suites
 func TestAccPolicySetting_String(t *testing.T) {
-	a := testAccCheckPolicySettingStringUpdateTemplateConfig()
-	log.Println(a)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -105,7 +102,7 @@ func TestAccPolicySetting_String(t *testing.T) {
 //}
 
 // configs
-var regionResourceAka = "arn:aws::eu-west-2:650022101893"
+var resourceAka = "tmod:@turbot/turbot#/"
 var policyTypeUri = "tmod:@turbot/aws#/policy/types/accountStack"
 
 func testAccCheckPolicySettingStringConfig() string {
@@ -116,7 +113,7 @@ resource "turbot_policy_setting" "test_policy" {
   value = "Skip"
   precedence = "must"
 }
-`, regionResourceAka, policyTypeUri)
+`, resourceAka, policyTypeUri)
 }
 
 func testAccCheckPolicySettingStringUpdateConfig() string {
@@ -127,7 +124,7 @@ resource "turbot_policy_setting" "test_policy" {
   value = "Check: Configured"
   precedence = "must"
 }
-`, regionResourceAka, policyTypeUri)
+`, resourceAka, policyTypeUri)
 }
 
 func testAccCheckPolicySettingStringUpdatePrecedenceConfig() string {
@@ -138,7 +135,7 @@ resource "turbot_policy_setting" "test_policy" {
   value = "Check: Configured"
   precedence = "should"
 }
-`, regionResourceAka, policyTypeUri)
+`, resourceAka, policyTypeUri)
 }
 
 func testAccCheckPolicySettingStringUpdateTemplateConfig() string {
@@ -151,7 +148,7 @@ resource "turbot_policy_setting" "test_policy" {
   template = %s
   precedence = "should"
 }
-`, regionResourceAka, policyTypeUri, template)
+`, resourceAka, policyTypeUri, template)
 }
 
 // helper functions
