@@ -246,13 +246,13 @@ func formatPayload(payload string) string {
 
 }
 
-func mapFromResourceData(d *schema.ResourceData, properties []string)map[string]interface{}{
+func mapFromResourceData(d *schema.ResourceData, properties []string) map[string]interface{} {
 	var propertyMap = map[string]interface{}{}
 	for _, p := range properties {
 		// get schema for property
 		value := d.Get(p)
 		if value != nil {
-			propertyMap[p] = value;
+			propertyMap[p] = value
 		}
 	}
 	return propertyMap

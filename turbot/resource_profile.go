@@ -8,6 +8,8 @@ import (
 	// "strings"
 )
 
+var profileProperties = []string{"title", "status", "display_name", "given_name", "family_name", "email", "directory_pool_id", "profile_id"}
+
 func resourceTurbotProfile() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceTurbotProfileCreate,
@@ -96,20 +98,13 @@ func resourceTurbotProfileExists(d *schema.ResourceData, meta interface{}) (b bo
 
 func resourceTurbotProfileCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
-	var payload = apiclient.ProfilePayload{
-		Parent:          d.Get("parent").(string),
-		Title:           d.Get("title").(string),
-		Status:          d.Get("status").(string),
-		DisplayName:     d.Get("display_name").(string),
-		GivenName:       d.Get("given_name").(string),
-		FamilyName:      d.Get("family_name").(string),
-		Email:           d.Get("email").(string),
-		DirectoryPoolId: d.Get("directory_pool_id").(string),
-		ProfileId:       d.Get("profile_id").(string),
-	}
+	parentAka := d.Get("parent").(string)
 
+	// build map of profile properties
+	data := mapFromResourceData(d, profileProperties)
 	// create profile returns turbot resource metadata containing the id
-	turbotMetadata, err := client.CreateProfile(&payload)
+	turbotMetadata, err := client.CreateProfile(parentAka, data)
+
 	if err != nil {
 		return err
 	}
@@ -127,22 +122,14 @@ func resourceTurbotProfileCreate(d *schema.ResourceData, meta interface{}) error
 
 func resourceTurbotProfileUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
-	var payload = apiclient.ProfilePayload{
-		Parent:          d.Get("parent").(string),
-		Title:           d.Get("title").(string),
-		Status:          d.Get("status").(string),
-		DisplayName:     d.Get("display_name").(string),
-		GivenName:       d.Get("given_name").(string),
-		FamilyName:      d.Get("family_name").(string),
-		Email:           d.Get("email").(string),
-		DirectoryPoolId: d.Get("directory_pool_id").(string),
-		ProfileId:       d.Get("profile_id").(string),
-	}
+	parentAka := d.Get("parent").(string)
 	id := d.Id()
 
-	log.Println("[INFO} resourceTurbotProfileUpdate", id, payload)
+// build map of profile properties
+data := mapFromResourceData(d, folderProperties)
+
 	// create profile returns turbot resource metadata containing the id
-	turbotMetadata, err := client.UpdateProfile(id, &payload)
+	turbotMetadata, err := client.UpdateProfile(id, parentAka, data)
 	if err != nil {
 		return err
 	}

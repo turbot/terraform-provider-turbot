@@ -5,24 +5,15 @@ import (
 	"log"
 )
 
-func (client *Client) CreateProfile(payload *ProfilePayload) (*TurbotMetadata, error) {
+func (client *Client) CreateProfile(parent string, data map[string]interface{}) (*TurbotMetadata, error) {
 	query := createResourceMutation()
 	responseData := &CreateResourceResponse{}
-	var commandPayload = map[string]map[string]string{
-		"data": {
-			"title":           payload.Title,
-			"status":          payload.Status,
-			"displayName":     payload.DisplayName,
-			"email":           payload.Email,
-			"givenName":       payload.GivenName,
-			"familyName":      payload.FamilyName,
-			"directoryPoolId": payload.DirectoryPoolId,
-			"profileId":       payload.ProfileId,
-		},
+	var commandPayload = map[string]interface{}{
+		"data": data,
 	}
 	commandMeta := map[string]string{
 		"typeAka":   "tmod:@turbot/turbot-iam#/resource/types/profile",
-		"parentAka": payload.Parent,
+		"parentAka": parent,
 	}
 	variables := map[string]interface{}{
 		"command": map[string]interface{}{
@@ -60,26 +51,18 @@ func (client *Client) ReadProfile(id string) (*Profile, error) {
 	return &responseData.Resource, nil
 }
 
-func (client *Client) UpdateProfile(id string, payload *ProfilePayload) (*TurbotMetadata, error) {
+func (client *Client) UpdateProfile(id, parent string, data map[string]interface{}) (*TurbotMetadata, error) {
 	query := updateResourceMutation()
 	responseData := &UpdateResourceResponse{}
 	var commandPayload = map[string]map[string]interface{}{
-		"data": {
-			"title":           payload.Title,
-			"status":          payload.Status,
-			"displayName":     payload.DisplayName,
-			"email":           payload.Email,
-			"givenName":       payload.GivenName,
-			"familyName":      payload.FamilyName,
-			"directoryPoolId": payload.DirectoryPoolId,
-		},
+		"data": data,
 		"turbotData": {
 			"akas": []string{id},
 		},
 	}
 	commandMeta := map[string]interface{}{
-		"typeAka":   "tmod:@turbot/turbot-iam#/resource/types/profile",
-		"parentAka": payload.Parent,
+		"typeAka":   "tmod:@turbot/turbot#/resource/types/folder",
+		"parentAka": parent,
 	}
 	variables := map[string]interface{}{
 		"command": map[string]interface{}{
