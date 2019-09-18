@@ -125,9 +125,18 @@ type ReadResourceResponse struct {
 	Resource interface{}
 }
 
+type ReadFullResourceResponse struct {
+	Resource FullResource
+}
+
 type Resource struct {
 	Turbot TurbotMetadata
 	Data   map[string]interface{}
+}
+
+type FullResource struct {
+	Object interface{}
+	Turbot TurbotMetadata
 }
 
 type ReadFolderResponse struct {

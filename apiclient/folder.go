@@ -46,7 +46,7 @@ func (client *Client) ReadFolder(id string) (*Folder, error) {
 	return &responseData.Resource, nil
 }
 
-func (client *Client) UpdateFolder( id, parent string, data map[string]interface{}) (*TurbotMetadata, error) {
+func (client *Client) UpdateFolder(id, parent string, data map[string]interface{}) (*TurbotMetadata, error) {
 	query := updateResourceMutation()
 	responseData := &UpdateResourceResponse{}
 	var commandPayload = map[string]map[string]interface{}{

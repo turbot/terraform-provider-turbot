@@ -38,8 +38,8 @@ func (client *Client) CreateResource(typeAka, parentAka, payload string) (*Turbo
 	return &responseData.Resource.Turbot, nil
 }
 
-func (client *Client) ReadResource(id string, properties map[string]string) (*Resource, error) {
-	query := readResourceQuery(id, properties)
+func (client *Client) ReadResource(aka string, properties map[string]string) (*Resource, error) {
+	query := readResourceQuery(aka, properties)
 	var responseData = &ReadResourceResponse{}
 
 	// execute api call
@@ -53,6 +53,18 @@ func (client *Client) ReadResource(id string, properties map[string]string) (*Re
 	}
 
 	return resource, nil
+}
+
+func (client *Client) ReadFullResource(aka string) (*FullResource, error) {
+	query := readFullResourceQuery(aka)
+	var responseData = &ReadFullResourceResponse{}
+
+	// execute api call
+	if err := client.doRequest(query, nil, responseData); err != nil {
+		return nil, fmt.Errorf("error reading resource: %s", err.Error())
+	}
+
+	return &responseData.Resource, nil
 }
 
 func (client *Client) DeleteResource(aka string) error {
