@@ -255,3 +255,21 @@ func readFullResourceQuery(aka string) string {
   }
 }`, aka)
 }
+
+// find directory
+func findDirectoryQuery(title, parentId string) string {
+	return fmt.Sprintf(`{
+	directories: resourceList(filter: "resourceType:directory") {
+		items {
+		  title: get(path:"title"),
+		  parent: get(path:"turbot.parentId"),
+		  description: get(path: "description"),
+		  turbot: get(path:"turbot")
+		  status: get(path:"status")
+		  directoryType: get(path:"directoryType")
+		  profileIdTemplate: get(path:"profileIdTemplate")
+		}
+	  }	
+	}
+	`, title, parentId)
+}
