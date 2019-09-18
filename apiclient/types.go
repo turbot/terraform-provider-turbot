@@ -143,6 +143,7 @@ type Profile struct {
 	DisplayName     string
 	FamilyName      string
 	DirectoryPoolId string
+	ProfileId       string
 }
 
 type ProfilePayload struct {
@@ -154,6 +155,7 @@ type ProfilePayload struct {
 	GivenName       string
 	FamilyName      string
 	DirectoryPoolId string
+	ProfileId       string
 }
 
 type ReadProfileResponse struct {

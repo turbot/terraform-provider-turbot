@@ -45,7 +45,7 @@ func resourceTurbotProfile() *schema.Resource {
 			},
 			"profile_id": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Required: true,
 			},
 			"last_login_timestamp": {
 				Type:     schema.TypeString,
@@ -105,6 +105,7 @@ func resourceTurbotProfileCreate(d *schema.ResourceData, meta interface{}) error
 		FamilyName:      d.Get("family_name").(string),
 		Email:           d.Get("email").(string),
 		DirectoryPoolId: d.Get("directory_pool_id").(string),
+		ProfileId:       d.Get("profile_id").(string),
 	}
 
 	// create profile returns turbot resource metadata containing the id

@@ -17,6 +17,7 @@ func (client *Client) CreateProfile(payload *ProfilePayload) (*TurbotMetadata, e
 			"givenName":       payload.GivenName,
 			"familyName":      payload.FamilyName,
 			"directoryPoolId": payload.DirectoryPoolId,
+			"profileId":       payload.ProfileId,
 		},
 	}
 	commandMeta := map[string]string{
@@ -86,7 +87,7 @@ func (client *Client) UpdateProfile(id string, payload *ProfilePayload) (*Turbot
 			"meta":    commandMeta,
 		},
 	}
-
+	log.Println("[INFO} resourceTurbotProfileUpdate", variables)
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error creating folder: %s", err.Error())
