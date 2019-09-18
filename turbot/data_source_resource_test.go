@@ -16,7 +16,7 @@ func TestAccResourceDataSource_Basic(t *testing.T) {
 				Config: testAccResourceDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.turbot_resource.test_resource", "turbot", "alpha.turbot.com"),
+						"data.turbot_resource.test_resource", "parent_id", ""),
 				),
 			},
 		},
