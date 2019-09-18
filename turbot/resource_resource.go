@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/iancoleman/strcase"
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
 	"log"
 )
@@ -248,11 +249,13 @@ func formatPayload(payload string) string {
 
 func mapFromResourceData(d *schema.ResourceData, properties []string) map[string]interface{} {
 	var propertyMap = map[string]interface{}{}
-	for _, p := range properties {
+	for _, terraformProperty := range properties {
 		// get schema for property
-		value := d.Get(p)
-		if value != nil {
-			propertyMap[p] = value
+		value, propertySet := d.GetOk(terraformProperty)
+		if propertySet {
+			// converted property from snake case (Terraform format) to lowerCamelCase (Turbot format).
+			var turbotProperty = strcase.ToLowerCamel(terraformProperty)
+			propertyMap[turbotProperty] = value
 		}
 	}
 	return propertyMap

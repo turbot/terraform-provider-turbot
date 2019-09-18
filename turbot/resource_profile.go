@@ -1,11 +1,8 @@
 package turbot
 
 import (
-	// "fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
-	"log"
-	// "strings"
 )
 
 var profileProperties = []string{"title", "status", "display_name", "given_name", "family_name", "email", "directory_pool_id", "profile_id"}
@@ -125,8 +122,8 @@ func resourceTurbotProfileUpdate(d *schema.ResourceData, meta interface{}) error
 	parentAka := d.Get("parent").(string)
 	id := d.Id()
 
-// build map of profile properties
-data := mapFromResourceData(d, folderProperties)
+	// build map of profile properties
+	data := mapFromResourceData(d, folderProperties)
 
 	// create profile returns turbot resource metadata containing the id
 	turbotMetadata, err := client.UpdateProfile(id, parentAka, data)
