@@ -24,7 +24,6 @@ func (client *Client) CreateSamlDirectory(parent string, data map[string]interfa
 	}
 
 	// execute api call
-	log.Println("CreateSamlDirectory: ", variables)
 	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error creating folder: %s", err.Error())
 	}
