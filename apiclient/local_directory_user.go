@@ -2,7 +2,6 @@ package apiclient
 
 import (
 	"fmt"
-	"log"
 )
 
 func (client *Client) CreateLocalDirectoryUser(parent string, data map[string]interface{}) (*TurbotMetadata, error) {
@@ -21,7 +20,6 @@ func (client *Client) CreateLocalDirectoryUser(parent string, data map[string]in
 			"meta":    commandMeta,
 		},
 	}
-
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error creating folder: %s", err.Error())
@@ -44,7 +42,6 @@ func (client *Client) ReadLocalDirectoryUser(id string) (*LocalDirectoryUser, er
 	}
 	query := readResourceQuery(id, properties)
 	responseData := &ReadLocalDirectoryUserResponse{}
-	log.Println("**************************************/nQuery", query)
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
 		return nil, fmt.Errorf("error reading folder: %s", err.Error())
@@ -71,7 +68,6 @@ func (client *Client) UpdateLocalDirectoryUserResource(id, parent string, data m
 			"meta":    commandMeta,
 		},
 	}
-
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error creating folder: %s", err.Error())

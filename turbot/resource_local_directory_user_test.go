@@ -60,6 +60,7 @@ func testAccLocalDirectoryUserConfig() string {
 } 
 `
 }
+
 func testAccLocalDirectoryUserUpdateTitleConfig() string {
 	return `
 	resource "turbot_local_directory_user" "test" {
@@ -102,6 +103,7 @@ func testAccCheckLocalDirectoryUserExists(resource string) resource.TestCheckFun
 		return nil
 	}
 }
+
 func testAccCheckLocalDirectoryUserDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*apiclient.Client)
 	for _, rs := range s.RootModule().Resources {
