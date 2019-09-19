@@ -186,3 +186,17 @@ type LocalDirectory struct {
 	DirectoryType     string
 	ProfileIdTemplate string
 }
+
+type ReadSamlDirectoryResponse struct {
+	Resource SamlDirectory
+}
+
+type SamlDirectory struct {
+	Turbot            TurbotMetadata
+	Title             string
+	Description       string
+	Parent            string
+	Status            string
+	DirectoryType     string
+	ProfileIdTemplate string
+}
