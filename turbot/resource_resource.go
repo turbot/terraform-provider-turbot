@@ -201,10 +201,7 @@ func supressIfParentAkaMatches(k, old, new string, d *schema.ResourceData) bool 
 }
 
 func suppressIfClientSecret(k, old, new string, d *schema.ResourceData) bool {
-	if old == "" {
-		return false
-	}
-	return true
+	return old != ""
 }
 
 // body is a json string

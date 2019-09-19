@@ -1,4 +1,4 @@
-resource "turbot_google_directory" "test8" {
+resource "turbot_google_directory" "test7" {
 		"title" = "google_directory_test_provider9",
 		"profile_id_template" = "profileemal",
 		"status" = "New",
@@ -13,7 +13,7 @@ resource "turbot_google_directory" "test9" {
 		"profile_id_template" = "profileemail",
 		"status" = "New",
 		"directory_type" = "google",
-		"client_id" = "GoogleDirTes5",
+		"client_id" = "GoogleDirTes7",
 		"client_secret" = "fb-tbevaACsBKQHthzba-PH",
 		"parent" = "162167737252865",
 		"description" = "test Directory"
