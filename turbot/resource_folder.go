@@ -5,7 +5,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
 )
 
-// these are the properties which must be passed to a create/update call
+// properties which must be passed to a create/update call
 var folderProperties = []string{"title", "description"}
 
 func resourceTurbotFolder() *schema.Resource {
