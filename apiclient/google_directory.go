@@ -2,7 +2,6 @@ package apiclient
 
 import (
 	"fmt"
-	"log"
 )
 
 func (client *Client) CreateGoogleDirectory(parent string, data map[string]interface{}) (*TurbotMetadata, error) {
@@ -21,8 +20,6 @@ func (client *Client) CreateGoogleDirectory(parent string, data map[string]inter
 			"meta":    commandMeta,
 		},
 	}
-	log.Println("###########################################        ", commandPayload)
-	log.Println("###########################################        ", query)
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error creating folder: %s", err.Error())
