@@ -1,11 +1,16 @@
 
 
+## 1.0.0-beta.2 (TBD)
+
+FEATURES:
+* **New Resource:** `turbot_saml_directory` ([#34](https://github.com/turbotio/terraform-provider-turbot/issues/34))
+
 ## 1.0.0-beta.2 (September 18, 2019)
 
 FEATURES:
-* **New Data Source:** `turbot_policy_value` ([#20](https://github.com/turbotio/terraform-provider-turbot/issues/20))
+* **New Data Source:** `turbot_resource` ([#20](https://github.com/turbotio/terraform-provider-turbot/issues/20))
 * **New Resource:** `turbot_local_directory` ([#14](https://github.com/turbotio/terraform-provider-turbot/issues/14))
-* **New Data Source:** `turbot_profile` ([#16](https://github.com/turbotio/terraform-provider-turbot/issues/16))
+* **New Resource:** `turbot_profile` ([#16](https://github.com/turbotio/terraform-provider-turbot/issues/16))
 
 BUGFIXES:
 
