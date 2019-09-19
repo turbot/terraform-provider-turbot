@@ -41,10 +41,10 @@ func resourceTurbotResource() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"payload": {
+			"body": {
 				Type:             schema.TypeString,
 				Required:         true,
-				DiffSuppressFunc: suppressIfPayloadMatches,
+				DiffSuppressFunc: suppressIfBodyMatches,
 			},
 		},
 	}
@@ -60,10 +60,10 @@ func resourceTurbotResourceCreate(d *schema.ResourceData, meta interface{}) erro
 	client := meta.(*apiclient.Client)
 	parent := d.Get("parent").(string)
 	resourceType := d.Get("type").(string)
-	payload := d.Get("payload").(string)
+	body := d.Get("body").(string)
 
 	// create resource returns turbot resource metadata containing the id
-	turbotMetadata, err := client.CreateResource(resourceType, parent, payload)
+	turbotMetadata, err := client.CreateResource(resourceType, parent, body)
 	if err != nil {
 		return err
 	}
@@ -75,8 +75,8 @@ func resourceTurbotResourceCreate(d *schema.ResourceData, meta interface{}) erro
 
 	// assign the id
 	d.SetId(turbotMetadata.Id)
-	// save formatted version of the payload for consistency
-	d.Set("payload", formatPayload(payload))
+	// save formatted version of the body for consistency
+	d.Set("body", formatBody(body))
 
 	return nil
 }
@@ -85,10 +85,10 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 	client := meta.(*apiclient.Client)
 	id := d.Id()
 
-	// build required properties from payload
-	properties, err := propertiesFromPayload(d.Get("payload").(string))
+	// build required properties from body
+	properties, err := propertiesFromBody(d.Get("body").(string))
 	if err != nil {
-		return fmt.Errorf("error retrieving properties from resource payload: %s", err.Error())
+		return fmt.Errorf("error retrieving properties from resource body: %s", err.Error())
 	}
 
 	resource, err := client.ReadResource(id, properties)
@@ -100,10 +100,10 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 
-	// rebuild payload from the resource
-	payload, err := payloadFromResource(resource.Data)
+	// rebuild body from the resource
+	body, err := bodyFromProperties(resource.Data)
 	if err != nil {
-		return fmt.Errorf("error building resource payload: %s", err.Error())
+		return fmt.Errorf("error building resource body: %s", err.Error())
 	}
 
 	// assign results back into ResourceData
@@ -113,19 +113,19 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 	d.Set("parent", resource.Turbot.ParentId)
-	d.Set("payload", payload)
+	d.Set("body", body)
 
 	return nil
 }
 
 func resourceTurbotResourceUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
-	payload := d.Get("payload").(string)
+	body := d.Get("body").(string)
 	parent := d.Get("parent").(string)
 	resourceType := d.Get("type").(string)
 	id := d.Id()
 	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.UpdateResource(id, parent, resourceType, payload)
+	turbotMetadata, err := client.UpdateResource(id, resourceType, parent, body)
 	if err != nil {
 		return err
 	}
@@ -155,28 +155,6 @@ func resourceTurbotResourceImport(d *schema.ResourceData, meta interface{}) ([]*
 		return nil, err
 	}
 	return []*schema.ResourceData{d}, nil
-}
-
-// given a json string, unmarshal into a map and return a map of alias ->  propertyName
-func propertiesFromPayload(payload string) (map[string]string, error) {
-	data := map[string]interface{}{}
-	if err := json.Unmarshal([]byte(payload), &data); err != nil {
-		return nil, err
-	}
-	var properties = map[string]string{}
-	for k := range data {
-		properties[k] = k
-	}
-	return properties, nil
-}
-
-// given a map of resource properties, marshal into a json string
-func payloadFromResource(d map[string]interface{}) (string, error) {
-	payload, err := json.MarshalIndent(d, "", " ")
-	if err != nil {
-		return "", err
-	}
-	return string(payload), nil
 }
 
 func setParentAkas(parentId string, d *schema.ResourceData, meta interface{}) error {
@@ -222,28 +200,50 @@ func supressIfParentAkaMatches(k, old, new string, d *schema.ResourceData) bool 
 	return false
 }
 
-// payload is a json string
-// apply standard formatting to old and new payloads then compare
-func suppressIfPayloadMatches(k, old, new string, d *schema.ResourceData) bool {
+// body is a json string
+// apply standard formatting to old and new bodys then compare
+func suppressIfBodyMatches(k, old, new string, d *schema.ResourceData) bool {
 	if old == "" || new == "" {
 		return false
 	}
-	return formatPayload(old) == formatPayload(new)
+	return formatBody(old) == formatBody(new)
 }
 
-// apply standard formatting to the json payload to enable easy diffing
-func formatPayload(payload string) string {
+// given a json string, unmarshal into a map and return a map of alias ->  propertyName
+func propertiesFromBody(body string) (map[string]string, error) {
 	data := map[string]interface{}{}
-	if err := json.Unmarshal([]byte(payload), &data); err != nil {
-		// ignore error and just return original payload
-		return payload
+	if err := json.Unmarshal([]byte(body), &data); err != nil {
+		return nil, err
 	}
-	payload, err := payloadFromResource(data)
+	var properties = map[string]string{}
+	for k := range data {
+		properties[k] = k
+	}
+	return properties, nil
+}
+
+// given a map of resource properties, marshal into a json string
+func bodyFromProperties(d map[string]interface{}) (string, error) {
+	body, err := json.MarshalIndent(d, "", " ")
 	if err != nil {
-		// ignore error and just return original payload
-		return payload
+		return "", err
 	}
-	return payload
+	return string(body), nil
+}
+
+// apply standard formatting to the json body to enable easy diffing
+func formatBody(body string) string {
+	data := map[string]interface{}{}
+	if err := json.Unmarshal([]byte(body), &data); err != nil {
+		// ignore error and just return original body
+		return body
+	}
+	body, err := bodyFromProperties(data)
+	if err != nil {
+		// ignore error and just return original body
+		return body
+	}
+	return body
 
 }
 
