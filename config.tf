@@ -1,16 +1,23 @@
-resource "turbot_local_directory_user" "test" {
-  "title" = "Pritha_Test_16",
-    "email" = "pritha15@turbot.com",
-    "status" = "Active",
-    "display_name" = "PrithaTest14",
-  "parent" = "170772056456165"
+resource "turbot_google_directory" "test8" {
+		"title" = "google_directory_test_provider9",
+		"profile_id_template" = "profileemal",
+		"status" = "New",
+		"directory_type" = "google",
+		"client_id" = "GoogleDirTes10",
+		"client_secret" = "fb-tbevaACsBKQHthzba-PH",
+		"parent" = "162167737252865",
+		"description" = "test Directory"
 }
-resource "turbot_local_directory_user" "test1" {
-  "title" = "Pritha_Test_18",
-    "email" = "pritha14@turbot.com",
-    "status" = "Active",
-    "display_name" = "PrithaTest14",
-  "parent" = "170772056456165"
+resource "turbot_google_directory" "test9" {
+		"title" = "google_directory_test_provider9",
+		"profile_id_template" = "profileemail",
+		"status" = "New",
+		"directory_type" = "google",
+		"client_id" = "GoogleDirTes5",
+		"client_secret" = "fb-tbevaACsBKQHthzba-PH",
+		"parent" = "162167737252865",
+		"description" = "test Directory"
 }
+
 
 

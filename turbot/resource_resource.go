@@ -222,6 +222,13 @@ func supressIfParentAkaMatches(k, old, new string, d *schema.ResourceData) bool 
 	return false
 }
 
+func suppressIfClientSecret(k, old, new string, d *schema.ResourceData) bool {
+	if old == "" {
+		return false
+	}
+	return true
+}
+
 // payload is a json string
 // apply standard formatting to old and new payloads then compare
 func suppressIfPayloadMatches(k, old, new string, d *schema.ResourceData) bool {

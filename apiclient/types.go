@@ -188,19 +188,38 @@ type LocalDirectory struct {
 }
 
 type ReadLocalDirectoryUserResponse struct {
-    Resource LocalDirectoryUser
+	Resource LocalDirectoryUser
 }
 
 type LocalDirectoryUser struct {
-    Turbot      TurbotMetadata
-    Parent      string
-    Title       string
-    Email       string
-    Status      string
-    DisplayName string
-    GivenName   string
-    MiddleName  string
-    FamilyName  string
-    Picture     string
+	Turbot      TurbotMetadata
+	Parent      string
+	Title       string
+	Email       string
+	Status      string
+	DisplayName string
+	GivenName   string
+	MiddleName  string
+	FamilyName  string
+	Picture     string
 }
 
+type ReadGoogleDirectoryResponse struct {
+	Resource GoogleDirectory
+}
+
+type GoogleDirectory struct {
+	Turbot            TurbotMetadata
+	Parent            string
+	Title             string
+	ProfileIdTemplate string
+	Description       string
+	Status            string
+	DirectoryType     string
+	ClientID          string
+	ClientSecret      string
+	PoolId            string
+	GroupIdTemplate   string
+	LoginNameTemplate string
+	HostedName        string
+}
