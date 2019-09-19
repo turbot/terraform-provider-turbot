@@ -61,46 +61,6 @@ func TestAccPolicySetting_String(t *testing.T) {
 	})
 }
 
-//func TestAccPolicySetting_Array(t *testing.T) {
-//	resource.Test(t, resource.TestCase{
-//		PreCheck:     func() { testAccPreCheck(t) },
-//		Providers:    testAccProviders,
-//		CheckDestroy: testAccCheckPolicySettingDestroy,
-//		Steps: []resource.TestStep{
-//			{
-//				Config: testAccCheckPolicySettingStringConfig(),
-//				Check: resource.ComposeTestCheckFunc(
-//					testAccCheckPolicySettingExists("turbot_policy_setting.test_policy"),
-//					resource.TestCheckResourceAttr(
-//						"turbot_policy_setting.test_policy", "value", "Skip"),
-//					resource.TestCheckResourceAttr(
-//						"turbot_policy_setting.test_policy", "precedence", "must"),
-//				),
-//			},
-//			{
-//				Config: testAccCheckPolicySettingStringUpdateConfig(),
-//				Check: resource.ComposeTestCheckFunc(
-//					testAccCheckPolicySettingExists("turbot_policy_setting.test_policy"),
-//					resource.TestCheckResourceAttr(
-//						"turbot_policy_setting.test_policy", "value", "Check: SSL Enabled"),
-//					resource.TestCheckResourceAttr(
-//						"turbot_policy_setting.test_policy", "precedence", "must"),
-//				),
-//			},
-//			{
-//				Config: testAccCheckPolicySettingStringUpdatePrecedenceConfig(),
-//				Check: resource.ComposeTestCheckFunc(
-//					testAccCheckPolicySettingExists("turbot_policy_setting.test_policy"),
-//					resource.TestCheckResourceAttr(
-//						"turbot_policy_setting.test_policy", "value", "Check: SSL Enabled"),
-//					resource.TestCheckResourceAttr(
-//						"turbot_policy_setting.test_policy", "precedence", "should"),
-//				),
-//			},
-//		},
-//	})
-//}
-
 // configs
 var resourceAka = "tmod:@turbot/turbot#/"
 var policyTypeUri = "tmod:@turbot/aws#/policy/types/accountStack"

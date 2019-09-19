@@ -200,3 +200,20 @@ type SamlDirectory struct {
 	DirectoryType     string
 	ProfileIdTemplate string
 }
+type ReadLocalDirectoryUserResponse struct {
+    Resource LocalDirectoryUser
+}
+
+type LocalDirectoryUser struct {
+    Turbot      TurbotMetadata
+    Parent      string
+    Title       string
+    Email       string
+    Status      string
+    DisplayName string
+    GivenName   string
+    MiddleName  string
+    FamilyName  string
+    Picture     string
+}
+

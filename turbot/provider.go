@@ -35,6 +35,7 @@ func Provider() terraform.ResourceProvider {
 			"turbot_resource":        resourceTurbotResource(),
 			"turbot_local_directory": resourceTurbotLocalDirectory(),
 			"turbot_profile":         resourceTurbotProfile(),
+			"turbot_local_directory_user": resourceTurbotLocalDirectoryUser(),
 			"turbot_saml_directory": resourceTurbotSamlDirectory().
 		},
 		DataSourcesMap: map[string]*schema.Resource{
