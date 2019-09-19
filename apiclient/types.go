@@ -218,3 +218,23 @@ type LocalDirectoryUser struct {
 	FamilyName  string
 	Picture     string
 }
+
+type ReadGoogleDirectoryResponse struct {
+	Resource GoogleDirectory
+}
+
+type GoogleDirectory struct {
+	Turbot            TurbotMetadata
+	Parent            string
+	Title             string
+	ProfileIdTemplate string
+	Description       string
+	Status            string
+	DirectoryType     string
+	ClientID          string
+	ClientSecret      string
+	PoolId            string
+	GroupIdTemplate   string
+	LoginNameTemplate string
+	HostedName        string
+}

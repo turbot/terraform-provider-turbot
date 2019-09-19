@@ -200,6 +200,10 @@ func supressIfParentAkaMatches(k, old, new string, d *schema.ResourceData) bool 
 	return false
 }
 
+func suppressIfClientSecret(k, old, new string, d *schema.ResourceData) bool {
+	return old != ""
+}
+
 // body is a json string
 // apply standard formatting to old and new bodys then compare
 func suppressIfBodyMatches(k, old, new string, d *schema.ResourceData) bool {

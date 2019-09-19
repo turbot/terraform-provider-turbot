@@ -1,3 +1,23 @@
+resource "turbot_google_directory" "test7" {
+		"title" = "google_directory_test_provider9",
+		"profile_id_template" = "profileemal",
+		"status" = "New",
+		"directory_type" = "google",
+		"client_id" = "GoogleDirTes10",
+		"client_secret" = "fb-tbevaACsBKQHthzba-PH",
+		"parent" = "162167737252865",
+		"description" = "test Directory"
+}
+resource "turbot_google_directory" "test9" {
+		"title" = "google_directory_test_provider9",
+		"profile_id_template" = "profileemail",
+		"status" = "New",
+		"directory_type" = "google",
+		"client_id" = "GoogleDirTes7",
+		"client_secret" = "fb-tbevaACsBKQHthzba-PH",
+		"parent" = "162167737252865",
+		"description" = "test Directory"
+}
 # resource "turbot_saml_directory" "test" {
 #   "parent"              = "tmod:@turbot/turbot#/"
 #   "profile_id_template" = "{{profile.email}}"
