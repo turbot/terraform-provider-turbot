@@ -6,7 +6,7 @@ import (
 )
 
 // these are the properties which must be passed to a create/update call
-var samlDirectoryProperties = []string{"description", "directoryType", "status", "entryPoint", "issuer", "certificate", "profileIdTemplate", "groupIdTemplate", "nameIdFormat", "signRequests", "signaturePrivateKey", "signatureAlgorithm", "poolId"}
+var samlDirectoryProperties = []string{"description", "directory_type", "status", "entry_point", "issuer", "certificate", "profile_id_template", "group_id_template", "name_id_format", "sign_requests", "signature_private_key", "signature_algorithm", "pool_id"}
 
 func resourceTurbotSamlDirectory() *schema.Resource {
 	return &schema.Resource{
@@ -39,7 +39,7 @@ func resourceTurbotSamlDirectory() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"directoryType": {
+			"directory_type": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
@@ -47,7 +47,7 @@ func resourceTurbotSamlDirectory() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"entryPoint": {
+			"entry_point": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
@@ -55,37 +55,37 @@ func resourceTurbotSamlDirectory() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"profileIdTemplate": {
+			"profile_id_template": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
 			"issuer": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
 			},
-			"groupIdTemplate": {
+			"group_id_template": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
 			},
-			"nameIdFormat": {
+			"name_id_format": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
 			},
-			"signRequests": {
+			"sign_requests": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
 			},
-			"signaturePrivateKey": {
+			"signature_private_key": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
 			},
-			"signatureAlgorithm": {
+			"signature_algorithm": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
 			},
-			"poolId": {
+			"pool_id": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
 			},
 		},
 	}

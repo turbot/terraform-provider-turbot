@@ -2,11 +2,13 @@ package apiclient
 
 import (
 	"fmt"
+	"log"
 )
 
 func (client *Client) CreateSamlDirectory(parent string, data map[string]interface{}) (*TurbotMetadata, error) {
 	query := createResourceMutation()
 	responseData := &CreateResourceResponse{}
+	log.Println("data%%%: ", data)
 	var commandPayload = map[string]interface{}{
 		"data": data,
 	}
@@ -22,6 +24,7 @@ func (client *Client) CreateSamlDirectory(parent string, data map[string]interfa
 	}
 
 	// execute api call
+	log.Println("CreateSamlDirectory: ", variables)
 	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error creating folder: %s", err.Error())
 	}

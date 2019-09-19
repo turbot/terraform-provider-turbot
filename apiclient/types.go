@@ -199,21 +199,22 @@ type SamlDirectory struct {
 	Status            string
 	DirectoryType     string
 	ProfileIdTemplate string
+	EntryPoint        string
+	Certificate       string
 }
 type ReadLocalDirectoryUserResponse struct {
-    Resource LocalDirectoryUser
+	Resource LocalDirectoryUser
 }
 
 type LocalDirectoryUser struct {
-    Turbot      TurbotMetadata
-    Parent      string
-    Title       string
-    Email       string
-    Status      string
-    DisplayName string
-    GivenName   string
-    MiddleName  string
-    FamilyName  string
-    Picture     string
+	Turbot      TurbotMetadata
+	Parent      string
+	Title       string
+	Email       string
+	Status      string
+	DisplayName string
+	GivenName   string
+	MiddleName  string
+	FamilyName  string
+	Picture     string
 }
-
