@@ -1,12 +1,16 @@
-# resource "turbot_profile" "test" {
-#   "parent" = "tmod:@turbot/turbot#/",
-#   "title" = "Severus Snape",
-#   "display_name" = "Severus M Snape",
-#   "email" = "severus.slytherin@hogwards.com",
-#   "given_name" = "Severus Snape",
-#   "family_name" = "Snape",
-#   "directory_pool_id" = "snapeseverus",
-#   "status" = "Active",
-#   "profile_id" = "170759063660234",
-# }
+resource "turbot_local_directory_user" "test" {
+  "title" = "Pritha_Test_16",
+    "email" = "pritha15@turbot.com",
+    "status" = "Active",
+    "display_name" = "PrithaTest14",
+  "parent" = "170772056456165"
+}
+resource "turbot_local_directory_user" "test1" {
+  "title" = "Pritha_Test_18",
+    "email" = "pritha14@turbot.com",
+    "status" = "Active",
+    "display_name" = "PrithaTest14",
+  "parent" = "170772056456165"
+}
+
 
