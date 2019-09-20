@@ -207,6 +207,19 @@ func createResourceMutation() string {
 }`
 }
 
+// create grant
+func createGrantMutation() string {
+	return `mutation CreateGrant($createGrantCommand: GrantCommandInput) {
+	grants: grantCreate(command: $createGrantCommand) {
+		items{
+			turbot{
+				id
+			}
+		}
+	}
+}`
+}
+
 // update resource
 func updateResourceMutation() string {
 	return `mutation UpsertResource($command: ResourceCommandInput) {
@@ -254,4 +267,17 @@ func readFullResourceQuery(aka string) string {
     turbot: get(path:"turbot")
   }
 }`, aka)
+}
+
+func readGrantQuery(aka string) string {
+	return fmt.Sprintf(`{
+		grant: grant(id:"%s") {
+			permissionTypeId
+			permissionLevelId
+				turbot{
+					resourceId,
+					profileId
+				}
+		}
+	  }`, aka)
 }

@@ -44,13 +44,25 @@ type PolicySetting struct {
 	Note               string
 	ValidFromTimestamp string
 	ValidToTimestamp   string
-	Turbot             TurbotMetadata
+	Turbot             TurbotPolicyMetadata
 }
 
-type TurbotMetadata struct {
+type TurbotResourceMetadata struct {
 	Id       string
 	ParentId string
 	Akas     []string
+}
+
+type TurbotPolicyMetadata struct {
+	Id       string
+	ParentId string
+	Akas     []string
+}
+
+type TurbotGrantMetadata struct {
+	Id         string
+	ProfileId  string
+	ResourceId string
 }
 
 // PolicyValueResponse: must be consistent with fields defined in readPolicyValueQuery
@@ -65,7 +77,7 @@ type PolicyValue struct {
 	Reason     string
 	Details    string
 	Setting    PolicySetting
-	Turbot     TurbotMetadata
+	Turbot     TurbotPolicyMetadata
 }
 
 // InstallModResponse: must be consistent with with fields defined in installModMutation
@@ -75,7 +87,7 @@ type InstallModResponse struct {
 
 type InstallModData struct {
 	Build  string
-	Turbot TurbotMetadata
+	Turbot TurbotResourceMetadata
 }
 
 type ReadModResponse struct {
@@ -109,13 +121,21 @@ type Mod struct {
 
 type CreateResourceResponse struct {
 	Resource struct {
-		Turbot TurbotMetadata
+		Turbot TurbotResourceMetadata
+	}
+}
+
+type CreateGrantResponse struct {
+	Grant struct {
+		Items []struct {
+			Turbot TurbotGrantMetadata
+		}
 	}
 }
 
 type UpdateResourceResponse struct {
 	Resource struct {
-		Turbot TurbotMetadata
+		Turbot TurbotResourceMetadata
 	}
 }
 
@@ -130,13 +150,13 @@ type ReadFullResourceResponse struct {
 }
 
 type Resource struct {
-	Turbot TurbotMetadata
+	Turbot TurbotResourceMetadata
 	Data   map[string]interface{}
 }
 
 type FullResource struct {
 	Object interface{}
-	Turbot TurbotMetadata
+	Turbot TurbotResourceMetadata
 }
 
 type ReadFolderResponse struct {
@@ -144,7 +164,7 @@ type ReadFolderResponse struct {
 }
 
 type Profile struct {
-	Turbot          TurbotMetadata
+	Turbot          TurbotResourceMetadata
 	Title           string
 	Parent          string
 	Status          string
@@ -167,7 +187,7 @@ type FindFolderResponse struct {
 }
 
 type Folder struct {
-	Turbot      TurbotMetadata
+	Turbot      TurbotResourceMetadata
 	Title       string
 	Description string
 	Parent      string
@@ -178,7 +198,7 @@ type ReadLocalDirectoryResponse struct {
 }
 
 type LocalDirectory struct {
-	Turbot            TurbotMetadata
+	Turbot            TurbotResourceMetadata
 	Title             string
 	Description       string
 	Parent            string
@@ -237,4 +257,16 @@ type GoogleDirectory struct {
 	GroupIdTemplate   string
 	LoginNameTemplate string
 	HostedName        string
+}
+
+type ReadGrantResponse struct {
+	Resource Grant
+}
+
+type Grant struct {
+	Turbot            TurbotGrantMetadata
+	PermissionTypeId  string
+	PermissionLevelId string
+	Parent            string
+	ProfileId         string
 }

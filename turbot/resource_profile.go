@@ -106,10 +106,13 @@ func resourceTurbotProfileCreate(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(turbotMetadata.ParentId, d, meta); err != nil {
+	// set parent_akas property by loading resource resource and fetching the akas
+	parent_Akas, err := client.GetResourceAkas(turbotMetadata.ParentId)
+	if err != nil {
 		return err
 	}
+	// assign parent_akas
+	d.Set("parent_akas", parent_Akas)
 
 	// assign the id
 	d.SetId(turbotMetadata.Id)
@@ -130,10 +133,13 @@ func resourceTurbotProfileUpdate(d *schema.ResourceData, meta interface{}) error
 	if err != nil {
 		return err
 	}
-	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(turbotMetadata.ParentId, d, meta); err != nil {
+	// set parent_akas property by loading resource resource and fetching the akas
+	parent_Akas, err := client.GetResourceAkas(turbotMetadata.ParentId)
+	if err != nil {
 		return err
 	}
+	// assign parent_akas
+	d.Set("parent_akas", parent_Akas)
 	return nil
 }
 
@@ -152,10 +158,13 @@ func resourceTurbotProfileRead(d *schema.ResourceData, meta interface{}) error {
 
 	// assign results back into ResourceData
 
-	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(profile.Turbot.ParentId, d, meta); err != nil {
+	/// set parent_akas property by loading resource resource and fetching the akas
+	parent_Akas, err := client.GetResourceAkas(profile.Turbot.ParentId)
+	if err != nil {
 		return err
 	}
+	// assign parent_akas
+	d.Set("parent_akas", parent_Akas)
 	d.Set("parent", profile.Parent)
 	d.Set("title", profile.Title)
 	d.Set("status", profile.Status)

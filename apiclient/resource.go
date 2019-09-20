@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/mitchellh/mapstructure"
+	"log"
 )
 
-func (client *Client) CreateResource(typeAka, parentAka, payload string) (*TurbotMetadata, error) {
+func (client *Client) CreateResource(typeAka, parentAka, payload string) (*TurbotResourceMetadata, error) {
 	query := createResourceMutation()
 	responseData := &CreateResourceResponse{}
 
@@ -130,12 +131,18 @@ func (client *Client) ResourceExists(id string) (bool, error) {
 	return exists, nil
 }
 
-func (client *Client) GetResourceAkas(id string) ([]string, error) {
-	resource, err := client.ReadResource(id, nil)
+func (client *Client) GetResourceAkas(ResourceId string) ([]string, error) {
+	parent, err := client.ReadResource(ResourceId, nil)
 	if err != nil {
+		log.Printf("[ERROR] Failed to load parentAka resource; %s", err)
 		return nil, err
 	}
-	return resource.Turbot.Akas, nil
+	parent_Akas := parent.Turbot.Akas
+	// if this resource has no akas, just use the id
+	if parent_Akas == nil {
+		parent_Akas = []string{ResourceId}
+	}
+	return parent_Akas, nil
 }
 
 // assign the ReadResource results into a Resource object, based on the 'properties' map

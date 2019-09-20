@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func (client *Client) CreateLocalDirectory(parent string, data map[string]interface{}) (*TurbotMetadata, error) {
+func (client *Client) CreateLocalDirectory(parent string, data map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := createResourceMutation()
 	responseData := &CreateResourceResponse{}
 	var commandPayload = map[string]interface{}{
@@ -48,7 +48,7 @@ func (client *Client) ReadLocalDirectory(id string) (*LocalDirectory, error) {
 	return &responseData.Resource, nil
 }
 
-func (client *Client) UpdateDirectory(id, parent string, data map[string]interface{}) (*TurbotMetadata, error) {
+func (client *Client) UpdateDirectory(id, parent string, data map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := updateResourceMutation()
 	responseData := &UpdateResourceResponse{}
 	var commandPayload = map[string]map[string]interface{}{

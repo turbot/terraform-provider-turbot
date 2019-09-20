@@ -77,10 +77,13 @@ func resourceTurbotLocalDirectoryCreate(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
-	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(turbotMetadata.ParentId, d, meta); err != nil {
+	// set parent_akas property by loading resource resource and fetching the akas
+	parent_Akas, err := client.GetResourceAkas(turbotMetadata.ParentId)
+	if err != nil {
 		return err
 	}
+	// assign parent_akas
+	d.Set("parent_akas", parent_Akas)
 
 	// assign the id
 	d.SetId(turbotMetadata.Id)
@@ -101,10 +104,13 @@ func resourceTurbotLocalDirectoryUpdate(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return err
 	}
-	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(turbotMetadata.ParentId, d, meta); err != nil {
+	// set parent_akas property by loading resource resource and fetching the akas
+	parent_Akas, err := client.GetResourceAkas(turbotMetadata.ParentId)
+	if err != nil {
 		return err
 	}
+	// assign parent_akas
+	d.Set("parent_akas", parent_Akas)
 	return nil
 }
 
@@ -123,10 +129,13 @@ func resourceTurbotLocalDirectoryRead(d *schema.ResourceData, meta interface{}) 
 
 	// assign results back into ResourceData
 
-	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(localDirectory.Turbot.ParentId, d, meta); err != nil {
+	// set parent_akas property by loading resource resource and fetching the akas
+	parent_Akas, err := client.GetResourceAkas(localDirectory.Turbot.ParentId)
+	if err != nil {
 		return err
 	}
+	// assign parent_akas
+	d.Set("parent_akas", parent_Akas)
 	d.Set("parent", localDirectory.Parent)
 	d.Set("title", localDirectory.Title)
 	return nil

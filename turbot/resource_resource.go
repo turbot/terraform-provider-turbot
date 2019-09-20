@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/iancoleman/strcase"
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
-	"log"
 )
 
 func resourceTurbotResource() *schema.Resource {
@@ -68,10 +67,13 @@ func resourceTurbotResourceCreate(d *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 
-	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(turbotMetadata.ParentId, d, meta); err != nil {
+	// set parent_akas property by loading resource resource and fetching the akas
+	parent_Akas, err := client.GetResourceAkas(turbotMetadata.ParentId)
+	if err != nil {
 		return err
 	}
+	// assign parent_akas
+	d.Set("parent_akas", parent_Akas)
 
 	// assign the id
 	d.SetId(turbotMetadata.Id)
@@ -108,10 +110,13 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 
 	// assign results back into ResourceData
 
-	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(resource.Turbot.ParentId, d, meta); err != nil {
+	// set parent_akas property by loading resource resource and fetching the akas
+	parent_Akas, err := client.GetResourceAkas(resource.Turbot.ParentId)
+	if err != nil {
 		return err
 	}
+	// assign parent_akas
+	d.Set("parent_akas", parent_Akas)
 	d.Set("parent", resource.Turbot.ParentId)
 	d.Set("body", body)
 
@@ -129,10 +134,13 @@ func resourceTurbotResourceUpdate(d *schema.ResourceData, meta interface{}) erro
 	if err != nil {
 		return err
 	}
-	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(turbotMetadata.ParentId, d, meta); err != nil {
+	// set parent_akas property by loading resource resource and fetching the akas
+	parent_Akas, err := client.GetResourceAkas(turbotMetadata.ParentId)
+	if err != nil {
 		return err
 	}
+	// assign parent_akas
+	d.Set("parent_akas", parent_Akas)
 	return nil
 }
 

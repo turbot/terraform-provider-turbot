@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-func (client *Client) CreateProfile(parent string, data map[string]interface{}) (*TurbotMetadata, error) {
+func (client *Client) CreateProfile(parent string, data map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := createResourceMutation()
 	responseData := &CreateResourceResponse{}
 	var commandPayload = map[string]interface{}{
@@ -51,7 +51,7 @@ func (client *Client) ReadProfile(id string) (*Profile, error) {
 	return &responseData.Resource, nil
 }
 
-func (client *Client) UpdateProfile(id, parent string, data map[string]interface{}) (*TurbotMetadata, error) {
+func (client *Client) UpdateProfile(id, parent string, data map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := updateResourceMutation()
 	responseData := &UpdateResourceResponse{}
 	var commandPayload = map[string]map[string]interface{}{
