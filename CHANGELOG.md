@@ -1,6 +1,6 @@
 
 
-## 1.0.0-beta.3 (TBD)
+## 1.0.0-beta.3 (September 20, 2019)
 
 FEATURES:
 * **New Resource:** `turbot_saml_directory` ([#34](https://github.com/turbotio/terraform-provider-turbot/issues/34))
