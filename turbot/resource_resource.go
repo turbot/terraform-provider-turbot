@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/encryption"
 	"github.com/iancoleman/strcase"
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
 )
@@ -304,3 +305,15 @@ func removeProperties(properties, excluded []string) []string {
 //	return i < len(s) && s[i] == searchterm
 //
 //}
+
+func encryptedKey(d, pgp string) (string, string, error) {
+	encryptionKey, err := encryption.RetrieveGPGKey(pgp)
+	if err != nil {
+		return "", "", err
+	}
+	fingerprint, encrypted, err := encryption.EncryptValue(encryptionKey, d, "Secret Key")
+	if err != nil {
+		return "", "", err
+	}
+	return fingerprint, encrypted, nil
+}

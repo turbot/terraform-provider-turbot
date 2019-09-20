@@ -34,6 +34,7 @@ func (client *Client) ReadGoogleDirectory(id string) (*GoogleDirectory, error) {
 		"directoryType":     "directoryType",
 		"profileIdTemplate": "profileIdTemplate",
 		"clientID":          "clientID",
+	//	"clientSecret":      "clientSecret",
 		"poolId":            "poolId",
 		"groupIdTemplate":   "groupIdTemplate",
 		"loginNameTemplate": "loginNameTemplate",
