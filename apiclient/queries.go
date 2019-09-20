@@ -136,7 +136,7 @@ func readPolicyValueQuery(policyTypeUri string, resourceId string) string {
         details
         setting {
 		  valueSource
-          turbot {	
+          turbot {
             id
           }
         }

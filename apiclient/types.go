@@ -143,6 +143,23 @@ type ReadFolderResponse struct {
 	Resource Folder
 }
 
+type Profile struct {
+	Turbot          TurbotMetadata
+	Title           string
+	Parent          string
+	Status          string
+	Email           string
+	GivenName       string
+	DisplayName     string
+	FamilyName      string
+	DirectoryPoolId string
+	ProfileId       string
+}
+
+type ReadProfileResponse struct {
+	Resource Profile
+}
+
 type FindFolderResponse struct {
 	Folders struct {
 		Items []Folder
@@ -168,4 +185,56 @@ type LocalDirectory struct {
 	Status            string
 	DirectoryType     string
 	ProfileIdTemplate string
+}
+
+type ReadSamlDirectoryResponse struct {
+	Resource SamlDirectory
+}
+
+type SamlDirectory struct {
+	Turbot            TurbotMetadata
+	Title             string
+	Description       string
+	Parent            string
+	Status            string
+	DirectoryType     string
+	ProfileIdTemplate string
+	EntryPoint        string
+	Certificate       string
+}
+type ReadLocalDirectoryUserResponse struct {
+	Resource LocalDirectoryUser
+}
+
+type LocalDirectoryUser struct {
+	Turbot      TurbotMetadata
+	Parent      string
+	Title       string
+	Email       string
+	Status      string
+	DisplayName string
+	GivenName   string
+	MiddleName  string
+	FamilyName  string
+	Picture     string
+}
+
+type ReadGoogleDirectoryResponse struct {
+	Resource GoogleDirectory
+}
+
+type GoogleDirectory struct {
+	Turbot            TurbotMetadata
+	Parent            string
+	Title             string
+	ProfileIdTemplate string
+	Description       string
+	Status            string
+	DirectoryType     string
+	ClientID          string
+	ClientSecret      string
+	PoolId            string
+	GroupIdTemplate   string
+	LoginNameTemplate string
+	HostedName        string
 }

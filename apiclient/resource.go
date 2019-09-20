@@ -33,7 +33,7 @@ func (client *Client) CreateResource(typeAka, parentAka, payload string) (*Turbo
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating folder: %s", err.Error())
+		return nil, fmt.Errorf("error creating resource: %s", err.Error())
 	}
 	return &responseData.Resource.Turbot, nil
 }
@@ -55,6 +55,7 @@ func (client *Client) ReadResource(aka string, properties map[string]string) (*R
 	return resource, nil
 }
 
+// todo replace with empty get()
 func (client *Client) ReadFullResource(aka string) (*FullResource, error) {
 	query := readFullResourceQuery(aka)
 	var responseData = &ReadFullResourceResponse{}
@@ -65,28 +66,6 @@ func (client *Client) ReadFullResource(aka string) (*FullResource, error) {
 	}
 
 	return &responseData.Resource, nil
-}
-
-func (client *Client) DeleteResource(aka string) error {
-	query := deleteResourceMutation()
-	var responseData interface{}
-
-	commandPayload := map[string]string{
-		"aka": aka,
-	}
-	commandMeta := map[string]string{}
-	variables := map[string]interface{}{
-		"command": map[string]interface{}{
-			"payload": commandPayload,
-			"meta":    commandMeta,
-		},
-	}
-
-	// execute api call
-	if err := client.doRequest(query, variables, &responseData); err != nil {
-		return fmt.Errorf("error deleting folder: %s", err.Error())
-	}
-	return nil
 }
 
 func (client *Client) UpdateResource(id, typeAka, parentAka, payload string) (*TurbotMetadata, error) {
@@ -118,6 +97,28 @@ func (client *Client) UpdateResource(id, typeAka, parentAka, payload string) (*T
 		return nil, fmt.Errorf("error creating folder: %s", err.Error())
 	}
 	return &responseData.Resource.Turbot, nil
+}
+
+func (client *Client) DeleteResource(aka string) error {
+	query := deleteResourceMutation()
+	var responseData interface{}
+
+	commandPayload := map[string]string{
+		"aka": aka,
+	}
+	commandMeta := map[string]string{}
+	variables := map[string]interface{}{
+		"command": map[string]interface{}{
+			"payload": commandPayload,
+			"meta":    commandMeta,
+		},
+	}
+
+	// execute api call
+	if err := client.doRequest(query, variables, &responseData); err != nil {
+		return fmt.Errorf("error deleting folder: %s", err.Error())
+	}
+	return nil
 }
 
 func (client *Client) ResourceExists(id string) (bool, error) {
