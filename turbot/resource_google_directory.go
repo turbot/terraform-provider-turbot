@@ -60,8 +60,8 @@ func resourceGoogleDirectory() *schema.Resource {
 				Required: true,
 			},
 			"client_secret": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:             schema.TypeString,
+				Required:         true,
 				DiffSuppressFunc: suppressIfClientSecret,
 			},
 			"pool_id": {

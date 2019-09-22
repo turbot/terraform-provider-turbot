@@ -2,10 +2,10 @@ package turbot
 
 import (
 	"fmt"
-	"log"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	apiClient "github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"log"
 )
 
 func Provider() terraform.ResourceProvider {
