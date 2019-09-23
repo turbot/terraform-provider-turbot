@@ -28,7 +28,7 @@ func resourceTurbotGrant() *schema.Resource {
 				ForceNew:         true,
 			},
 			// when doing a read, fetch the resource akas to use in supressIfresourceAkaMatches()
-			"parent_akas": {
+			"resource_akas": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Schema{
