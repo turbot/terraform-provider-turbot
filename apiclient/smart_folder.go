@@ -2,6 +2,7 @@ package apiclient
 
 import (
 	"fmt"
+	"log"
 )
 
 func (client *Client) CreateSmartFolder(parent string, data map[string]interface{}) (*TurbotMetadata, error) {
@@ -16,9 +17,11 @@ func (client *Client) CreateSmartFolder(parent string, data map[string]interface
 	variables := map[string]interface{}{
 		"command": map[string]interface{}{
 			"payload": commandPayload,
-			"meta":    commandMeta,
+			"meta":    commandMeta
 		},
 	}
+
+	log.Println("resource", variables)
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
