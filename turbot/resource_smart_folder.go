@@ -7,7 +7,7 @@ import (
 
 // properties which must be passed to a create/update call
 var smartFolderProperties = []string{"title", "description", "filters"}
-     
+
 func resourceTurbotSmartFolder() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceTurbotSmartFolderCreate,
@@ -43,8 +43,8 @@ func resourceTurbotSmartFolder() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"filters": {
-				Type:     schema.TypeMap,
+			"filter": {
+				Type:     schema.TypeList,
 				Required: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,

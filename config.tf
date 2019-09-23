@@ -13,9 +13,9 @@
 # }
 
 
-resource "turbot_smart_folder" "test-"{
+resource "turbot_smart_folder" "test"{
   "title" = "smart_folder",
-  "filters" = " - 'arn:aws:iam::013122550996:user/pratik/accesskey/AKIAQGDRKHTKBON32K3J' ",
+  "filter" = [" - 'arn:aws:iam::013122550996:user/pratik/accesskey/AKIAQGDRKHTKBON32K3J' "],
   "description" = "Smart Folder",
   "parent" = "tmod:@turbot/turbot#/"
 }
