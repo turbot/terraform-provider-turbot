@@ -169,6 +169,10 @@ type ReadFolderResponse struct {
 	Resource Folder
 }
 
+type ReadSmartFolderResponse struct {
+	Resource SmartFolder
+}
+
 type Profile struct {
 	Turbot          TurbotResourceMetadata
 	Title           string
@@ -192,10 +196,24 @@ type FindFolderResponse struct {
 	}
 }
 
+type FindSmartFolderResponse struct {
+	SmartFolders struct {
+		Items []SmartFolders
+	}
+}
+
 type Folder struct {
 	Turbot      TurbotResourceMetadata
 	Title       string
 	Description string
+	Parent      string
+}
+
+type SmartFolder struct {
+	Turbot      TurbotMetadata
+	Title       string
+	Description string
+	Rules        map[string]interface{}
 	Parent      string
 }
 

@@ -39,6 +39,7 @@ func Provider() terraform.ResourceProvider {
 			"turbot_google_directory":     resourceGoogleDirectory(),
 			"turbot_saml_directory":       resourceTurbotSamlDirectory(),
 			"turbot_shadow_resource":      resourceTurbotShadowResource(),
+			"turbot_smart_folder":		   resourceTurbotSmartFolder(),
 			"turbot_grant":                resourceTurbotGrant(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
