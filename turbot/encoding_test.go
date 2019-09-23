@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func EncodingTest(t *testing.T) error {
+func TestEncoding(t *testing.T) {
 	var requestBody bytes.Buffer
 	var queryObj = map[string]interface{}{
 		"body": "test",
@@ -30,5 +30,4 @@ func EncodingTest(t *testing.T) error {
 	json.NewDecoder(&requestBody).Decode(&op)
 	log.Println("Decoded", requestBodyObj)
 	log.Println("Decoded", op)
-	return nil
 }
