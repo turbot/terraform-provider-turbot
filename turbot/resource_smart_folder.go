@@ -6,8 +6,8 @@ import (
 )
 
 // properties which must be passed to a create/update call
-var smartFolderProperties = map[string] interface{}{"title", "description", "rules"}
-
+var smartFolderProperties = []string{"title", "description", "filters"}
+     
 func resourceTurbotSmartFolder() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceTurbotSmartFolderCreate,
@@ -19,15 +19,15 @@ func resourceTurbotSmartFolder() *schema.Resource {
 			State: resourceTurbotSmartFolderImport,
 		},
 		Schema: map[string]*schema.Schema{
-			// aka of the parent resource
-			// "parent": {
-			// 	Type:     schema.TypeString,
-			// 	Required: true,
-			// 	// when doing a diff, the state file will contain the id of the parent bu tthe config contains the aka,
-			// 	// so we need custom diff code
-			// 	DiffSuppressFunc: supressIfParentAkaMatches,
-			// },
-			// when doing a read, fetch the parent akas to use in supressIfParentAkaMatches()
+			//aka of the parent resource
+			"parent": {
+				Type:     schema.TypeString,
+				Required: true,
+				// when doing a diff, the state file will contain the id of the parent bu tthe config contains the aka,
+				// so we need custom diff code
+				DiffSuppressFunc: supressIfParentAkaMatches,
+			},
+			//when doing a read, fetch the parent akas to use in supressIfParentAkaMatches()
 			"parent_akas": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -41,16 +41,15 @@ func resourceTurbotSmartFolder() *schema.Resource {
 			},
 			"description": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
-			"rules":{
+			"filters": {
 				Type:     schema.TypeMap,
 				Required: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-			}
-
+			},
 		},
 	}
 }
@@ -61,27 +60,26 @@ func resourceTurbotSmartFolderExists(d *schema.ResourceData, meta interface{}) (
 	return client.ResourceExists(id)
 }
 
-// func resourceTurbotSmartFolderCreate(d *schema.ResourceData, meta interface{}) error {
-// 	client := meta.(*apiclient.Client)
-// 	parentAka := d.Get("parent").(string)
-// 	// build map of folder properties
-// 	data := mapFromResourceData(d, folderProperties)
-// 	// create folder returns turbot resource metadata containing the id
-// 	turbotMetadata, err := client.CreateFolder(parentAka, data)
-// 	if err != nil {
-// 		return err
-// 	}
+func resourceTurbotSmartFolderCreate(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*apiclient.Client)
+	parentAka := d.Get("parent").(string)
+	// build map of folder properties
+	data := mapFromResourceData(d, folderProperties)
+	// create folder returns turbot resource metadata containing the id
+	turbotMetadata, err := client.CreateSmartFolder(parentAka, data)
+	if err != nil {
+		return err
+	}
 
-// 	// set parent_akas property by loading parent resource and fetching the akas
-// 	if err = setParentAkas(turbotMetadata.ParentId, d, meta); err != nil {
-// 		return err
-// 	}
+	// set parent_akas property by loading parent resource and fetching the akas
+	if err = setParentAkas(turbotMetadata.ParentId, d, meta); err != nil {
+		return err
+	}
 
-// 	// assign the id
-// 	d.SetId(turbotMetadata.Id)
-
-// 	return nil
-// }
+	// assign the id
+	d.SetId(turbotMetadata.Id)
+	return nil
+}
 
 func resourceTurbotSmartFolderUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
@@ -89,10 +87,10 @@ func resourceTurbotSmartFolderUpdate(d *schema.ResourceData, meta interface{}) e
 	id := d.Id()
 
 	// build map of folder properties
-	data := mapFromResourceData(d, folderProperties)
+	data := mapFromResourceData(d, smartFolderProperties)
 
 	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.UpdateFolder(id, parentAka, data)
+	turbotMetadata, err := client.UpdateSmartFolder(id, parentAka, data)
 	if err != nil {
 		return err
 	}
@@ -107,7 +105,7 @@ func resourceTurbotSmartFolderRead(d *schema.ResourceData, meta interface{}) err
 	client := meta.(*apiclient.Client)
 	id := d.Id()
 
-	folder, err := client.ReadFolder(id)
+	smartFolder, err := client.ReadSmartFolder(id)
 	if err != nil {
 		if apiclient.NotFoundError(err) {
 			// folder was not found - clear id
@@ -117,14 +115,14 @@ func resourceTurbotSmartFolderRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	// assign results back into ResourceData
-
 	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(folder.Turbot.ParentId, d, meta); err != nil {
+	if err = setParentAkas(smartFolder.Turbot.ParentId, d, meta); err != nil {
 		return err
 	}
-	d.Set("rules", folder.Rules)
-	d.Set("title", folder.Title)
-	d.Set("description", folder.Description)
+	d.Set("parent_id", smartFolder.Parent)
+	d.Set("filters", smartFolder.Filters)
+	d.Set("title", smartFolder.Title)
+	d.Set("description", smartFolder.Description)
 
 	return nil
 }

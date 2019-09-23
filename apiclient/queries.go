@@ -107,7 +107,31 @@ func deletePolicySettingMutation() string {
 		}
 	}
 }`
+}
 
+// create smart folder mutation
+func createSmartFolderMutation() string {
+	return fmt.Sprintf(`mutation CreateSmartFolder($createsmartFolderCommand: SmartFolderCommandInput) {
+		smartFolderCreate(command: $createsmartFolderCommand) {
+			object
+			turbot {
+				title
+			}
+		}
+	}`)
+}
+
+//update smart folder mutation
+
+func updateSmartFolderMutation() string {
+	return fmt.Sprintf(`mutation UpdateSmartFolder($updateSmartFolderCommand: SmartFolderCommandInput) {
+		smartFolderUpdate(command: $updateSmartFolderCommand) {
+			object
+			turbot {
+				title
+			}
+		}
+	}`)
 }
 
 func findPolicySettingQuery(policyTypeUri, resourceAka string) string {

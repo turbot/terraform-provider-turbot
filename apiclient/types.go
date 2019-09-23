@@ -198,7 +198,7 @@ type FindFolderResponse struct {
 
 type FindSmartFolderResponse struct {
 	SmartFolders struct {
-		Items []SmartFolders
+		Items []SmartFolder
 	}
 }
 
@@ -213,7 +213,7 @@ type SmartFolder struct {
 	Turbot      TurbotMetadata
 	Title       string
 	Description string
-	Rules        map[string]interface{}
+	Filters     map[string]interface{}
 	Parent      string
 }
 
