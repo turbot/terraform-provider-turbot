@@ -22,7 +22,7 @@ func TestAccSmartFolder(t *testing.T) {
 					resource.TestCheckResourceAttr("turbot_smart_folder.test", "title", "smart_folder"),
 					resource.TestCheckResourceAttr("turbot_smart_folder.test", "description", "Smart Folder Testing"),
 					resource.TestCheckResourceAttr("turbot_smart_folder.test", "parent", "tmod:@turbot/turbot#/"),
-					resource.TestCheckResourceAttr("turbot_smart_folder.test", "filters", "- 'arn:aws:iam::013122550996:user/pratik/accesskey/AKIAQGDRKHTKBON32K3J' "),
+					resource.TestCheckResourceAttr("turbot_smart_folder.test", "filters", "arn:aws:iam::013122550996:user/pratik/accesskey/AKIAQGDRKHTKBON32K3J"),
 				),
 			},
 			{
@@ -51,10 +51,10 @@ func testAccSmartFolderConfig() string {
 func testAccSmartFolderUpdateDescConfig() string {
 	return `
 	resource "turbot_smart_folder" "test" {
-		parent  = 				"tmod:@turbot/turbot#/"
-		filters = 				" - 'arn:aws:iam::013122550996:user/pratik/accesskey/AKIAQGDRKHTKBON32K3J' ",
-		description =     "Smart Folder updated"
-		title = 					"smart_folder"
+		parent  = "tmod:@turbot/turbot#/"
+		filters = ["arn:aws:iam::013122550996:user/pratik/accesskey/AKIAQGDRKHTKBON32K3J"]
+		description = "Smart Folder updated"
+		title ="smart_folder"
 	}
 `
 }
