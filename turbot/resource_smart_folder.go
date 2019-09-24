@@ -43,7 +43,7 @@ func resourceTurbotSmartFolder() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"filter": {
+			"filters": {
 				Type:     schema.TypeList,
 				Required: true,
 				Elem: &schema.Schema{

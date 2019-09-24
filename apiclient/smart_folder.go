@@ -17,7 +17,7 @@ func (client *Client) CreateSmartFolder(parent string, data map[string]interface
 	variables := map[string]interface{}{
 		"command": map[string]interface{}{
 			"payload": commandPayload,
-			"meta":    commandMeta
+			"meta":    commandMeta,
 		},
 	}
 

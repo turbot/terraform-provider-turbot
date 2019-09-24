@@ -111,11 +111,13 @@ func deletePolicySettingMutation() string {
 
 // create smart folder mutation
 func createSmartFolderMutation() string {
-	return fmt.Sprintf(`mutation CreateSmartFolder($createsmartFolderCommand: SmartFolderCommandInput) {
-		smartFolderCreate(command: $createsmartFolderCommand) {
+	return fmt.Sprintf(`mutation CreateSmartFolder($command: SmartFolderCommandInput) {
+		smartFolderCreate(command: $command) {
 			object
 			turbot {
-				title
+				id
+				parentId
+				akas
 			}
 		}
 	}`)
@@ -126,9 +128,10 @@ func createSmartFolderMutation() string {
 func updateSmartFolderMutation() string {
 	return fmt.Sprintf(`mutation UpdateSmartFolder($updateSmartFolderCommand: SmartFolderCommandInput) {
 		smartFolderUpdate(command: $updateSmartFolderCommand) {
-			object
 			turbot {
-				title
+				id
+				parentId
+				akas
 			}
 		}
 	}`)
@@ -255,7 +258,7 @@ func updateResourceMutation() string {
 		turbot {
 		  id
 		  parentId
-          akas
+      akas
 		}
 	}
 }`
