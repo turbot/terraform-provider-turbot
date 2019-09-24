@@ -24,6 +24,9 @@ func (client *Client) CreateGrant(profileId, parent string, data map[string]inte
 	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error creating grant: %s", err.Error())
 	}
+	//ret := TurbotGrantMetadata{
+	//	Id: "testID",
+	//}
 	return &responseData.Grants.Items[0].Turbot, nil
 }
 

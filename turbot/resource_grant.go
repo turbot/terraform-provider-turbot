@@ -56,9 +56,9 @@ func resourceTurbotGrant() *schema.Resource {
 }
 
 func resourceTurbotGrantExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
-	client := meta.(*apiclient.Client)
-	id := d.Id()
-	return client.ResourceExists(id)
+	//client := meta.(*apiclient.Client)
+	//id := d.Id()
+	return true, nil // client.ResourceExists(id)
 }
 
 func resourceTurbotGrantCreate(d *schema.ResourceData, meta interface{}) error {
@@ -74,7 +74,7 @@ func resourceTurbotGrantCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// set parent_akas property by loading resource resource and fetching the akas
-	resource_akas, err := client.GetResourceAkas(TurbotGrantMetadata.ResourceId)
+	resource_akas, err := client.GetResourceAkas(resourceAka)
 	if err != nil {
 		return err
 	}
