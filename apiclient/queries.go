@@ -112,8 +112,7 @@ func deletePolicySettingMutation() string {
 // create smart folder mutation
 func createSmartFolderMutation() string {
 	return fmt.Sprintf(`mutation CreateSmartFolder($command: SmartFolderCommandInput) {
-		smartFolderCreate(command: $command) {
-			object
+		smartFolder: smartFolderCreate(command: $command) {
 			turbot {
 				id
 				parentId

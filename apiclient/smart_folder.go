@@ -7,7 +7,7 @@ import (
 
 func (client *Client) CreateSmartFolder(parent string, data map[string]interface{}) (*TurbotMetadata, error) {
 	query := createSmartFolderMutation()
-	responseData := &CreateResourceResponse{}
+	responseData := &CreateSmartFolderResponse{}
 	var commandPayload = map[string]interface{}{
 		"data": data,
 	}
@@ -27,7 +27,7 @@ func (client *Client) CreateSmartFolder(parent string, data map[string]interface
 	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error creating folder: %s", err.Error())
 	}
-	return &responseData.Resource.Turbot, nil
+	return &responseData.SmartFolder.Turbot, nil
 }
 
 func (client *Client) ReadSmartFolder(id string) (*SmartFolder, error) {
@@ -44,7 +44,7 @@ func (client *Client) ReadSmartFolder(id string) (*SmartFolder, error) {
 	if err := client.doRequest(query, nil, responseData); err != nil {
 		return nil, fmt.Errorf("error reading folder: %s", err.Error())
 	}
-	return &responseData.Resource, nil
+	return &responseData.SmartFolder, nil
 }
 
 func (client *Client) UpdateSmartFolder(id, parent string, data map[string]interface{}) (*TurbotMetadata, error) {
