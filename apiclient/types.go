@@ -194,7 +194,7 @@ type Folder struct {
 }
 
 type ReadSmartFolderResponse struct {
-	SmartFolder SmartFolder
+	Resource SmartFolder
 }
 type CreateSmartFolderResponse struct {
 	SmartFolder struct {
@@ -202,8 +202,8 @@ type CreateSmartFolderResponse struct {
 	}
 }
 
-type UpdateSmartFolderResponse struct{
-	SmartFolder struct{
+type UpdateSmartFolderResponse struct {
+	SmartFolder struct {
 		Turbot TurbotMetadata
 	}
 }
