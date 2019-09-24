@@ -56,9 +56,9 @@ func resourceTurbotGrant() *schema.Resource {
 }
 
 func resourceTurbotGrantExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
-	//client := meta.(*apiclient.Client)
-	//id := d.Id()
-	return true, nil // client.ResourceExists(id)
+	client := meta.(*apiclient.Client)
+	id := d.Id()
+	return client.GrantExists(id)
 }
 
 func resourceTurbotGrantCreate(d *schema.ResourceData, meta interface{}) error {
@@ -118,7 +118,7 @@ func resourceTurbotGrantRead(d *schema.ResourceData, meta interface{}) error {
 func resourceTurbotGrantDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
 	id := d.Id()
-	err := client.DeleteResource(id)
+	err := client.DeleteGrant(id)
 	if err != nil {
 		return err
 	}

@@ -276,9 +276,23 @@ func readGrantQuery(aka string) string {
 			permissionTypeId
 			permissionLevelId
 				turbot{
+                    id
 					resourceId,
 					profileId
 				}
 		}
 	  }`, aka)
+}
+
+// delete resource
+func deleteGrantMutation() string {
+	return `mutation DeleteGrant($command: GrantCommandInput) {
+ 	grant: grantDelete(command: $command) {
+		items {
+			turbot {
+		  		id
+			}
+		}
+	}
+}`
 }

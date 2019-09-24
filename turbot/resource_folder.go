@@ -55,29 +55,26 @@ func resourceTurbotFolderExists(d *schema.ResourceData, meta interface{}) (b boo
 
 func resourceTurbotFolderCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
-	data := map[string]interface{}{
-		"permission_type_id":  "165808822449188",
-		"permission_level_id": "165808822475826",
-	}
-
-	resourceAka := "165808811630593"
-	profileId := "166523243823562"
-	// create Grant returns turbot resource metadata containing the id
-	TurbotGrantMetadata, err := client.CreateGrant(profileId, resourceAka, data)
+	parentAka := d.Get("parent").(string)
+	// build map of folder properties
+	data := mapFromResourceData(d, folderProperties)
+	// create folder returns turbot resource metadata containing the id
+	turbotMetadata, err := client.CreateFolder(parentAka, data)
 	if err != nil {
 		return err
 	}
 
 	// set parent_akas property by loading resource resource and fetching the akas
-	resource_akas, err := client.GetResourceAkas(TurbotGrantMetadata.ResourceId)
+	parentAkas, err := client.GetResourceAkas(turbotMetadata.ParentId)
 	if err != nil {
 		return err
 	}
 	// assign parent_akas
-	d.Set("parent_akas", resource_akas)
+	d.Set("parent_akas", parentAkas)
 
 	// assign the id
-	d.SetId(TurbotGrantMetadata.Id)
+	d.SetId(turbotMetadata.Id)
+
 	return nil
 }
 
