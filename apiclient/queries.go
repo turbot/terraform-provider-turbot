@@ -125,8 +125,8 @@ func createSmartFolderMutation() string {
 //update smart folder mutation
 
 func updateSmartFolderMutation() string {
-	return fmt.Sprintf(`mutation UpdateSmartFolder($updateSmartFolderCommand: SmartFolderCommandInput) {
-		smartFolderUpdate(command: $updateSmartFolderCommand) {
+	return fmt.Sprintf(`mutation UpdateSmartFolder($command: SmartFolderCommandInput) {
+		smartFolder:	smartFolderUpdate(command: $command) {
 			turbot {
 				id
 				parentId

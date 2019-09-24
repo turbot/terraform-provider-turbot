@@ -202,6 +202,12 @@ type CreateSmartFolderResponse struct {
 	}
 }
 
+type UpdateSmartFolderResponse struct{
+	SmartFolder struct{
+		Turbot TurbotMetadata
+	}
+}
+
 type SmartFolder struct {
 	Turbot      TurbotMetadata
 	Title       string
