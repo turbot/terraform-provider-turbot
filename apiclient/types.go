@@ -126,7 +126,7 @@ type CreateResourceResponse struct {
 }
 
 type CreateGrantResponse struct {
-	Grant struct {
+	Grants struct {
 		Items []struct {
 			Turbot TurbotGrantMetadata
 		}
@@ -260,13 +260,11 @@ type GoogleDirectory struct {
 }
 
 type ReadGrantResponse struct {
-	Resource Grant
+	Grant Grant
 }
 
 type Grant struct {
 	Turbot            TurbotGrantMetadata
 	PermissionTypeId  string
 	PermissionLevelId string
-	Parent            string
-	ProfileId         string
 }

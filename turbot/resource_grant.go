@@ -74,12 +74,12 @@ func resourceTurbotGrantCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// set parent_akas property by loading resource resource and fetching the akas
-	resource_Akas, err := client.GetResourceAkas(TurbotGrantMetadata.ResourceId)
+	resource_akas, err := client.GetResourceAkas(TurbotGrantMetadata.ResourceId)
 	if err != nil {
 		return err
 	}
 	// assign parent_akas
-	d.Set("resource_akas", resource_Akas)
+	d.Set("resource_akas", resource_akas)
 
 	// assign the id
 	d.SetId(TurbotGrantMetadata.Id)
@@ -102,12 +102,16 @@ func resourceTurbotGrantRead(d *schema.ResourceData, meta interface{}) error {
 	// assign results back into ResourceData
 
 	// set parent_Akas property by loading resource resource and fetching the akas
-	resource_Akas, err := client.GetResourceAkas(Grant.Turbot.ResourceId)
+	resource_akas, err := client.GetResourceAkas(Grant.Turbot.ResourceId)
 	if err != nil {
 		return err
 	}
 	// assign parent_akas
-	d.Set("resource_akas", resource_Akas)
+	d.Set("permission_level_id", Grant.PermissionLevelId)
+	d.Set("permission_type_id", Grant.PermissionTypeId)
+	d.Set("profile_id", &Grant.Turbot.ProfileId)
+	d.Set("resource", Grant.Turbot.ResourceId)
+	d.Set("resource_akas", resource_akas)
 	return nil
 }
 

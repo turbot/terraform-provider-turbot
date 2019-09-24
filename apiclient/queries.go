@@ -209,11 +209,12 @@ func createResourceMutation() string {
 
 // create grant
 func createGrantMutation() string {
-	return `mutation CreateGrant($createGrantCommand: GrantCommandInput) {
-	grants: grantCreate(command: $createGrantCommand) {
+	return `mutation CreateGrant($command: GrantCommandInput) {
+	grants: grantCreate(command: $command) {
 		items{
 			turbot{
 				id
+				resourceId
 			}
 		}
 	}
