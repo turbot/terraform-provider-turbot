@@ -44,6 +44,19 @@ func TestAccGoogleDirectory(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_google_directory.test", "description", "test Directory for turbot terraform provider"),
 				),
+			}, {
+				Config: testAccGoogleDirectoryTagsConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckGoogleDirectoryExists("turbot_google_directory.test"),
+					resource.TestCheckResourceAttr(
+						"turbot_google_directory.test", "title", "google_directory_test_provider"),
+					resource.TestCheckResourceAttr(
+						"turbot_google_directory.test", "description", "test Directory for turbot terraform provider"),
+					resource.TestCheckResourceAttr(
+						"turbot_folder.test", "tags.Name", "tags test"),
+					resource.TestCheckResourceAttr(
+						"turbot_folder.test", "tags.Environment", "foo"),
+				),
 			},
 		},
 	})
