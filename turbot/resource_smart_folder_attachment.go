@@ -55,7 +55,7 @@ func resourceTurbotSmartFolderAttachemntCreate(d *schema.ResourceData, meta inte
 func resourceTurbotSmartFolderAttachemntRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
 	var id = strings.Split(d.Id(), "_")[0]
-	smartFolderAttachment, err := client.ReadSmartFolderAttachment(id)
+	_, err := client.ReadSmartFolderAttachment(id)
 	if err != nil {
 		if apiclient.NotFoundError(err) {
 			// folder was not found - clear id
@@ -66,8 +66,8 @@ func resourceTurbotSmartFolderAttachemntRead(d *schema.ResourceData, meta interf
 
 	// assign results back into ResourceData
 
-	d.Set("resource", smartFolderAttachment.Resource)
-	d.Set("smart_folder", smartFolderAttachment.SmartFolderAttachment)
+	//d.Set("resource", smartFolderAttachment.Resource)
+	//d.Set("smart_folder", smartFolderAttachment.SmartFolderAttachment)
 
 	return nil
 }

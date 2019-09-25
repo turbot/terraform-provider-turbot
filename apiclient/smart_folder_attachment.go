@@ -8,8 +8,8 @@ func (client *Client) CreateSmartFolderAttachment(resourceId string, resourceGro
 	query := createSmartFolderAttachmentMutation()
 	responseData := &CreateSmartFolderAttachResponse{}
 	commandMeta := map[string]string{
-		"resourceId":      resourceId,
-		"resourceGroupId": resourceGroupId,
+		"resourceId":    resourceId,
+		"smartFolderId": resourceGroupId,
 	}
 	variables := map[string]interface{}{
 		"command": map[string]interface{}{
@@ -24,23 +24,23 @@ func (client *Client) CreateSmartFolderAttachment(resourceId string, resourceGro
 	return &responseData.SmartFolder.Turbot, nil
 }
 
-func (client *Client) ReadSmartFolderAttachment(id string) (*[]Resoures, error) {
+func (client *Client) ReadSmartFolderAttachment(id string) (*[]string, error) {
 	query := readAttachedResourcesOnSmartfolder(id)
-	responseData := &ReadSmartFolderAttachResponse{}
-
+	//responseData := &ReadSmartFolderAttachResponse{}
+	var responseData interface{}
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	if err := client.doRequest(query, nil, &responseData); err != nil {
 		return nil, fmt.Errorf("error reading folder: %s", err.Error())
 	}
-	return &responseData.SmartFolder.Items, nil
+	return nil, nil
 }
 
 func (client *Client) DeleteSmartFolderAttachment(resourceId string, resourceGroupId string) error {
-	_ := detachSmartFolderAttachment()
+	query := detachSmartFolderAttachment()
 	var responseData interface{}
 	commandMeta := map[string]string{
-		"resourceId":      resourceId,
-		"resourceGroupId": resourceGroupId,
+		"resourceId":    resourceId,
+		"smartFolderId": resourceGroupId,
 	}
 	variables := map[string]interface{}{
 		"command": map[string]interface{}{

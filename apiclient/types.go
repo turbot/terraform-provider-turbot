@@ -296,11 +296,11 @@ type CreateSmartFolderAttachResponse struct {
 	}
 }
 
-type ReadSmartFolderAttachResponse struct {
-	SmartFolder struct {
-		Items []string
-	}
-}
+//type ReadSmartFolderAttachResponse struct {
+//	SmartFolder struct {
+//		Items []string
+//	}
+//}
 
 type ReadGrantResponse struct {
 	Grant Grant
