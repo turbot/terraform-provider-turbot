@@ -4,11 +4,11 @@ import (
 	"fmt"
 )
 
-func (client *Client) CreateGrant(profileId, parent string, data map[string]interface{}) (*TurbotGrantMetadata, error) {
+func (client *Client) CreateGrant(profileId, resource string, data map[string]interface{}) (*TurbotGrantMetadata, error) {
 	query := createGrantMutation()
 	responseData := &CreateGrantResponse{}
 	commandMeta := map[string]interface{}{
-		"resourceAka": parent,
+		"resourceAka": resource,
 		"profileId":   profileId,
 	}
 	variables := map[string]interface{}{

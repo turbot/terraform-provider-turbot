@@ -132,17 +132,17 @@ func (client *Client) ResourceExists(id string) (bool, error) {
 }
 
 func (client *Client) GetResourceAkas(ResourceId string) ([]string, error) {
-	parent, err := client.ReadResource(ResourceId, nil)
+	resource, err := client.ReadResource(ResourceId, nil)
 	if err != nil {
-		log.Printf("[ERROR] Failed to load parentAka resource; %s", err)
+		log.Printf("[ERROR] Failed to load target resource; %s", err)
 		return nil, err
 	}
-	parent_Akas := parent.Turbot.Akas
+	resource_Akas := resource.Turbot.Akas
 	// if this resource has no akas, just use the id
-	if parent_Akas == nil {
-		parent_Akas = []string{ResourceId}
+	if resource_Akas == nil {
+		resource_Akas = []string{ResourceId}
 	}
-	return parent_Akas, nil
+	return resource_Akas, nil
 }
 
 // assign the ReadResource results into a Resource object, based on the 'properties' map

@@ -7,8 +7,8 @@ import (
 
 // these are the properties which must be passed to a create/update call
 var grantMap = map[string]string{
-	"permission_type_id":  "permissionTypeId",
-	"permission_level_id": "permissionLevelId",
+	"permission_type":  "permissionTypeAka",
+	"permission_level": "permissionLevelAka",
 }
 
 func resourceTurbotGrant() *schema.Resource {
@@ -39,12 +39,12 @@ func resourceTurbotGrant() *schema.Resource {
 				},
 				ForceNew: true,
 			},
-			"permission_type_id": {
+			"permission_type": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"permission_level_id": {
+			"permission_level": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -76,7 +76,7 @@ func resourceTurbotGrantCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	// set parent_akas property by loading resource resource and fetching the akas
+	// set resource_akas property by loading resource resource and fetching the akas
 	resource_akas, err := client.GetResourceAkas(resourceAka)
 	if err != nil {
 		return err
