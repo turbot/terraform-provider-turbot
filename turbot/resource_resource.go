@@ -9,6 +9,8 @@ import (
 	"log"
 )
 
+var resourceMetadataProperties = []string{"tags"}
+
 func resourceTurbotResource() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceTurbotResourceCreate,
@@ -26,9 +28,9 @@ func resourceTurbotResource() *schema.Resource {
 				Required: true,
 				// when doing a diff, the state file will contain the id of the parent bu tthe config contains the aka,
 				// so we need custom diff code
-				DiffSuppressFunc: supressIfParentAkaMatches,
+				DiffSuppressFunc: suppressIfParentAkaMatches,
 			},
-			// when doing a read, fetch the parent akas to use in supressIfParentAkaMatches()
+			// when doing a read, fetch the parent akas to use in suppressIfParentAkaMatches()
 			"parent_akas": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -46,6 +48,13 @@ func resourceTurbotResource() *schema.Resource {
 				Required:         true,
 				DiffSuppressFunc: suppressIfBodyMatches,
 			},
+			"tags": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 	}
 }
@@ -62,8 +71,9 @@ func resourceTurbotResourceCreate(d *schema.ResourceData, meta interface{}) erro
 	resourceType := d.Get("type").(string)
 	body := d.Get("body").(string)
 
-	// create resource returns turbot resource metadata containing the id
-	turbotMetadata, err := client.CreateResource(resourceType, parent, body)
+	// populate turbot data
+	mutationTurbotData := mapFromResourceData(d, resourceMetadataProperties)
+	turbotMetadata, err := client.CreateResource(resourceType, parent, body, mutationTurbotData)
 	if err != nil {
 		return err
 	}
@@ -130,8 +140,8 @@ func resourceTurbotResourceUpdate(d *schema.ResourceData, meta interface{}) erro
 	parent := d.Get("parent").(string)
 	resourceType := d.Get("type").(string)
 	id := d.Id()
-	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.UpdateResource(id, resourceType, parent, body)
+	mutationTurbotData := mapFromResourceData(d, resourceMetadataProperties)
+	turbotMetadata, err := client.UpdateResource(id, resourceType, parent, body, mutationTurbotData)
 	if err != nil {
 		return err
 	}
@@ -189,7 +199,7 @@ func setParentAkas(parentId string, d *schema.ResourceData, meta interface{}) er
 // the 'parent' in the config is an aka - however the state file will have an id.
 // to perform a diff we also store parent_akas in state file, which is the list of akas for the parent
 // if the new value of parent existts in parent_akas, then suppress diff
-func supressIfParentAkaMatches(k, old, new string, d *schema.ResourceData) bool {
+func suppressIfParentAkaMatches(k, old, new string, d *schema.ResourceData) bool {
 	parentAkasProperty, parentAkasSet := d.GetOk("parent_akas")
 	// if parent_id has not been set yet, do not suppress the diff
 	if !parentAkasSet {
@@ -272,6 +282,19 @@ func mapFromResourceData(d *schema.ResourceData, properties []string) map[string
 		}
 	}
 	return propertyMap
+}
+
+// given a property list, remove the excluded properties
+func removeProperties(properties, excluded []string) []string {
+	for _, excludedProperty := range excluded {
+		for i, property := range properties {
+			if property == excludedProperty {
+				properties = append(properties[:i], properties[i+1:]...)
+				break
+			}
+		}
+	}
+	return properties
 }
 
 func createMapFromResourceData(d *schema.ResourceData, terraformToTurbotMap map[string]string) map[string]interface{} {

@@ -5,6 +5,13 @@ import (
 	"fmt"
 )
 
+var turbotMetadataQuery = `turbot {
+  id
+  parentId
+  akas
+  tags
+}`
+
 // return query and matching response object to receive query result
 
 func validationQuery() (string, ValidationResponse) {
@@ -196,15 +203,11 @@ func readModQuery(modId string) string {
 
 // create resource
 func createResourceMutation() string {
-	return `mutation CreateResource($command: ResourceCommandInput) {
+	return fmt.Sprintf(`mutation CreateResource($command: ResourceCommandInput) {
   resource: resourceCreate(command: $command) {
-    turbot {
-      id
-      parentId
-      akas
-    }
+%s
   }
-}`
+}`, turbotMetadataQuery)
 }
 
 // create grant

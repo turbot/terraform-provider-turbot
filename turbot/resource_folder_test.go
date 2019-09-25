@@ -37,10 +37,12 @@ func TestAccFolder(t *testing.T) {
 			},
 			{
 				Config: testAccFolderTagsConfig(),
-				Check: testAccCheckResourceTags("turbot_folder.test", map[string]string{
-					"Name":        "provider_test_upd",
-					"Environment": "foo",
-				}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"turbot_folder.test", "tags.Name", "Provider Test"),
+					resource.TestCheckResourceAttr(
+						"turbot_folder.test", "tags.Environment", "foo"),
+				),
 			},
 		},
 	})
@@ -139,8 +141,9 @@ resource "turbot_folder" "test" {
 	title = "provider_test_upd"
 	description = "test folder for turbot terraform provider"
 	tags = {
-      "Name" = "provider_test_upd"
+      "Name" = "Provider Test"
       "Environment" = "foo"
+    }
 }
 `
 }
@@ -224,20 +227,4 @@ func testAccCheckFolderDestroy(s *terraform.State) error {
 	}
 
 	return nil
-}
-
-func testAccCheckResourceTags(resourceName string, tags map[string]string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		// retrieve the resource by name from state
-		rs, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return fmt.Errorf("Not found: %s", resourceName)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("Resource ID is not set")
-		}
-
-		return nil
-	}
 }

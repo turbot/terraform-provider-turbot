@@ -7,6 +7,7 @@ import (
 
 // these are the properties which must be passed to a create/update call
 var localDirectoryProperties = []string{"title", "profile_id_template", "description"}
+var localDirectoryMetadataProperties = []string{"tags"}
 
 func resourceTurbotLocalDirectory() *schema.Resource {
 	return &schema.Resource{
@@ -25,9 +26,9 @@ func resourceTurbotLocalDirectory() *schema.Resource {
 				Required: true,
 				// when doing a diff, the state file will contain the id of the parent bu tthe config contains the aka,
 				// so we need custom diff code
-				DiffSuppressFunc: supressIfParentAkaMatches,
+				DiffSuppressFunc: suppressIfParentAkaMatches,
 			},
-			// when doing a read, fetch the parent akas to use in supressIfParentAkaMatches()
+			// when doing a read, fetch the parent akas to use in suppressIfParentAkaMatches()
 			"parent_akas": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -55,6 +56,13 @@ func resourceTurbotLocalDirectory() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"tags": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 	}
 }
@@ -68,11 +76,15 @@ func resourceTurbotLocalDirectoryExists(d *schema.ResourceData, meta interface{}
 func resourceTurbotLocalDirectoryCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
 	parentAka := d.Get("parent").(string)
-	// build map of local directory properties
-	data := mapFromResourceData(d, localDirectoryProperties)
-	data["status"] = "New"
-	data["directoryType"] = "local"
-	turbotMetadata, err := client.CreateLocalDirectory(parentAka, data)
+	// build mutation payload
+	payload := map[string]map[string]interface{}{
+		"data":       mapFromResourceData(d, localDirectoryProperties),
+		"turbotData": mapFromResourceData(d, localDirectoryMetadataProperties),
+	}
+	// set computed properties
+	payload["data"]["status"] = "New"
+	payload["data"]["directoryType"] = "local"
+	turbotMetadata, err := client.CreateLocalDirectory(parentAka, payload)
 	if err != nil {
 		return err
 	}
@@ -87,8 +99,8 @@ func resourceTurbotLocalDirectoryCreate(d *schema.ResourceData, meta interface{}
 
 	// assign the id
 	d.SetId(turbotMetadata.Id)
-	d.Set("status", data["status"])
-	d.Set("directoryType", data["directoryType"])
+	d.Set("status", payload["data"]["status"])
+	d.Set("directoryType", payload["data"]["directoryType"])
 	return nil
 }
 
@@ -97,10 +109,13 @@ func resourceTurbotLocalDirectoryUpdate(d *schema.ResourceData, meta interface{}
 	parentAka := d.Get("parent").(string)
 	id := d.Id()
 
-	// build map of local directory properties
-	data := mapFromResourceData(d, folderProperties)
+	// build mutation payload
+	payload := map[string]map[string]interface{}{
+		"data":       mapFromResourceData(d, localDirectoryProperties),
+		"turbotData": mapFromResourceData(d, localDirectoryMetadataProperties),
+	}
 	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.UpdateDirectory(id, parentAka, data)
+	turbotMetadata, err := client.UpdateLocalDirectory(id, parentAka, payload)
 	if err != nil {
 		return err
 	}

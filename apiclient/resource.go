@@ -7,12 +7,12 @@ import (
 	"log"
 )
 
-func (client *Client) CreateResource(typeAka, parentAka, payload string) (*TurbotResourceMetadata, error) {
+func (client *Client) CreateResource(typeAka, parentAka, body string, turbotData map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := createResourceMutation()
 	responseData := &CreateResourceResponse{}
 
 	data := map[string]interface{}{}
-	if err := json.Unmarshal([]byte(payload), &data); err != nil {
+	if err := json.Unmarshal([]byte(body), &data); err != nil {
 		return nil, fmt.Errorf("error creating resource: %s", err.Error())
 	}
 
@@ -26,7 +26,8 @@ func (client *Client) CreateResource(typeAka, parentAka, payload string) (*Turbo
 	variables := map[string]interface{}{
 		"command": map[string]interface{}{
 			"payload": map[string]interface{}{
-				"data": data,
+				"data":       data,
+				"turbotData": turbotData,
 			},
 			"meta": commandMeta,
 		},
@@ -56,7 +57,7 @@ func (client *Client) ReadResource(aka string, properties map[string]string) (*R
 	return resource, nil
 }
 
-// todo replace with empty get()
+// todo replace with empty get() https://github.com/turbotio/terraform-provider-turbot/issues/58
 func (client *Client) ReadFullResource(aka string) (*FullResource, error) {
 	query := readFullResourceQuery(aka)
 	var responseData = &ReadFullResourceResponse{}
@@ -69,15 +70,13 @@ func (client *Client) ReadFullResource(aka string) (*FullResource, error) {
 	return &responseData.Resource, nil
 }
 
-func (client *Client) UpdateResource(id, typeAka, parentAka, payload string) (*TurbotResourceMetadata, error) {
+func (client *Client) UpdateResource(id, typeAka, parentAka, body string, turbotData map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := updateResourceMutation()
 	responseData := &UpdateResourceResponse{}
 	data := map[string]interface{}{}
-	if err := json.Unmarshal([]byte(payload), &data); err != nil {
+	if err := json.Unmarshal([]byte(body), &data); err != nil {
 		return nil, fmt.Errorf("error updating resource: %s", err.Error())
 	}
-
-	// todo extract turbotData
 
 	commandMeta := map[string]string{
 		"typeAka":   typeAka,
@@ -87,7 +86,8 @@ func (client *Client) UpdateResource(id, typeAka, parentAka, payload string) (*T
 	variables := map[string]interface{}{
 		"command": map[string]interface{}{
 			"payload": map[string]interface{}{
-				"data": data,
+				"data":       data,
+				"turbotData": turbotData,
 			},
 			"meta": commandMeta,
 		},
