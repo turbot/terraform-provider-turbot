@@ -69,7 +69,7 @@ func (client *Client) ReadFullResource(aka string) (*FullResource, error) {
 	return &responseData.Resource, nil
 }
 
-func (client *Client) UpdateResource(id, typeAka, parentAka, payload string) (*TurbotMetadata, error) {
+func (client *Client) UpdateResource(id, typeAka, parentAka, payload string) (*TurbotResourceMetadata, error) {
 	query := updateResourceMutation()
 	responseData := &UpdateResourceResponse{}
 	data := map[string]interface{}{}

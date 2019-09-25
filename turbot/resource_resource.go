@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/iancoleman/strcase"
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"log"
 )
 
 func resourceTurbotResource() *schema.Resource {

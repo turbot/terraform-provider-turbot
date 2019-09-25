@@ -212,7 +212,7 @@ type ReadSamlDirectoryResponse struct {
 }
 
 type SamlDirectory struct {
-	Turbot            TurbotMetadata
+	Turbot            TurbotResourceMetadata
 	Title             string
 	Description       string
 	Parent            string
@@ -227,7 +227,7 @@ type ReadLocalDirectoryUserResponse struct {
 }
 
 type LocalDirectoryUser struct {
-	Turbot      TurbotMetadata
+	Turbot      TurbotResourceMetadata
 	Parent      string
 	Title       string
 	Email       string
@@ -244,7 +244,7 @@ type ReadGoogleDirectoryResponse struct {
 }
 
 type GoogleDirectory struct {
-	Turbot            TurbotMetadata
+	Turbot            TurbotResourceMetadata
 	Parent            string
 	Title             string
 	ProfileIdTemplate string

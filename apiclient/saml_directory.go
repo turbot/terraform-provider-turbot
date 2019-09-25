@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-func (client *Client) CreateSamlDirectory(parent string, data map[string]interface{}) (*TurbotMetadata, error) {
+func (client *Client) CreateSamlDirectory(parent string, data map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := createResourceMutation()
 	responseData := &CreateResourceResponse{}
 	log.Println("data%%%: ", data)
@@ -50,7 +50,7 @@ func (client *Client) ReadSamlDirectory(id string) (*SamlDirectory, error) {
 	return &responseData.Resource, nil
 }
 
-func (client *Client) UpdateSamlDirectory(id, parent string, data map[string]interface{}) (*TurbotMetadata, error) {
+func (client *Client) UpdateSamlDirectory(id, parent string, data map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := updateResourceMutation()
 	responseData := &UpdateResourceResponse{}
 	var commandPayload = map[string]map[string]interface{}{
