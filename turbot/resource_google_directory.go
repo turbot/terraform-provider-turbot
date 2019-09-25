@@ -119,10 +119,12 @@ func resourceTurbotGoogleDirectoryCreate(d *schema.ResourceData, meta interface{
 	}
 
 	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(turbotMetadata.ParentId, d, meta); err != nil {
+	parentAkas, err := client.GetResourceAkas(turbotMetadata.ParentId)
+	if err != nil {
 		return err
 	}
-
+	// assign parent_akas
+	d.Set("parent_akas", parentAkas)
 	// assign the id
 	d.SetId(turbotMetadata.Id)
 	d.Set("status", payload["data"]["status"])
@@ -150,9 +152,12 @@ func resourceTurbotGoogleDirectoryUpdate(d *schema.ResourceData, meta interface{
 		return err
 	}
 	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(turbotMetadata.ParentId, d, meta); err != nil {
+	parentAkas, err := client.GetResourceAkas(turbotMetadata.ParentId)
+	if err != nil {
 		return err
 	}
+	// assign parent_akas
+	d.Set("parent_akas", parentAkas)
 	return nil
 }
 
@@ -172,9 +177,12 @@ func resourceTurbotGoogleDirectoryRead(d *schema.ResourceData, meta interface{})
 	// assign results back into ResourceData
 
 	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(googleDirectory.Turbot.ParentId, d, meta); err != nil {
+	parentAkas, err := client.GetResourceAkas(googleDirectory.Turbot.ParentId)
+	if err != nil {
 		return err
 	}
+	// assign parent_akas
+	d.Set("parent_akas", parentAkas)
 	d.Set("parent", googleDirectory.Parent)
 	d.Set("title", googleDirectory.Title)
 	d.Set("profile_id_template", googleDirectory.ProfileIdTemplate)

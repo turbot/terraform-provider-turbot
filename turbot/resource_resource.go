@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/iancoleman/strcase"
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
-	"log"
 )
 
 var resourceMetadataProperties = []string{"tags"}
@@ -174,26 +173,6 @@ func resourceTurbotResourceImport(d *schema.ResourceData, meta interface{}) ([]*
 		return nil, err
 	}
 	return []*schema.ResourceData{d}, nil
-}
-
-func setParentAkas(parentId string, d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
-
-	// load parent resource to get parent_akas
-	parent, err := client.ReadResource(parentId, nil)
-	if err != nil {
-		log.Printf("[ERROR] Failed to load parentAka resource; %s", err)
-		return err
-	}
-	parentAkas := parent.Turbot.Akas
-	// if this resource has no akas, just use the id
-	if parentAkas == nil {
-		parentAkas = []string{parentId}
-	}
-
-	// assign parent_akas
-	d.Set("parent_akas", parent.Turbot.Akas)
-	return nil
 }
 
 // the 'parent' in the config is an aka - however the state file will have an id.
