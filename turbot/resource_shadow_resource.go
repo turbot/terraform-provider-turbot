@@ -9,7 +9,7 @@ import (
 )
 
 // properties which must be passed to a create/update call
-var shadowResourceProperties = []string{"filter"}
+var shadowResourceProperties = []string{"filter", "resource"}
 
 func resourceTurbotShadowResource() *schema.Resource {
 	return &schema.Resource{
@@ -22,7 +22,12 @@ func resourceTurbotShadowResource() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"filter": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
+				ForceNew: true,
+			},
+			"resource": {
+				Type:     schema.TypeString,
+				Optional: true,
 				ForceNew: true,
 			},
 		},
@@ -33,8 +38,20 @@ func resourceTurbotShadowResourceCreate(d *schema.ResourceData, meta interface{}
 	client := meta.(*apiclient.Client)
 
 	filter := d.Get("filter").(string)
+	resourceAka := d.Get("resource").(string)
+	if (filter == "" && aka == "") {
+		return nil, fmt.Errorf("one of resource or filter should be specified")
+	}
+
+	if (filter != "" && aka != "") {
+		return nil, fmt.Errorf("resource and filter must not both be specified")
+	}
+	var resource Resource
+	if resourceAka != "" {
+		filter = fmt.Sprintf("resource:%s", resourceAka)
+	}
 	// create folder returns turbot resource metadata containing the id
-	resource, err := waitForResource(filter, client)
+	resource, err := waitForResourceWithFilter(filter, client)
 	if err != nil {
 		log.Println("[ERROR] Turbot shadow resource creation failed...", err)
 		return err
@@ -46,7 +63,7 @@ func resourceTurbotShadowResourceCreate(d *schema.ResourceData, meta interface{}
 	return nil
 }
 
-func waitForResource(filter string, client *apiclient.Client) (*apiclient.Resource, error) {
+func waitForResourceWithFilter(filter string, client *apiclient.Client) (*apiclient.Resource, error) {
 	retryCount := 0
 	// retry for 5 minutes
 	timeoutMins := 5
