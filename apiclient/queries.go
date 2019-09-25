@@ -140,8 +140,7 @@ func updateSmartFolderMutation() string {
 
 func createSmartFolderAttachmentMutation() string {
 	return fmt.Sprintf(`mutation AttachSmartFolder($command: SmartFolderCommandInput) {
-		attachSmartFolder(command: $command) {
-			object
+		smartFolder :smartFolderAttach(command: $command) {
 			turbot {
 				id
 			}
@@ -151,15 +150,28 @@ func createSmartFolderAttachmentMutation() string {
 
 // detach FolderResource mutation
 
-func detachSmartFolderAttachment() srting {
-	return fmt.Sprintf(`mutation DetachSmartFolder($detachSmartFolderCommand: SmartFolderCommandInput) {
-		detachSmartFolder(command: $detachSmartFolderCommand) {
-			object
+func detachSmartFolderAttachment() string {
+	return fmt.Sprintf(`mutation DetachSmartFolder($command: SmartFolderCommandInput) {
+		detachSmartFolder: smartFolderDetach(command: $command) {
     		turbot {
 				id
 			}
   		}
 	}`)
+}
+
+// read Smart Folder attached to multiple Resources
+
+func readAttachedResourcesOnSmartfolder(id string) string {
+	return fmt.Sprintf(`
+	resource(id:"%s") {
+   	attachedResources{
+			items{
+				
+			}
+		}
+ }
+`, id)
 }
 
 func findPolicySettingQuery(policyTypeUri, resourceAka string) string {

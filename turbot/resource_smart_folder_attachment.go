@@ -3,6 +3,7 @@ package turbot
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"strings"
 )
 
 func resourceTurbotSmartFolderAttachemnt() *schema.Resource {
@@ -15,15 +16,15 @@ func resourceTurbotSmartFolderAttachemnt() *schema.Resource {
 			State: resourceTurbotSmartFolderAttachemntImport,
 		},
 		Schema: map[string]*schema.Schema{
-			"resource_id": {
+			"resource": {
 				Type:     schema.TypeString,
 				Required: true,
-				Forces:   New,
+				ForceNew: true,
 			},
-			"resource_group_id": {
+			"smart_folder": {
 				Type:     schema.TypeString,
 				Required: true,
-				Forces:   New,
+				ForceNew: true,
 			},
 		},
 	}
@@ -37,25 +38,24 @@ func resourceTurbotSmartFolderAttachemntExists(d *schema.ResourceData, meta inte
 
 func resourceTurbotSmartFolderAttachemntCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
-	resourceId := d.Get("resource_id").(string)
-	resourceGroupId := d.Get("resource_group_id").(string)
+	resource := d.Get("resource").(string)
+	smartFolder := d.Get("smart_folder").(string)
 	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.CreateSmartFolderAttachment(resourceId, resourceGroupId)
+	turbotMetadata, err := client.CreateSmartFolderAttachment(resource, smartFolder)
 	if err != nil {
 		return err
 	}
 
 	// assign the id
-	d.SetId(turbotMetadata.Id)
-
+	var stateId = buildId(turbotMetadata.Id, resource)
+	d.SetId(stateId)
 	return nil
 }
 
-func resourceSmartFolderAttachemntRead(d *schema.ResourceData, meta interface{}) error {
+func resourceTurbotSmartFolderAttachemntRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
-	id := d.Id()
-
-	folder, err := client.ReadSmartFolderAttachment(id)
+	var id = strings.Split(d.Id(), "_")[0]
+	smartFolderAttachment, err := client.ReadSmartFolderAttachment(id)
 	if err != nil {
 		if apiclient.NotFoundError(err) {
 			// folder was not found - clear id
@@ -66,16 +66,17 @@ func resourceSmartFolderAttachemntRead(d *schema.ResourceData, meta interface{})
 
 	// assign results back into ResourceData
 
-	d.Set("resource", SmartFolderAttachment.Resource)
-	d.Set("smart_folder_attachment", SmartFolderAttachment.SmartFolderAttachment)
+	d.Set("resource", smartFolderAttachment.Resource)
+	d.Set("smart_folder", smartFolderAttachment.SmartFolderAttachment)
 
 	return nil
 }
 
 func resourceTurbotSmartFolderAttachemntDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
-	id := d.Id()
-	err := client.DeleteResource(id)
+	resourceId := d.Get("resource_id").(string)
+	resourceGroupId := d.Get("resource_group_id").(string)
+	err := client.DeleteSmartFolderAttachment(resourceId, resourceGroupId)
 	if err != nil {
 		return err
 	}
@@ -91,4 +92,8 @@ func resourceTurbotSmartFolderAttachemntImport(d *schema.ResourceData, meta inte
 		return nil, err
 	}
 	return []*schema.ResourceData{d}, nil
+}
+
+func buildId(smartFolder, resource string) string {
+	return smartFolder + "_" + resource
 }
