@@ -39,14 +39,14 @@ func resourceTurbotShadowResourceCreate(d *schema.ResourceData, meta interface{}
 
 	filter := d.Get("filter").(string)
 	resourceAka := d.Get("resource").(string)
-	if (filter == "" && aka == "") {
-		return nil, fmt.Errorf("one of resource or filter should be specified")
+	if (filter == "" && resourceAka == "") {
+		return fmt.Errorf("one of resource or filter should be specified")
 	}
 
-	if (filter != "" && aka != "") {
-		return nil, fmt.Errorf("resource and filter must not both be specified")
+	if (filter != "" && resourceAka != "") {
+		return fmt.Errorf("resource and filter must not both be specified")
 	}
-	var resource Resource
+
 	if resourceAka != "" {
 		filter = fmt.Sprintf("resource:%s", resourceAka)
 	}
