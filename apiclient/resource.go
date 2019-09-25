@@ -70,6 +70,18 @@ func (client *Client) ReadFullResource(aka string) (*FullResource, error) {
 	return &responseData.Resource, nil
 }
 
+func (client *Client) ReadResourceList(filter string, properties map[string]string) ([]Resource, error) {
+	query := readResourceListQuery(filter, properties)
+	var responseData = &ReadResourceListResponse{}
+
+	// execute api call
+	if err := client.doRequest(query, nil, responseData); err != nil {
+		return nil, fmt.Errorf("error fetching resource list: %s", err.Error())
+	}
+
+	return responseData.ResourceList.Items, nil
+}
+
 func (client *Client) UpdateResource(id, typeAka, parentAka, body string, turbotData map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := updateResourceMutation()
 	responseData := &UpdateResourceResponse{}

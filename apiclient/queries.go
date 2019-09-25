@@ -264,6 +264,23 @@ func readResourceQuery(aka string, properties map[string]string) string {
 }`, aka, propertiesString.String())
 }
 
+func readResourceListQuery(filter string, properties map[string]string) string {
+	var propertiesString bytes.Buffer
+	if properties != nil {
+		for alias, propertyPath := range properties {
+			propertiesString.WriteString(fmt.Sprintf("    %s: get(path: \"%s\")\n", alias, propertyPath))
+		}
+	}
+	return fmt.Sprintf(`{
+  resourceList(filter:"%s") {
+	items{
+		%s
+    turbot: get(path:"turbot")
+  	}
+	}
+}`, filter, propertiesString.String())
+}
+
 func readFullResourceQuery(aka string) string {
 	return fmt.Sprintf(`{
   resource(id:"%s") {

@@ -149,6 +149,10 @@ type ReadFullResourceResponse struct {
 	Resource FullResource
 }
 
+type ReadResourceListResponse struct {
+	ResourceList map[string]interface{}
+}
+
 type Resource struct {
 	Turbot TurbotResourceMetadata
 	Data   map[string]interface{}
