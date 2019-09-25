@@ -136,6 +136,32 @@ func updateSmartFolderMutation() string {
 	}`)
 }
 
+// attach folderResource Mutation
+
+func createSmartFolderAttachmentMutation() string {
+	return fmt.Sprintf(`mutation AttachSmartFolder($command: SmartFolderCommandInput) {
+		attachSmartFolder(command: $command) {
+			object
+			turbot {
+				id
+			}
+		}
+	}`)
+}
+
+// detach FolderResource mutation
+
+func detachSmartFolderAttachment() srting {
+	return fmt.Sprintf(`mutation DetachSmartFolder($detachSmartFolderCommand: SmartFolderCommandInput) {
+		detachSmartFolder(command: $detachSmartFolderCommand) {
+			object
+    		turbot {
+				id
+			}
+  		}
+	}`)
+}
+
 func findPolicySettingQuery(policyTypeUri, resourceAka string) string {
 	return fmt.Sprintf(`{
   policySettings: policySettingList(filter: "policyType:%s resource:%s") {

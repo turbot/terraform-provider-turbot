@@ -282,6 +282,22 @@ type GoogleDirectory struct {
 	HostedName        string
 }
 
+type ReadSmartFolderAttachmentResponse struct {
+	Resource SmartFolderAttachment
+}
+
+type SmartFolderAttachment struct {
+	Turbot      TurbotMetadata
+	Resource    string
+	SmartFolder string
+}
+
+type FindSmartFolderAttachmentResponse struct {
+	SmartFoldersAttachment struct {
+		Items []SmartFoldersAttachment
+	}
+}
+
 type ReadGrantResponse struct {
 	Grant Grant
 }
