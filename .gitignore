@@ -24,6 +24,6 @@ codebuild_artifacts
 *.tfstate
 *.log
 .terraform/**
-terraform-provider-turbot
+terraform-provider-turbot*
 config.tf
 override.tf

@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func (client *Client) CreateGoogleDirectory(parent string, data map[string]interface{}) (*TurbotMetadata, error) {
+func (client *Client) CreateGoogleDirectory(parent string, data map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := createResourceMutation()
 	responseData := &CreateResourceResponse{}
 	var commandPayload = map[string]interface{}{
@@ -52,7 +52,7 @@ func (client *Client) ReadGoogleDirectory(id string) (*GoogleDirectory, error) {
 	return &responseData.Resource, nil
 }
 
-func (client *Client) UpdateGoogleDirectory(id, parent string, data map[string]interface{}) (*TurbotMetadata, error) {
+func (client *Client) UpdateGoogleDirectory(id, parent string, data map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := updateResourceMutation()
 	responseData := &UpdateResourceResponse{}
 	var commandPayload = map[string]map[string]interface{}{

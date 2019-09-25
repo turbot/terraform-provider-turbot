@@ -68,10 +68,13 @@ func resourceTurbotResourceCreate(d *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 
-	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(turbotMetadata.ParentId, d, meta); err != nil {
+	// set parent_akas property by loading resource resource and fetching the akas
+	parent_Akas, err := client.GetResourceAkas(turbotMetadata.ParentId)
+	if err != nil {
 		return err
 	}
+	// assign parent_akas
+	d.Set("parent_akas", parent_Akas)
 
 	// assign the id
 	d.SetId(turbotMetadata.Id)
@@ -108,10 +111,13 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 
 	// assign results back into ResourceData
 
-	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(resource.Turbot.ParentId, d, meta); err != nil {
+	// set parent_akas property by loading resource resource and fetching the akas
+	parent_Akas, err := client.GetResourceAkas(resource.Turbot.ParentId)
+	if err != nil {
 		return err
 	}
+	// assign parent_akas
+	d.Set("parent_akas", parent_Akas)
 	d.Set("parent", resource.Turbot.ParentId)
 	d.Set("body", body)
 
@@ -129,10 +135,13 @@ func resourceTurbotResourceUpdate(d *schema.ResourceData, meta interface{}) erro
 	if err != nil {
 		return err
 	}
-	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(turbotMetadata.ParentId, d, meta); err != nil {
+	// set parent_akas property by loading resource resource and fetching the akas
+	parent_Akas, err := client.GetResourceAkas(turbotMetadata.ParentId)
+	if err != nil {
 		return err
 	}
+	// assign parent_akas
+	d.Set("parent_akas", parent_Akas)
 	return nil
 }
 
@@ -263,4 +272,16 @@ func mapFromResourceData(d *schema.ResourceData, properties []string) map[string
 		}
 	}
 	return propertyMap
+}
+
+func createMapFromResourceData(d *schema.ResourceData, terraformToTurbotMap map[string]string) map[string]interface{} {
+	var resourcePropertyMap = map[string]interface{}{}
+	for terraform, turbot := range terraformToTurbotMap {
+		// get schema for property
+		value, propertySet := d.GetOk(terraform)
+		if propertySet {
+			resourcePropertyMap[turbot] = value
+		}
+	}
+	return resourcePropertyMap
 }
