@@ -49,13 +49,13 @@ func TestAccLocalDirectory(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLocalDirectoryExists("turbot_local_directory.test"),
 					resource.TestCheckResourceAttr(
-						"turbot_local_directory.test", "title", "provider_test"),
+						"turbot_local_directory.test", "title", "provider_test_refactor"),
 					resource.TestCheckResourceAttr(
-						"turbot_local_directory.test", "description", "test Directory for turbot terraform provider"),
+						"turbot_local_directory.test", "description", "test Directory"),
 					resource.TestCheckResourceAttr(
-						"turbot_folder.test", "tags.Name", "tags test"),
+						"turbot_local_directory.test", "tags.Name", "tags test"),
 					resource.TestCheckResourceAttr(
-						"turbot_folder.test", "tags.Environment", "foo"),
+						"turbot_local_directory.test", "tags.Environment", "foo"),
 				),
 			},
 		},

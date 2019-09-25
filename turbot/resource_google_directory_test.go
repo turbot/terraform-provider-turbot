@@ -53,9 +53,9 @@ func TestAccGoogleDirectory(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_google_directory.test", "description", "test Directory for turbot terraform provider"),
 					resource.TestCheckResourceAttr(
-						"turbot_folder.test", "tags.Name", "tags test"),
+						"turbot_google_directory.test", "tags.Name", "tags test"),
 					resource.TestCheckResourceAttr(
-						"turbot_folder.test", "tags.Environment", "foo"),
+						"turbot_google_directory.test", "tags.Environment", "foo"),
 				),
 			},
 		},
