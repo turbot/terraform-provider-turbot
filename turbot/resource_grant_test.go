@@ -34,8 +34,8 @@ func testAccLocalGrantConfig() string {
 	return `
 	resource "turbot_grant" "test" {
 		resource = "165808811630593"
-		permission_type_id = "165808822449188"
-		permission_level_id = "165808822475826"
+		permission_type = "165808822449188"
+		permission_level = "165808822475826"
 		profile_id = "166523243823562"
 	  }
 `

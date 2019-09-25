@@ -9,7 +9,7 @@ import (
 var samlDirectoryProperties = []string{"description", "directory_type", "status", "entry_point", "issuer", "certificate", "profile_id_template", "group_id_template", "name_id_format", "sign_requests", "signature_private_key", "signature_algorithm", "pool_id"}
 var samlDirectoryMetadataProperties = []string{"tags"}
 
-func samlDirectoryUpdateProperties() []string {
+func getSamlDirectoryUpdateProperties() []string {
 	excludedProperties := []string{"directory_type"}
 	return removeProperties(samlDirectoryProperties, excludedProperties)
 }
@@ -33,7 +33,7 @@ func resourceTurbotSamlDirectory() *schema.Resource {
 				// so we need custom diff code
 				DiffSuppressFunc: suppressIfParentAkaMatches,
 			},
-			// when doing a read, fetch the parent akas to use in supresIfParentAkaMatches()
+			// when doing a read, fetch the parent akas to use in suppressIfParentAkaMatches()
 			"parent_akas": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -145,7 +145,7 @@ func resourceTurbotSamlDirectoryUpdate(d *schema.ResourceData, meta interface{})
 	id := d.Id()
 
 	payload := map[string]map[string]interface{}{
-		"data":       mapFromResourceData(d, samlDirectoryUpdateProperties()),
+		"data":       mapFromResourceData(d, getSamlDirectoryUpdateProperties()),
 		"turbotData": mapFromResourceData(d, samlDirectoryMetadataProperties),
 	}
 

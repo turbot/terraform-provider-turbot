@@ -284,6 +284,18 @@ func mapFromResourceData(d *schema.ResourceData, properties []string) map[string
 	return propertyMap
 }
 
+func mapFromResourceDataWithPropertyMap(d *schema.ResourceData, terraformToTurbotMap map[string]string) map[string]interface{} {
+	var resourcePropertyMap = map[string]interface{}{}
+	for terraform, turbot := range terraformToTurbotMap {
+		// get schema for property
+		value, propertySet := d.GetOk(terraform)
+		if propertySet {
+			resourcePropertyMap[turbot] = value
+		}
+	}
+	return resourcePropertyMap
+}
+
 // given a property list, remove the excluded properties
 func removeProperties(properties, excluded []string) []string {
 	for _, excludedProperty := range excluded {
@@ -297,14 +309,20 @@ func removeProperties(properties, excluded []string) []string {
 	return properties
 }
 
-func createMapFromResourceData(d *schema.ResourceData, terraformToTurbotMap map[string]string) map[string]interface{} {
-	var resourcePropertyMap = map[string]interface{}{}
-	for terraform, turbot := range terraformToTurbotMap {
-		// get schema for property
-		value, propertySet := d.GetOk(terraform)
-		if propertySet {
-			resourcePropertyMap[turbot] = value
-		}
-	}
-	return resourcePropertyMap
-}
+// given a property list, remove the excluded properties
+//func removePropertiesFromMap(propertyMap map[string]string, excluded []string) map[string]string {
+//	var result = map[string]string{}
+//	for k, v := range propertyMap {
+//		if !sliceContains(excluded, k) {
+//			result[k] = v
+//		}
+//	}
+//	return result
+//}
+
+// no native contains in golang :/
+//func sliceContains(s []string, searchterm string) bool {
+//	i := sort.SearchStrings(s, searchterm)
+//	return i < len(s) && s[i] == searchterm
+//
+//}
