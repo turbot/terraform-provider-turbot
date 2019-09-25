@@ -272,3 +272,15 @@ func mapFromResourceData(d *schema.ResourceData, properties []string) map[string
 	}
 	return propertyMap
 }
+
+func createMapFromResourceData(d *schema.ResourceData, terraformToTurbotMap map[string]string) map[string]interface{} {
+	var resourcePropertyMap = map[string]interface{}{}
+	for terraform, turbot := range terraformToTurbotMap {
+		// get schema for property
+		value, propertySet := d.GetOk(terraform)
+		if propertySet {
+			resourcePropertyMap[turbot] = value
+		}
+	}
+	return resourcePropertyMap
+}

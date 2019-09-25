@@ -6,7 +6,10 @@ import (
 )
 
 // these are the properties which must be passed to a create/update call
-var grantProperties = []string{"permission_type_id", "permission_level_id"}
+var grantMap = map[string]string{
+	"permission_type_id":  "permissionTypeId",
+	"permission_level_id": "permissionLevelId",
+}
 
 func resourceTurbotGrant() *schema.Resource {
 	return &schema.Resource{
@@ -66,7 +69,7 @@ func resourceTurbotGrantCreate(d *schema.ResourceData, meta interface{}) error {
 	resourceAka := d.Get("resource").(string)
 	profileId := d.Get("profile_id").(string)
 	// build map of Grant properties
-	data := mapFromResourceData(d, grantProperties)
+	data := createMapFromResourceData(d, grantMap)
 	// create Grant returns turbot resource metadata containing the id
 	TurbotGrantMetadata, err := client.CreateGrant(profileId, resourceAka, data)
 	if err != nil {
@@ -109,7 +112,7 @@ func resourceTurbotGrantRead(d *schema.ResourceData, meta interface{}) error {
 	// assign parent_akas
 	d.Set("permission_level_id", Grant.PermissionLevelId)
 	d.Set("permission_type_id", Grant.PermissionTypeId)
-	d.Set("profile_id", &Grant.Turbot.ProfileId)
+	d.Set("profile_id", Grant.Turbot.ProfileId)
 	d.Set("resource", Grant.Turbot.ResourceId)
 	d.Set("resource_akas", resource_akas)
 	return nil
@@ -137,18 +140,18 @@ func resourceTurbotGrantImport(d *schema.ResourceData, meta interface{}) ([]*sch
 }
 
 func supressIfResourceAkaMatches(k, old, new string, d *schema.ResourceData) bool {
-	parent_AkasProperty, parent_AkasSet := d.GetOk("parent_akas")
+	resource_AkasProperty, resource_AkasSet := d.GetOk("resource_akas")
 	// if resource_id has not been set yet, do not suppress the diff
-	if !parent_AkasSet {
+	if !resource_AkasSet {
 		return false
 	}
 
-	parent_Akas, ok := parent_AkasProperty.([]interface{})
+	resource_Akas, ok := resource_AkasProperty.([]interface{})
 	if !ok {
 		return false
 	}
 	// if parent_Akas contains 'new', suppress diff
-	for _, aka := range parent_Akas {
+	for _, aka := range resource_Akas {
 		if aka.(string) == new {
 			return true
 		}
