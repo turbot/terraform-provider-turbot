@@ -30,7 +30,7 @@ func resourceTurbotGrant() *schema.Resource {
 				DiffSuppressFunc: supressIfResourceAkaMatches,
 				ForceNew:         true,
 			},
-			// when doing a read, fetch the resource akas to use in supressIfresourceAkaMatches()
+			// when doing a read, fetch the resource akas to use in supressIfResourceAkaMatches()
 			"resource_akas": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -81,7 +81,7 @@ func resourceTurbotGrantCreate(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	// assign parent_akas
+	// assign resource akas
 	d.Set("resource_akas", resource_akas)
 
 	// assign the id
@@ -104,12 +104,11 @@ func resourceTurbotGrantRead(d *schema.ResourceData, meta interface{}) error {
 
 	// assign results back into ResourceData
 
-	// set parent_Akas property by loading resource resource and fetching the akas
+	// set resource_akas property by loading resource resource and fetching the akas
 	resource_akas, err := client.GetResourceAkas(Grant.Turbot.ResourceId)
 	if err != nil {
 		return err
 	}
-	// assign parent_akas
 	d.Set("permission_level_id", Grant.PermissionLevelId)
 	d.Set("permission_type_id", Grant.PermissionTypeId)
 	d.Set("profile_id", Grant.Turbot.ProfileId)
@@ -140,17 +139,17 @@ func resourceTurbotGrantImport(d *schema.ResourceData, meta interface{}) ([]*sch
 }
 
 func supressIfResourceAkaMatches(k, old, new string, d *schema.ResourceData) bool {
-	resource_AkasProperty, resource_AkasSet := d.GetOk("resource_akas")
+	resourceAkasProperty, resourceAkasSet := d.GetOk("resource_akas")
 	// if resource_id has not been set yet, do not suppress the diff
-	if !resource_AkasSet {
+	if !resourceAkasSet {
 		return false
 	}
 
-	resource_Akas, ok := resource_AkasProperty.([]interface{})
+	resource_Akas, ok := resourceAkasProperty.([]interface{})
 	if !ok {
 		return false
 	}
-	// if parent_Akas contains 'new', suppress diff
+	// if resource_akas contains the 'new' aka, suppress diff
 	for _, aka := range resource_Akas {
 		if aka.(string) == new {
 			return true

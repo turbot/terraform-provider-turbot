@@ -131,16 +131,16 @@ func (client *Client) ResourceExists(id string) (bool, error) {
 	return exists, nil
 }
 
-func (client *Client) GetResourceAkas(ResourceId string) ([]string, error) {
-	resource, err := client.ReadResource(ResourceId, nil)
+func (client *Client) GetResourceAkas(resourceAka string) ([]string, error) {
+	resource, err := client.ReadResource(resourceAka, nil)
 	if err != nil {
 		log.Printf("[ERROR] Failed to load target resource; %s", err)
 		return nil, err
 	}
 	resource_Akas := resource.Turbot.Akas
-	// if this resource has no akas, just use the id
+	// if this resource has no akas, just use the one passed in
 	if resource_Akas == nil {
-		resource_Akas = []string{ResourceId}
+		resource_Akas = []string{resourceAka}
 	}
 	return resource_Akas, nil
 }
