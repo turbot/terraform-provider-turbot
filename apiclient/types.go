@@ -150,7 +150,9 @@ type ReadFullResourceResponse struct {
 }
 
 type ReadResourceListResponse struct {
-	ResourceList map[string]interface{}
+	ResourceList struct {
+		Items []Resource
+	}
 }
 
 type Resource struct {

@@ -1,8 +1,11 @@
 package turbot
 
 import (
+	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"log"
+	"time"
 )
 
 // properties which must be passed to a create/update call
@@ -13,7 +16,6 @@ func resourceTurbotShadowResource() *schema.Resource {
 		Create: resourceTurbotShadowResourceCreate,
 		Read:   resourceTurbotShadowResourceRead,
 		Delete: resourceTurbotShadowResourceDelete,
-		Exists: resourceTurbotShadowResourceExists,
 		Importer: &schema.ResourceImporter{
 			State: resourceTurbotShadowResourceImport,
 		},
@@ -26,100 +28,86 @@ func resourceTurbotShadowResource() *schema.Resource {
 	}
 }
 
-func resourceTurbotShadowResourceExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
-	client := meta.(*apiclient.Client)
-	id := d.Id()
-	return client.ResourceExists(id)
-}
-
 func resourceTurbotShadowResourceCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
+
 	filter := d.Get("filter").(string)
 	// create folder returns turbot resource metadata containing the id
-	resourceList, err := waitForResource(filter)
+	resource, err := waitForResource(filter, client)
 	if err != nil {
 		log.Println("[ERROR] Turbot shadow resource creation failed...", err)
 		return err
 	}
 
 	// assign the id
-	d.SetId(resourceList.Id)
+	d.SetId(resource.Turbot.Id)
 
 	return nil
 }
 
-func waitForResource(filter string, client *apiclient.Client) (string, error) {
+func waitForResource(filter string, client *apiclient.Client) (*apiclient.Resource, error) {
 	retryCount := 0
-	// retry for 15 minutes
-	maxRetries := 40
-	sleep := 20 * time.Second
+	// retry for 5 minutes
+	timeoutMins := 5
+	retryIntervalSecs := 5
+	maxRetries := (timeoutMins * 60) / retryIntervalSecs
+	sleep := time.Duration(retryIntervalSecs) * time.Second
 	log.Printf("Wait for the resource with filter: %s", filter)
 
 	for retryCount < maxRetries {
-		resourceList, err := getResource(filter, client)
+		log.Printf("retry count: %d", retryCount)
+
+		resource, err := getResource(filter, client)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
-		if resourceList {
-			log.Printf("resource with filter: %s", filter)
+		if resource != nil {
+			log.Printf("found resource")
 			// success
-			return resourceList, nil
+			return resource, nil
 		}
-		}
+
 		log.Printf("no resource with filter: %s, retrying!", filter)
 		time.Sleep(sleep)
 		retryCount++
 	}
-	return "", errors.New("Fetching resource timed out")
+	log.Printf("no resource with filter: %s, giving up!", filter)
+
+	return nil, fmt.Errorf("fetching resource with filter timed out after %d minutes", timeoutMins)
 }
 
-func getResource(filter string, client *apiclient.Client) ( Resource, error) {
-
-	list, err := client.ReadResourceList(filter, nil)
+func getResource(filter string, client *apiclient.Client) (*apiclient.Resource, error) {
+	resourceList, err := client.ReadResourceList(filter, nil)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	if len(list) == 1 {
+	if len(resourceList) == 1 {
 		log.Printf("resource with filter: %s", filter)
 		// success
-		return resourceList, nil
+		return &resourceList[0], nil
 	}
-	if len(list) > 1 {
-		return nil, errors.New("Try a better filter")
-
+	if len(resourceList) > 1 {
+		return nil, fmt.Errorf("filter %s returned %d items. Specify a filter returning a single item", filter, len(resourceList))
 	}
-	id := list.Data["id"]
-	return
+	return nil, nil
 }
 
-func resourceShadowResourceRead(d *schema.ResourceData, meta interface{}) error {
+func resourceTurbotShadowResourceRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
 	id := d.Id()
-
-	folder, err := client.ReadShadowResource(id)
+	exists, err := client.ResourceExists(id)
 	if err != nil {
-		if apiclient.NotFoundError(err) {
-			// folder was not found - clear id
-			d.SetId("")
-		}
 		return err
 	}
-
-	// assign results back into ResourceData
-
-	d.Set("filter", ShadowResource.Filter)
-
+	if !exists {
+		d.SetId("")
+		return nil
+	}
+	d.Set("filter", d.Get("filter"))
 	return nil
 }
 
 func resourceTurbotShadowResourceDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
-	id := d.Id()
-	err := client.DeleteResource(id)
-	if err != nil {
-		return err
-	}
-
 	// clear the id to show we have deleted
 	d.SetId("")
 
