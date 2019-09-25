@@ -23,6 +23,7 @@ func resourceTurbotShadowResource() *schema.Resource {
 			"filter": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 		},
 	}
