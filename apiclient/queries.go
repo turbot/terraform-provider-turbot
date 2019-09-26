@@ -107,7 +107,79 @@ func deletePolicySettingMutation() string {
 		}
 	}
 }`
+}
 
+// create smart folder mutation
+func createSmartFolderMutation() string {
+	return fmt.Sprintf(`mutation CreateSmartFolder($command: SmartFolderCommandInput) {
+		smartFolder: smartFolderCreate(command: $command) {
+			turbot {
+				id
+				parentId
+				akas
+			}
+		}
+	}`)
+}
+
+//update smart folder mutation
+
+func updateSmartFolderMutation() string {
+	return fmt.Sprintf(`mutation UpdateSmartFolder($command: SmartFolderCommandInput) {
+		smartFolder: smartFolderUpdate(command: $command) {
+			turbot {
+				id
+				parentId
+				akas
+			}
+		}
+	}`)
+}
+
+// attach folderResource Mutation
+
+func createSmartFolderAttachmentMutation() string {
+	return fmt.Sprintf(`mutation AttachSmartFolder($command: SmartFolderCommandInput) {
+		smartFolderAttach(command: $command) {
+			turbot {
+				id
+			}
+		}
+	}`)
+}
+
+// detach FolderResource mutation
+
+func detachSmartFolderAttachment() string {
+	return fmt.Sprintf(`mutation DetachSmartFolder($command: SmartFolderCommandInput) {
+		detachSmartFolder: smartFolderDetach(command: $command) {
+    		turbot {
+				id
+			}
+  		}
+	}`)
+}
+
+// read Smart Folder attached to multiple Resources
+
+func readSmartFolderQuery(id string) string {
+	return fmt.Sprintf(`{
+	smartFolder: resource(id:"%s") {
+		title: get(path:"title")
+		description: get(path:"description")
+		filter: get(path:"filters")
+		parent:	get(path:"turbot.id")
+		turbot: get(path:"turbot")
+   		attachedResources{
+			items{
+				turbot{
+					id
+					akas
+			}
+		}
+	}
+ }
+}`, id)
 }
 
 func findPolicySettingQuery(policyTypeUri, resourceAka string) string {
@@ -231,7 +303,7 @@ func updateResourceMutation() string {
 		turbot {
 		  id
 		  parentId
-          akas
+      akas
 		}
 	}
 }`

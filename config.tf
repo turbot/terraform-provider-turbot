@@ -1,11 +1,6 @@
-resource "turbot_google_directory" "test" {
-	title = "google_directory_test_provider2"
-	profile_id_template = "profileemail"
-	status = "New"
-	directory_type = "google"
-	client_id = "GoogleDirTest4"
-	client_secret = "fb-tbevaACsBKQHthzba-PH9"
-	parent = "tmod:@turbot/turbot#/"
-	description = "test Directory"
-}
+resource "turbot_smart_folder" "test" {
+  parent  = 				"tmod:@turbot/turbot#/"
+  filters = 			["arn:aws:iam::013122550996:user/pratik/accesskey/AKIAQGDRKHTKBON32K3J"],
+  description =     "Smart Folder Testing"
+  title = 					"smart_folder"
 }

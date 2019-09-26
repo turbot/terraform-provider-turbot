@@ -186,17 +186,39 @@ type ReadProfileResponse struct {
 	Resource Profile
 }
 
-type FindFolderResponse struct {
-	Folders struct {
-		Items []Folder
-	}
-}
-
 type Folder struct {
 	Turbot      TurbotResourceMetadata
 	Title       string
 	Description string
 	Parent      string
+}
+
+type ReadSmartFolderResponse struct {
+	SmartFolder SmartFolder
+}
+type CreateSmartFolderResponse struct {
+	SmartFolder struct {
+		Turbot TurbotResourceMetadata
+	}
+}
+
+type UpdateSmartFolderResponse struct {
+	SmartFolder struct {
+		Turbot TurbotResourceMetadata
+	}
+}
+
+type SmartFolder struct {
+	Turbot            TurbotResourceMetadata
+	Title             string
+	Description       string
+	Filters           []string
+	Parent            string
+	AttachedResources struct {
+		Items []struct {
+			Turbot TurbotResourceMetadata
+		}
+	}
 }
 
 type ReadLocalDirectoryResponse struct {
@@ -263,6 +285,20 @@ type GoogleDirectory struct {
 	GroupIdTemplate   string
 	LoginNameTemplate string
 	HostedName        string
+}
+
+type SmartFolderAttachment struct {
+	Turbot      TurbotResourceMetadata
+	Title       string
+	Description string
+	Filters     map[string]interface{}
+	Parent      string
+}
+
+type CreateSmartFolderAttachResponse struct {
+	SmartFolderAttach struct {
+		Turbot TurbotResourceMetadata
+	}
 }
 
 type ReadGrantResponse struct {
