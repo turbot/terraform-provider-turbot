@@ -7,6 +7,12 @@ import (
 
 // these are the properties which must be passed to a create/update call
 var samlDirectoryProperties = []string{"description", "directory_type", "status", "entry_point", "issuer", "certificate", "profile_id_template", "group_id_template", "name_id_format", "sign_requests", "signature_private_key", "signature_algorithm", "pool_id"}
+var samlDirectoryMetadataProperties = []string{"tags"}
+
+func getSamlDirectoryUpdateProperties() []string {
+	excludedProperties := []string{"directory_type"}
+	return removeProperties(samlDirectoryProperties, excludedProperties)
+}
 
 func resourceTurbotSamlDirectory() *schema.Resource {
 	return &schema.Resource{
@@ -19,15 +25,15 @@ func resourceTurbotSamlDirectory() *schema.Resource {
 			State: resourceTurbotSamlDirectoryImport,
 		},
 		Schema: map[string]*schema.Schema{
-			// aka of the parent resource
+			// aka of the parent resourcesamlDirectoryProperties
 			"parent": {
 				Type:     schema.TypeString,
 				Required: true,
 				// when doing a diff, the state file will contain the id of the parent bu the config contains the aka,
 				// so we need custom diff code
-				DiffSuppressFunc: supressIfParentAkaMatches,
+				DiffSuppressFunc: suppressIfParentAkaMatches,
 			},
-			// when doing a read, fetch the parent akas to use in supresIfParentAkaMatches()
+			// when doing a read, fetch the parent akas to use in suppressIfParentAkaMatches()
 			"parent_akas": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -87,6 +93,13 @@ func resourceTurbotSamlDirectory() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"tags": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 	}
 }
@@ -100,24 +113,30 @@ func resourceTurbotSamlDirectoryExists(d *schema.ResourceData, meta interface{})
 func resourceTurbotSamlDirectoryCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
 	parentAka := d.Get("parent").(string)
-	// build map of Saml directory properties
-	data := mapFromResourceData(d, samlDirectoryProperties)
-	data["status"] = "New"
-	data["directoryType"] = "saml"
-	turbotMetadata, err := client.CreateSamlDirectory(parentAka, data)
+	// build mutation payload
+	payload := map[string]map[string]interface{}{
+		"data":       mapFromResourceData(d, samlDirectoryProperties),
+		"turbotData": mapFromResourceData(d, samlDirectoryMetadataProperties),
+	}
+	// set computed properties
+	payload["data"]["status"] = "New"
+	payload["data"]["directoryType"] = "saml"
+
+	turbotMetadata, err := client.CreateSamlDirectory(parentAka, payload)
 	if err != nil {
 		return err
 	}
 
 	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(turbotMetadata.ParentId, d, meta); err != nil {
+	parentAkas, err := client.GetResourceAkas(turbotMetadata.ParentId)
+	if err != nil {
 		return err
 	}
-
+	d.Set("parent_akas", parentAkas)
 	// assign the id
 	d.SetId(turbotMetadata.Id)
-	d.Set("status", data["status"])
-	d.Set("directoryType", data["directoryType"])
+	d.Set("status", payload["data"]["status"])
+	d.Set("directoryType", payload["data"]["directoryType"])
 	return nil
 }
 
@@ -126,17 +145,22 @@ func resourceTurbotSamlDirectoryUpdate(d *schema.ResourceData, meta interface{})
 	parentAka := d.Get("parent").(string)
 	id := d.Id()
 
-	// build map of Saml directory properties
-	data := mapFromResourceData(d, folderProperties)
+	payload := map[string]map[string]interface{}{
+		"data":       mapFromResourceData(d, getSamlDirectoryUpdateProperties()),
+		"turbotData": mapFromResourceData(d, samlDirectoryMetadataProperties),
+	}
+
 	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.UpdateDirectory(id, parentAka, data)
+	turbotMetadata, err := client.UpdateSamlDirectory(id, parentAka, payload)
 	if err != nil {
 		return err
 	}
 	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(turbotMetadata.ParentId, d, meta); err != nil {
+	parentAkas, err := client.GetResourceAkas(turbotMetadata.ParentId)
+	if err != nil {
 		return err
 	}
+	d.Set("parent_akas", parentAkas)
 	return nil
 }
 
@@ -156,9 +180,11 @@ func resourceTurbotSamlDirectoryRead(d *schema.ResourceData, meta interface{}) e
 	// assign results back into ResourceData
 
 	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(samlDirectory.Turbot.ParentId, d, meta); err != nil {
+	parentAkas, err := client.GetResourceAkas(samlDirectory.Turbot.ParentId)
+	if err != nil {
 		return err
 	}
+	d.Set("parent_akas", parentAkas)
 	d.Set("parent", samlDirectory.Parent)
 	d.Set("title", samlDirectory.Title)
 	return nil

@@ -27,22 +27,21 @@ func TestAccFolder(t *testing.T) {
 			},
 			{
 				Config: testAccFolderUpdateDescConfig(),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckFolderExists("turbot_folder.test"),
-					resource.TestCheckResourceAttr(
-						"turbot_folder.test", "title", "provider_test"),
-					resource.TestCheckResourceAttr(
-						"turbot_folder.test", "description", "test folder for turbot terraform provider"),
-				),
+				Check: resource.TestCheckResourceAttr(
+					"turbot_folder.test", "description", "test folder for turbot terraform provider"),
 			},
 			{
 				Config: testAccFolderUpdateTitleConfig(),
+				Check: resource.TestCheckResourceAttr(
+					"turbot_folder.test", "title", "provider_test_upd"),
+			},
+			{
+				Config: testAccFolderTagsConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckFolderExists("turbot_folder.test"),
 					resource.TestCheckResourceAttr(
-						"turbot_folder.test", "title", "provider_test_upd"),
+						"turbot_folder.test", "tags.Name", "Provider Test"),
 					resource.TestCheckResourceAttr(
-						"turbot_folder.test", "description", "test folder for turbot terraform provider"),
+						"turbot_folder.test", "tags.Environment", "foo"),
 				),
 			},
 		},
@@ -131,6 +130,20 @@ resource "turbot_folder" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	title = "provider_test_upd"
 	description = "test folder for turbot terraform provider"
+}
+`
+}
+
+func testAccFolderTagsConfig() string {
+	return `
+resource "turbot_folder" "test" {
+	parent = "tmod:@turbot/turbot#/"
+	title = "provider_test_upd"
+	description = "test folder for turbot terraform provider"
+	tags = {
+      "Name" = "Provider Test"
+      "Environment" = "foo"
+    }
 }
 `
 }

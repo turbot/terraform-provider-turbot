@@ -25,9 +25,9 @@ func resourceTurbotProfile() *schema.Resource {
 				Required: true,
 				// when doing a diff, the state file will contain the id of the parent bu tthe config contains the aka,
 				// so we need custom diff code
-				DiffSuppressFunc: supressIfParentAkaMatches,
+				DiffSuppressFunc: suppressIfParentAkaMatches,
 			},
-			// when doing a read, fetch the parent akas to use in supressIfParentAkaMatches()
+			// when doing a read, fetch the parent akas to use in suppressIfParentAkaMatches()
 			"parent_akas": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -126,7 +126,7 @@ func resourceTurbotProfileUpdate(d *schema.ResourceData, meta interface{}) error
 	id := d.Id()
 
 	// build map of profile properties
-	data := mapFromResourceData(d, folderProperties)
+	data := mapFromResourceData(d, folderDataProperties)
 
 	// create profile returns turbot resource metadata containing the id
 	turbotMetadata, err := client.UpdateProfile(id, parentAka, data)

@@ -5,8 +5,8 @@ import (
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
 )
 
-// these are the properties which must be passed to a create/update call
-var grantMap = map[string]string{
+// map of Terraform properties to Turbot properties that we pass to create and update mutations
+var grantDataMap = map[string]string{
 	"permission_type":  "permissionTypeAka",
 	"permission_level": "permissionLevelAka",
 }
@@ -69,7 +69,7 @@ func resourceTurbotGrantCreate(d *schema.ResourceData, meta interface{}) error {
 	resourceAka := d.Get("resource").(string)
 	profileId := d.Get("profile_id").(string)
 	// build map of Grant properties
-	data := createMapFromResourceData(d, grantMap)
+	data := mapFromResourceDataWithPropertyMap(d, grantDataMap)
 	// create Grant returns turbot resource metadata containing the id
 	TurbotGrantMetadata, err := client.CreateGrant(profileId, resourceAka, data)
 	if err != nil {

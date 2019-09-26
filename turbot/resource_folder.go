@@ -6,7 +6,8 @@ import (
 )
 
 // properties which must be passed to a create/update call
-var folderProperties = []string{"title", "description"}
+var folderDataProperties = []string{"title", "description"}
+var folderMetadataProperties = []string{"tags"}
 
 func resourceTurbotFolder() *schema.Resource {
 	return &schema.Resource{
@@ -25,9 +26,9 @@ func resourceTurbotFolder() *schema.Resource {
 				Required: true,
 				// when doing a diff, the state file will contain the id of the parent bu tthe config contains the aka,
 				// so we need custom diff code
-				DiffSuppressFunc: supressIfParentAkaMatches,
+				DiffSuppressFunc: suppressIfParentAkaMatches,
 			},
-			// when doing a read, fetch the parent akas to use in supressIfParentAkaMatches()
+			// when doing a read, fetch the parent akas to use in suppressIfParentAkaMatches()
 			"parent_akas": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -43,6 +44,13 @@ func resourceTurbotFolder() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"tags": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 	}
 }
@@ -56,10 +64,14 @@ func resourceTurbotFolderExists(d *schema.ResourceData, meta interface{}) (b boo
 func resourceTurbotFolderCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
 	parentAka := d.Get("parent").(string)
-	// build map of folder properties
-	data := mapFromResourceData(d, folderProperties)
+	// build mutation payload
+	payload := map[string]map[string]interface{}{
+		"data":       mapFromResourceData(d, folderDataProperties),
+		"turbotData": mapFromResourceData(d, folderMetadataProperties),
+	}
+
 	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.CreateFolder(parentAka, data)
+	turbotMetadata, err := client.CreateFolder(parentAka, payload)
 	if err != nil {
 		return err
 	}
@@ -83,11 +95,13 @@ func resourceTurbotFolderUpdate(d *schema.ResourceData, meta interface{}) error 
 	parentAka := d.Get("parent").(string)
 	id := d.Id()
 
-	// build map of folder properties
-	data := mapFromResourceData(d, folderProperties)
-
+	// build mutation payload
+	payload := map[string]map[string]interface{}{
+		"data":       mapFromResourceData(d, folderDataProperties),
+		"turbotData": mapFromResourceData(d, folderMetadataProperties),
+	}
 	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.UpdateFolder(id, parentAka, data)
+	turbotMetadata, err := client.UpdateFolder(id, parentAka, payload)
 	if err != nil {
 		return err
 	}
