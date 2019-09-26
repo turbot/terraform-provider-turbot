@@ -1,19 +1,21 @@
 package turbot
 
 import (
+	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"log"
 	"strings"
 )
 
 func resourceTurbotSmartFolderAttachemnt() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceTurbotSmartFolderAttachemntCreate,
-		Read:   resourceTurbotSmartFolderAttachemntRead,
-		Delete: resourceTurbotSmartFolderAttachemntDelete,
-		Exists: resourceTurbotSmartFolderAttachemntExists,
+		Create: resourceTurbotSmartFolderAttachmentCreate,
+		Read:   resourceTurbotSmartFolderAttachmentRead,
+		Delete: resourceTurbotSmartFolderAttachmentDelete,
+		Exists: resourceTurbotSmartFolderAttachmentExists,
 		Importer: &schema.ResourceImporter{
-			State: resourceTurbotSmartFolderAttachemntImport,
+			State: resourceTurbotSmartFolderAttachmentImport,
 		},
 		Schema: map[string]*schema.Schema{
 			"resource": {
@@ -30,53 +32,64 @@ func resourceTurbotSmartFolderAttachemnt() *schema.Resource {
 	}
 }
 
-func resourceTurbotSmartFolderAttachemntExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
+func resourceTurbotSmartFolderAttachmentExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
 	client := meta.(*apiclient.Client)
-	id := d.Id()
-	return client.ResourceExists(id)
+	smartFolderId, resource := parseId(d.Id())
+	// execute api call
+	smartFolder, err := client.ReadSmartFolder(smartFolderId)
+	if err != nil {
+		return false, fmt.Errorf("error reading smart folder: %s", err.Error())
+	}
+
+	//find resource aka in list of attached resources
+	for _, attachedResource := range smartFolder.AttachedResources.Items {
+		log.Println("attachedResource", attachedResource)
+		if resource == attachedResource.Turbot.Id {
+			return true, nil
+		}
+		log.Println("Target resource", resource)
+		log.Println("Resource id", attachedResource.Turbot.Id)
+		for _, aka := range attachedResource.Turbot.Akas {
+			if aka == resource {
+				log.Println("Exists", aka)
+				return true, nil
+			}
+		}
+	}
+	return false, nil
 }
 
-func resourceTurbotSmartFolderAttachemntCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceTurbotSmartFolderAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
 	resource := d.Get("resource").(string)
 	smartFolder := d.Get("smart_folder").(string)
 	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.CreateSmartFolderAttachment(resource, smartFolder)
+	_, err := client.CreateSmartFolderAttachment(resource, smartFolder)
 	if err != nil {
 		return err
 	}
 
 	// assign the id
-	var stateId = buildId(turbotMetadata.Id, resource)
+	var stateId = buildId(smartFolder, resource)
 	d.SetId(stateId)
 	return nil
 }
 
-func resourceTurbotSmartFolderAttachemntRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
-	var id = strings.Split(d.Id(), "_")[0]
-	_, err := client.ReadSmartFolderAttachment(id)
-	if err != nil {
-		if apiclient.NotFoundError(err) {
-			// folder was not found - clear id
-			d.SetId("")
-		}
-		return err
-	}
-
+func resourceTurbotSmartFolderAttachmentRead(d *schema.ResourceData, meta interface{}) error {
+	smartFolder, resource := parseId(d.Id())
 	// assign results back into ResourceData
 
-	//d.Set("resource", smartFolderAttachment.Resource)
-	//d.Set("smart_folder", smartFolderAttachment.SmartFolderAttachment)
+	d.Set("resource", resource)
+	d.Set("smart_folder", smartFolder)
 
 	return nil
 }
 
-func resourceTurbotSmartFolderAttachemntDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceTurbotSmartFolderAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
-	resourceId := d.Get("resource_id").(string)
-	resourceGroupId := d.Get("resource_group_id").(string)
-	err := client.DeleteSmartFolderAttachment(resourceId, resourceGroupId)
+	resource := d.Get("resource").(string)
+	smartFolder := d.Get("smart_folder").(string)
+	err := client.DeleteSmartFolderAttachment(resource, smartFolder)
 	if err != nil {
 		return err
 	}
@@ -87,8 +100,8 @@ func resourceTurbotSmartFolderAttachemntDelete(d *schema.ResourceData, meta inte
 	return nil
 }
 
-func resourceTurbotSmartFolderAttachemntImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-	if err := resourceTurbotSmartFolderAttachemntRead(d, meta); err != nil {
+func resourceTurbotSmartFolderAttachmentImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	if err := resourceTurbotSmartFolderAttachmentRead(d, meta); err != nil {
 		return nil, err
 	}
 	return []*schema.ResourceData{d}, nil
@@ -96,4 +109,11 @@ func resourceTurbotSmartFolderAttachemntImport(d *schema.ResourceData, meta inte
 
 func buildId(smartFolder, resource string) string {
 	return smartFolder + "_" + resource
+}
+
+func parseId(id string) (smartFolder, resource string) {
+	segments := strings.Split(id, "_")
+	smartFolder = segments[0]
+	resource = segments[1]
+	return
 }

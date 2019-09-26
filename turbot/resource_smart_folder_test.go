@@ -25,13 +25,6 @@ func TestAccSmartFolder(t *testing.T) {
 					resource.TestCheckResourceAttr("turbot_smart_folder.test", "filters", "arn:aws:iam::013122550996:user/pratik/accesskey/AKIAQGDRKHTKBON32K3J"),
 				),
 			},
-			{
-				Config: testAccSmartFolderUpdateDescConfig(),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSmartFolderExists("turbot_smart_folder.test"),
-					resource.TestCheckResourceAttr("turbot_smart_folder.test", "description", "Smart Folder updated"),
-				),
-			},
 		},
 	})
 }

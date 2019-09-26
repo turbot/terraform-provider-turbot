@@ -19,8 +19,8 @@ func TestAccSmartFolderAttachment(t *testing.T) {
 				Config: testAccSmartFolderAttachmentConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSmartFolderAttachmentExists("turbot_smart_folder_attachment.test"),
-					resource.TestCheckResourceAttr("turbot_smart_folder_attachment.test", "resource_id", "167225763707951"),
-					resource.TestCheckResourceAttr("turbot_smart_folder_attachment.test", " resource_group_id", "171223595183451"),
+					resource.TestCheckResourceAttr("turbot_smart_folder_attachment.test", "resource", "167225763707951"),
+					resource.TestCheckResourceAttr("turbot_smart_folder_attachment.test", "smart_folder", "171223595183451"),
 				),
 			},
 		},
@@ -31,8 +31,8 @@ func TestAccSmartFolderAttachment(t *testing.T) {
 func testAccSmartFolderAttachmentConfig() string {
 	return `
     resource "turbot_smart_folder_attachment" "test" {
-        resource_id =               "167225763707951",
-        resource_group_id =     "17122359518345"
+        resource = "167225763707951"
+        smart_folder = "171222424857954"
     }
 `
 }
@@ -48,7 +48,7 @@ func testAccCheckSmartFolderAttachmentExists(resource string) resource.TestCheck
 			return fmt.Errorf("No Record ID is set")
 		}
 		client := testAccProvider.Meta().(*apiclient.Client)
-		_, err := client.ReadSmartFolderAttachment(rs.Primary.ID)
+		_, err := client.ReadSmartFolder(rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("error fetching item with resource %s. %s", resource, err)
 		}
@@ -61,7 +61,7 @@ func testAccCheckSmartFolderAttachmentDestroy(s *terraform.State) error {
 		if rs.Type != "smartFolder" {
 			continue
 		}
-		_, err := client.ReadSmartFolderAttachment(rs.Primary.ID)
+		_, err := client.ReadSmartFolder(rs.Primary.ID)
 		if err == nil {
 			return fmt.Errorf("Alert still exists")
 		}

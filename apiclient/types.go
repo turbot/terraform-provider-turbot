@@ -194,7 +194,7 @@ type Folder struct {
 }
 
 type ReadSmartFolderResponse struct {
-	Resource SmartFolder
+	SmartFolder SmartFolder
 }
 type CreateSmartFolderResponse struct {
 	SmartFolder struct {
@@ -209,11 +209,16 @@ type UpdateSmartFolderResponse struct {
 }
 
 type SmartFolder struct {
-	Turbot      TurbotMetadata
-	Title       string
-	Description string
-	Filters     map[string]interface{}
-	Parent      string
+	Turbot            TurbotMetadata
+	Title             string
+	Description       string
+	Filters           map[string]interface{}
+	Parent            string
+	AttachedResources struct {
+		Items []struct {
+			Turbot TurbotMetadata
+		}
+	}
 }
 
 type ReadLocalDirectoryResponse struct {
@@ -291,16 +296,11 @@ type SmartFolderAttachment struct {
 }
 
 type CreateSmartFolderAttachResponse struct {
-	SmartFolder struct {
+	SmartFolderAttach struct {
 		Turbot TurbotMetadata
 	}
 }
 
-//type ReadSmartFolderAttachResponse struct {
-//	SmartFolder struct {
-//		Items []string
-//	}
-//}
 
 type ReadGrantResponse struct {
 	Grant Grant

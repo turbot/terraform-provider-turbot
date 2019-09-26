@@ -31,21 +31,15 @@ func (client *Client) CreateSmartFolder(parent string, data map[string]interface
 }
 
 func (client *Client) ReadSmartFolder(id string) (*SmartFolder, error) {
-	// create a map of the properties we want the graphql query to return
-
-	properties := map[string]string{
-		"title":       "title",
-		"parent":      "turbot.parentId",
-		"description": "description",
-	}
-	query := readResourceQuery(id, properties)
+	query := readSmartFolderQuery(id)
+	//var responseData interface{}
 	responseData := &ReadSmartFolderResponse{}
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
 		return nil, fmt.Errorf("error reading folder: %s", err.Error())
 	}
-	return &responseData.Resource, nil
+	return &responseData.SmartFolder, nil
 }
 
 func (client *Client) UpdateSmartFolder(id, parent string, data map[string]interface{}) (*TurbotMetadata, error) {
@@ -59,7 +53,7 @@ func (client *Client) UpdateSmartFolder(id, parent string, data map[string]inter
 		},
 	}
 	commandMeta := map[string]interface{}{
-		"resourceGroupId": id,
+		"smartFolderId": id,
 	}
 	variables := map[string]interface{}{
 		"command": map[string]interface{}{
