@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-func (client *Client) CreateSmartFolder(parent string, data map[string]interface{}) (*TurbotMetadata, error) {
+func (client *Client) CreateSmartFolder(parent string, data map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := createSmartFolderMutation()
 	responseData := &CreateSmartFolderResponse{}
 	var commandPayload = map[string]interface{}{
@@ -42,7 +42,7 @@ func (client *Client) ReadSmartFolder(id string) (*SmartFolder, error) {
 	return &responseData.SmartFolder, nil
 }
 
-func (client *Client) UpdateSmartFolder(id, parent string, data map[string]interface{}) (*TurbotMetadata, error) {
+func (client *Client) UpdateSmartFolder(id, parent string, data map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := updateSmartFolderMutation()
 	responseData := &UpdateSmartFolderResponse{}
 	//var responseData interface{}

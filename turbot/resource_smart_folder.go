@@ -24,11 +24,11 @@ func resourceTurbotSmartFolder() *schema.Resource {
 			"parent": {
 				Type:     schema.TypeString,
 				Required: true,
-				// when doing a diff, the state file will contain the id of the parent bu tthe config contains the aka,
+				// when doing a diff, the state file will contain the id of the parent but the config contains the aka,
 				// so we need custom diff code
 				DiffSuppressFunc: supressIfParentAkaMatches,
 			},
-			//when doing a read, fetch the parent akas to use in supressIfParentAkaMatches()
+			//when doing a read, fetch the parent akas to use in suppressIfParentAkaMatches()
 			"parent_akas": {
 				Type:     schema.TypeList,
 				Computed: true,

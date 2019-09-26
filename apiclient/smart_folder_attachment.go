@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func (client *Client) CreateSmartFolderAttachment(resourceId, resourceGroupId string) (*TurbotMetadata, error) {
+func (client *Client) CreateSmartFolderAttachment(resourceId, resourceGroupId string) (*TurbotResourceMetadata, error) {
 	query := createSmartFolderAttachmentMutation()
 	responseData := &CreateSmartFolderAttachResponse{}
 	//var res interface{}

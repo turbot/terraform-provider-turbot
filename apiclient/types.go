@@ -198,25 +198,25 @@ type ReadSmartFolderResponse struct {
 }
 type CreateSmartFolderResponse struct {
 	SmartFolder struct {
-		Turbot TurbotMetadata
+		Turbot TurbotResourceMetadata
 	}
 }
 
 type UpdateSmartFolderResponse struct {
 	SmartFolder struct {
-		Turbot TurbotMetadata
+		Turbot TurbotResourceMetadata
 	}
 }
 
 type SmartFolder struct {
-	Turbot            TurbotMetadata
+	Turbot            TurbotResourceMetadata
 	Title             string
 	Description       string
 	Filters           []string
 	Parent            string
 	AttachedResources struct {
 		Items []struct {
-			Turbot TurbotMetadata
+			Turbot TurbotResourceMetadata
 		}
 	}
 }
@@ -288,7 +288,7 @@ type GoogleDirectory struct {
 }
 
 type SmartFolderAttachment struct {
-	Turbot      TurbotMetadata
+	Turbot      TurbotResourceMetadata
 	Title       string
 	Description string
 	Filters     map[string]interface{}
@@ -297,10 +297,9 @@ type SmartFolderAttachment struct {
 
 type CreateSmartFolderAttachResponse struct {
 	SmartFolderAttach struct {
-		Turbot TurbotMetadata
+		Turbot TurbotResourceMetadata
 	}
 }
-
 
 type ReadGrantResponse struct {
 	Grant Grant
