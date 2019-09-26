@@ -6,7 +6,8 @@ import (
 )
 
 // properties which must be passed to a create/update call
-var smartFolderProperties = []string{"title", "description", "filters"}
+// TODO add filters here once we are consistent with the db
+var smartFolderProperties = []string{"title", "description"}
 
 func resourceTurbotSmartFolder() *schema.Resource {
 	return &schema.Resource{
@@ -43,12 +44,9 @@ func resourceTurbotSmartFolder() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"filters": {
-				Type:     schema.TypeList,
+			"filter": {
+				Type:     schema.TypeString,
 				Required: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
 			},
 		},
 	}
@@ -65,6 +63,9 @@ func resourceTurbotSmartFolderCreate(d *schema.ResourceData, meta interface{}) e
 	parentAka := d.Get("parent").(string)
 	// build map of folder properties
 	data := mapFromResourceData(d, folderProperties)
+	// TODO currently turbot accepts array of filters but only uses the first
+	data["filters"] = []string{d.Get("filter").(string)}
+
 	// create folder returns turbot resource metadata containing the id
 	turbotMetadata, err := client.CreateSmartFolder(parentAka, data)
 	if err != nil {
@@ -88,6 +89,8 @@ func resourceTurbotSmartFolderUpdate(d *schema.ResourceData, meta interface{}) e
 
 	// build map of folder properties
 	data := mapFromResourceData(d, smartFolderProperties)
+	// TODO currently turbot accepts array of filters but only uses the first
+	data["filters"] = []string{d.Get("filter").(string)}
 
 	// create folder returns turbot resource metadata containing the id
 	turbotMetadata, err := client.UpdateSmartFolder(id, parentAka, data)
@@ -120,7 +123,8 @@ func resourceTurbotSmartFolderRead(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 	d.Set("parent_id", smartFolder.Parent)
-	d.Set("filters", smartFolder.Filters)
+	// TODO currently turbot accepts array of filters but only uses the first
+	d.Set("filter", smartFolder.Filters[0])
 	d.Set("title", smartFolder.Title)
 	d.Set("description", smartFolder.Description)
 

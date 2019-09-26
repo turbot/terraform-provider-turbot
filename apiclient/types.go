@@ -212,7 +212,7 @@ type SmartFolder struct {
 	Turbot            TurbotMetadata
 	Title             string
 	Description       string
-	Filters           map[string]interface{}
+	Filters           []string
 	Parent            string
 	AttachedResources struct {
 		Items []struct {
