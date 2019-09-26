@@ -46,7 +46,7 @@ func resourceTurbotSmartFolder() *schema.Resource {
 			},
 			"filter": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 		},
 	}
@@ -64,7 +64,9 @@ func resourceTurbotSmartFolderCreate(d *schema.ResourceData, meta interface{}) e
 	// build map of folder properties
 	data := mapFromResourceData(d, smartFolderProperties)
 	// TODO currently turbot accepts array of filters but only uses the first
-	data["filters"] = []string{d.Get("filter").(string)}
+	if filter := d.Get("filter").(string); filter != "" {
+		data["filters"] = []string{filter}
+	}
 
 	// create folder returns turbot resource metadata containing the id
 	turbotMetadata, err := client.CreateSmartFolder(parentAka, data)
@@ -93,7 +95,10 @@ func resourceTurbotSmartFolderUpdate(d *schema.ResourceData, meta interface{}) e
 	// build map of folder properties
 	data := mapFromResourceData(d, smartFolderProperties)
 	// TODO currently turbot accepts array of filters but only uses the first
-	data["filters"] = []string{d.Get("filter").(string)}
+	if filter := d.Get("filter").(string); filter != "" {
+		data["filters"] = []string{filter}
+	}
+	//data["filters"] = []string{d.Get("filter").(string)}
 
 	// create folder returns turbot resource metadata containing the id
 	turbotMetadata, err := client.UpdateSmartFolder(id, parentAka, data)
@@ -129,11 +134,14 @@ func resourceTurbotSmartFolderRead(d *schema.ResourceData, meta interface{}) err
 	if err != nil {
 		return err
 	}
+	if len(smartFolder.Filters) > 0 {
+		d.Set("filter", smartFolder.Filters[0])
+	}
 	// assign parent_akas
 	d.Set("parent_akas", parentAkas)
 	d.Set("parent_id", smartFolder.Parent)
 	// TODO currently turbot accepts array of filters but only uses the first
-	d.Set("filter", smartFolder.Filters[0])
+
 	d.Set("title", smartFolder.Title)
 	d.Set("description", smartFolder.Description)
 

@@ -167,6 +167,7 @@ func readSmartFolderQuery(id string) string {
 	smartFolder: resource(id:"%s") {
 		title: get(path:"title")
 		description: get(path:"description")
+		filter: get(path:"filters")
 		parent:	get(path:"turbot.id")
 		turbot: get(path:"turbot")
    		attachedResources{
