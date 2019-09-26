@@ -70,7 +70,7 @@ func waitForResourceWithFilter(filter string, client *apiclient.Client) (*apicli
 	retryIntervalSecs := 5
 	maxRetries := (timeoutMins * 60) / retryIntervalSecs
 	sleep := time.Duration(retryIntervalSecs) * time.Second
-	log.Printf("Wait for the resource with filter: %s", filter)
+	log.Printf("Wait for the resource with filter: \"%s\"", filter)
 
 	for retryCount < maxRetries {
 		log.Printf("retry count: %d", retryCount)
@@ -85,11 +85,11 @@ func waitForResourceWithFilter(filter string, client *apiclient.Client) (*apicli
 			return resource, nil
 		}
 
-		log.Printf("no resource with filter: %s, retrying!", filter)
+		log.Printf("no resource with filter: \"%s\", retrying!", filter)
 		time.Sleep(sleep)
 		retryCount++
 	}
-	log.Printf("no resource with filter: %s, giving up!", filter)
+	log.Printf("no resource with filter: \"%s\", giving up!", filter)
 
 	return nil, fmt.Errorf("fetching resource with filter timed out after %d minutes", timeoutMins)
 }
@@ -100,12 +100,12 @@ func getResource(filter string, client *apiclient.Client) (*apiclient.Resource, 
 		return nil, err
 	}
 	if len(resourceList) == 1 {
-		log.Printf("resource with filter: %s", filter)
+		log.Printf("resource with filter: \"%s\"", filter)
 		// success
 		return &resourceList[0], nil
 	}
 	if len(resourceList) > 1 {
-		return nil, fmt.Errorf("filter %s returned %d items. Specify a filter returning a single item", filter, len(resourceList))
+		return nil, fmt.Errorf("filter \"%s\" returned %d items. Specify a filter returning a single item", filter, len(resourceList))
 	}
 	return nil, nil
 }
