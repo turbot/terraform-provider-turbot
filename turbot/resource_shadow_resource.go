@@ -39,11 +39,11 @@ func resourceTurbotShadowResourceCreate(d *schema.ResourceData, meta interface{}
 
 	filter := d.Get("filter").(string)
 	resourceAka := d.Get("resource").(string)
-	if (filter == "" && resourceAka == "") {
+	if filter == "" && resourceAka == "" {
 		return fmt.Errorf("one of resource or filter should be specified")
 	}
 
-	if (filter != "" && resourceAka != "") {
+	if filter != "" && resourceAka != "" {
 		return fmt.Errorf("resource and filter must not both be specified")
 	}
 
@@ -51,7 +51,7 @@ func resourceTurbotShadowResourceCreate(d *schema.ResourceData, meta interface{}
 		filter = fmt.Sprintf("resource:%s", resourceAka)
 	}
 	// create folder returns turbot resource metadata containing the id
-	resource, err := waitForResourceWithFilter(filter, client)
+	resource, err := waitForResource(filter, client)
 	if err != nil {
 		log.Println("[ERROR] Turbot shadow resource creation failed...", err)
 		return err
@@ -59,22 +59,17 @@ func resourceTurbotShadowResourceCreate(d *schema.ResourceData, meta interface{}
 
 	// assign the id
 	d.SetId(resource.Turbot.Id)
-
 	return nil
 }
 
-func waitForResourceWithFilter(filter string, client *apiclient.Client) (*apiclient.Resource, error) {
+func waitForResource(filter string, client *apiclient.Client) (*apiclient.Resource, error) {
 	retryCount := 0
 	// retry for 5 minutes
 	timeoutMins := 5
 	retryIntervalSecs := 5
 	maxRetries := (timeoutMins * 60) / retryIntervalSecs
 	sleep := time.Duration(retryIntervalSecs) * time.Second
-	log.Printf("Wait for the resource with filter: \"%s\"", filter)
-
 	for retryCount < maxRetries {
-		log.Printf("retry count: %d", retryCount)
-
 		resource, err := getResource(filter, client)
 		if err != nil {
 			return nil, err
@@ -84,13 +79,9 @@ func waitForResourceWithFilter(filter string, client *apiclient.Client) (*apicli
 			// success
 			return resource, nil
 		}
-
-		log.Printf("no resource with filter: \"%s\", retrying!", filter)
 		time.Sleep(sleep)
 		retryCount++
 	}
-	log.Printf("no resource with filter: \"%s\", giving up!", filter)
-
 	return nil, fmt.Errorf("fetching resource with filter timed out after %d minutes", timeoutMins)
 }
 
@@ -100,7 +91,6 @@ func getResource(filter string, client *apiclient.Client) (*apiclient.Resource, 
 		return nil, err
 	}
 	if len(resourceList) == 1 {
-		log.Printf("resource with filter: \"%s\"", filter)
 		// success
 		return &resourceList[0], nil
 	}
