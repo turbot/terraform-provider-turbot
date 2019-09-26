@@ -177,7 +177,7 @@ func resourceTurbotResourceImport(d *schema.ResourceData, meta interface{}) ([]*
 
 // the 'parent' in the config is an aka - however the state file will have an id.
 // to perform a diff we also store parent_akas in state file, which is the list of akas for the parent
-// if the new value of parent existts in parent_akas, then suppress diff
+// if the new value of parent exists in parent_akas, then suppress diff
 func suppressIfParentAkaMatches(k, old, new string, d *schema.ResourceData) bool {
 	parentAkasProperty, parentAkasSet := d.GetOk("parent_akas")
 	// if parent_id has not been set yet, do not suppress the diff
