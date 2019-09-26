@@ -175,26 +175,6 @@ func resourceTurbotResourceImport(d *schema.ResourceData, meta interface{}) ([]*
 	return []*schema.ResourceData{d}, nil
 }
 
-func setParentAkas(parentId string, d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
-
-	// load parent resource to get parent_akas
-	parent, err := client.ReadResource(parentId, nil)
-	if err != nil {
-		log.Printf("[ERROR] Failed to load parentAka resource; %s", err)
-		return err
-	}
-	parentAkas := parent.Turbot.Akas
-	// if this resource has no akas, just use the id
-	if parentAkas == nil {
-		parentAkas = []string{parentId}
-	}
-
-	// assign parent_akas
-	d.Set("parent_akas", parent.Turbot.Akas)
-	return nil
-}
-
 // the 'parent' in the config is an aka - however the state file will have an id.
 // to perform a diff we also store parent_akas in state file, which is the list of akas for the parent
 // if the new value of parent exists in parent_akas, then suppress diff

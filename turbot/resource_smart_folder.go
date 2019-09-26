@@ -26,7 +26,7 @@ func resourceTurbotSmartFolder() *schema.Resource {
 				Required: true,
 				// when doing a diff, the state file will contain the id of the parent but the config contains the aka,
 				// so we need custom diff code
-				DiffSuppressFunc: supressIfParentAkaMatches,
+				DiffSuppressFunc: suppressIfParentAkaMatches,
 			},
 			//when doing a read, fetch the parent akas to use in suppressIfParentAkaMatches()
 			"parent_akas": {
@@ -62,7 +62,7 @@ func resourceTurbotSmartFolderCreate(d *schema.ResourceData, meta interface{}) e
 	client := meta.(*apiclient.Client)
 	parentAka := d.Get("parent").(string)
 	// build map of folder properties
-	data := mapFromResourceData(d, folderProperties)
+	data := mapFromResourceData(d, smartFolderProperties)
 	// TODO currently turbot accepts array of filters but only uses the first
 	data["filters"] = []string{d.Get("filter").(string)}
 
@@ -72,10 +72,13 @@ func resourceTurbotSmartFolderCreate(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 
-	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(turbotMetadata.ParentId, d, meta); err != nil {
+	// set parent_akas property by loading resource resource and fetching the akas
+	parentAkas, err := client.GetResourceAkas(turbotMetadata.ParentId)
+	if err != nil {
 		return err
 	}
+	// assign parent_akas
+	d.Set("parent_akas", parentAkas)
 
 	// assign the id
 	d.SetId(turbotMetadata.Id)
@@ -97,10 +100,13 @@ func resourceTurbotSmartFolderUpdate(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return err
 	}
-	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(turbotMetadata.ParentId, d, meta); err != nil {
+	// set parent_akas property by loading resource resource and fetching the akas
+	parentAkas, err := client.GetResourceAkas(turbotMetadata.ParentId)
+	if err != nil {
 		return err
 	}
+	// assign parent_akas
+	d.Set("parent_akas", parentAkas)
 	return nil
 }
 
@@ -118,10 +124,13 @@ func resourceTurbotSmartFolderRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	// assign results back into ResourceData
-	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(smartFolder.Turbot.ParentId, d, meta); err != nil {
+	// set parent_akas property by loading resource resource and fetching the akas
+	parentAkas, err := client.GetResourceAkas(smartFolder.Turbot.ParentId)
+	if err != nil {
 		return err
 	}
+	// assign parent_akas
+	d.Set("parent_akas", parentAkas)
 	d.Set("parent_id", smartFolder.Parent)
 	// TODO currently turbot accepts array of filters but only uses the first
 	d.Set("filter", smartFolder.Filters[0])
