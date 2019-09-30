@@ -2,10 +2,10 @@ package turbot
 
 import (
 	"fmt"
-	"testing"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"testing"
 )
 
 // test suites
@@ -44,6 +44,19 @@ func TestAccGoogleDirectory(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_google_directory.test", "description", "test Directory for turbot terraform provider"),
 				),
+			}, {
+				Config: testAccGoogleDirectoryTagsConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckGoogleDirectoryExists("turbot_google_directory.test"),
+					resource.TestCheckResourceAttr(
+						"turbot_google_directory.test", "title", "google_directory_test_provider"),
+					resource.TestCheckResourceAttr(
+						"turbot_google_directory.test", "description", "test Directory for turbot terraform provider"),
+					resource.TestCheckResourceAttr(
+						"turbot_google_directory.test", "tags.Name", "tags test"),
+					resource.TestCheckResourceAttr(
+						"turbot_google_directory.test", "tags.Environment", "foo"),
+				),
 			},
 		},
 	})
@@ -51,47 +64,64 @@ func TestAccGoogleDirectory(t *testing.T) {
 
 func testAccGoogleDirectoryConfig() string {
 	return `
-	resource "turbot_google_directory" "test" {
-		title = "google_directory_test_provider"
-		profile_id_template = "profileemail"
-		status = "New"
-		directory_type = "google"
-		client_id = "GoogleDirTest4"
-		client_secret = "fb-tbevaACsBKQHthzba-PH9"
-		parent = "162167737252865"
-		description = "test Directory"
-}
-`
-}
-
-func testAccGoogleDirectoryUpdateDescConfig() string {
-	return `
-	resource "turbot_google_directory" "test" {
-		title = "google_directory_test_provider2"
-		profile_id_template = "profileemail"
-		status = "New"
-		directory_type = "google"
-		client_id = "GoogleDirTest4"
-		client_secret = "fb-tbevaACsBKQHthzba-PH9"
-		parent = "162167737252865"
-		description = "test Directory"
-	  }
+resource "turbot_google_directory" "test" {
+	title = "google_directory_test_provider"
+	profile_id_template = "profileemail"
+	status = "New"
+	directory_type = "google"
+	client_id = "GoogleDirTest4"
+	client_secret = "fb-tbevaACsBKQHthzba-PH9"
+	parent = "tmod:@turbot/turbot#/"
+	description = "test Directory"
 }
 `
 }
 
 func testAccGoogleDirectoryUpdateTitleConfig() string {
 	return `
-	resource "turbot_google_directory" "test" {
-		title = "google_directory_test_provider"
-		profile_id_template = "profileemail"
-		status = "New"
-		directory_type = "google"
-		client_id = "GoogleDirTest4"
-		client_secret = "fb-tbevaACsBKQHthzba-PH9"
-		parent = "162167737252865"
-		description = "test Directory for turbot terraform provider"
-	  }
+resource "turbot_google_directory" "test" {
+	title = "google_directory_test_provider2"
+	profile_id_template = "profileemail"
+	status = "New"
+	directory_type = "google"
+	client_id = "GoogleDirTest4"
+	client_secret = "fb-tbevaACsBKQHthzba-PH9"
+	parent = "tmod:@turbot/turbot#/"
+	description = "test Directory"
+}
+`
+}
+
+func testAccGoogleDirectoryUpdateDescConfig() string {
+	return `
+resource "turbot_google_directory" "test" {
+	title = "google_directory_test_provider"
+	profile_id_template = "profileemail"
+	status = "New"
+	directory_type = "google"
+	client_id = "GoogleDirTest4"
+	client_secret = "fb-tbevaACsBKQHthzba-PH9"
+	parent = "tmod:@turbot/turbot#/"
+	description = "test Directory for turbot terraform provider"
+}
+`
+}
+
+func testAccGoogleDirectoryTagsConfig() string {
+	return `
+resource "turbot_google_directory" "test" {
+	title = "google_directory_test_provider"
+	profile_id_template = "profileemail"
+	status = "New"
+	directory_type = "google"
+	client_id = "GoogleDirTest4"
+	client_secret = "fb-tbevaACsBKQHthzba-PH9"
+	parent = "tmod:@turbot/turbot#/"
+	description = "test Directory for turbot terraform provider"
+	tags = {
+		  "Name" = "tags test"
+		  "Environment" = "foo"
+	}
 }
 `
 }

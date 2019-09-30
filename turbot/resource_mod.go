@@ -27,10 +27,10 @@ func resourceTurbotMod() *schema.Resource {
 				Required: true,
 				// when doing a diff, the state file will contain the id of the parent bu tthe config contains the aka,
 				// so we need custom diff code
-				DiffSuppressFunc: supressIfParentAkaMatches,
+				DiffSuppressFunc: suppressIfParentAkaMatches,
 				ForceNew:         true,
 			},
-			// when doing a read, fetch the parent akas to use in supressIfParentAkaMatches()
+			// when doing a read, fetch the parent akas to use in suppressIfParentAkaMatches()
 			"parent_akas": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -154,10 +154,13 @@ func modInstall(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(mod.Turbot.ParentId, d, meta); err != nil {
+	// set parent_akas property by loading resource resource and fetching the akas
+	parent_Akas, err := client.GetResourceAkas(mod.Turbot.ParentId)
+	if err != nil {
 		return err
 	}
+	// assign parent_akas
+	d.Set("parent_akas", parent_Akas)
 	// assign the id
 	d.SetId(modId)
 	d.Set("version_latest", installedVersion)
@@ -196,10 +199,13 @@ func resourceTurbotModRead(d *schema.ResourceData, meta interface{}) error {
 
 	// assign results back into ResourceData
 
-	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(mod.Parent, d, meta); err != nil {
+	// set parent_akas property by loading resource resource and fetching the akas
+	parent_Akas, err := client.GetResourceAkas(mod.Parent)
+	if err != nil {
 		return err
 	}
+	// assign parent_akas
+	d.Set("parent_akas", parent_Akas)
 	d.Set("parent", mod.Parent)
 	d.Set("org", mod.Org)
 	d.Set("mod", mod.Mod)

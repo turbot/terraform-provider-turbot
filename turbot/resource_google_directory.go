@@ -7,6 +7,7 @@ import (
 
 // these are the properties which must be passed to a create/update call
 var googleDirectoryProperties = []string{"title", "pool_id", "profile_id_template", "group_id_template", "login_name_template", "client_secret", "hosted_name", "description"}
+var googleDirectoryMetadataProperties = []string{"tags"}
 
 func resourceGoogleDirectory() *schema.Resource {
 	return &schema.Resource{
@@ -23,11 +24,11 @@ func resourceGoogleDirectory() *schema.Resource {
 			"parent": {
 				Type:     schema.TypeString,
 				Required: true,
-				// when doing a diff, the state file will contain the id of the parent bu tthe config contains the aka,
+				// when doing a diff, the state file will contain the id of the parent but the config contains the aka,
 				// so we need custom diff code
-				DiffSuppressFunc: supressIfParentAkaMatches,
+				DiffSuppressFunc: suppressIfParentAkaMatches,
 			},
-			// when doing a read, fetch the parent akas to use in supressIfParentAkaMatches()
+			// when doing a read, fetch the parent akas to use in suppressIfParentAkaMatches()
 			"parent_akas": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -60,8 +61,8 @@ func resourceGoogleDirectory() *schema.Resource {
 				Required: true,
 			},
 			"client_secret": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:             schema.TypeString,
+				Required:         true,
 				DiffSuppressFunc: suppressIfClientSecret,
 			},
 			"pool_id": {
@@ -80,6 +81,13 @@ func resourceGoogleDirectory() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"tags": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 	}
 }
@@ -94,24 +102,33 @@ func resourceTurbotGoogleDirectoryCreate(d *schema.ResourceData, meta interface{
 	client := meta.(*apiclient.Client)
 	parentAka := d.Get("parent").(string)
 	// build map of local directory properties
-	data := mapFromResourceData(d, googleDirectoryProperties)
-	data["status"] = "New"
-	data["directoryType"] = "google"
-	data["clientID"] = d.Get("client_id").(string)
-	turbotMetadata, err := client.CreateGoogleDirectory(parentAka, data)
+	payload := map[string]map[string]interface{}{
+		"data":       mapFromResourceData(d, googleDirectoryProperties),
+		"turbotData": mapFromResourceData(d, googleDirectoryMetadataProperties),
+	}
+
+	// set computed properties
+	payload["data"]["status"] = "New"
+	payload["data"]["directoryType"] = "google"
+	// TODO CHANGE ONCE WE HAVE FULL PROPERTY MAP
+	payload["data"]["clientID"] = d.Get("client_id").(string)
+
+	turbotMetadata, err := client.CreateGoogleDirectory(parentAka, payload)
 	if err != nil {
 		return err
 	}
 
 	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(turbotMetadata.ParentId, d, meta); err != nil {
+	parentAkas, err := client.GetResourceAkas(turbotMetadata.ParentId)
+	if err != nil {
 		return err
 	}
-
+	// assign parent_akas
+	d.Set("parent_akas", parentAkas)
 	// assign the id
 	d.SetId(turbotMetadata.Id)
-	d.Set("status", data["status"])
-	d.Set("directoryType", data["directoryType"])
+	d.Set("status", payload["data"]["status"])
+	d.Set("directoryType", payload["data"]["directoryType"])
 	d.Set("clientSecret", "sensitive")
 	return nil
 }
@@ -122,17 +139,25 @@ func resourceTurbotGoogleDirectoryUpdate(d *schema.ResourceData, meta interface{
 	id := d.Id()
 
 	// build map of local directory properties
-	data := mapFromResourceData(d, googleDirectoryProperties)
-	data["clientID"] = d.Get("client_id").(string)
+	payload := map[string]map[string]interface{}{
+		"data":       mapFromResourceData(d, googleDirectoryProperties),
+		"turbotData": mapFromResourceData(d, googleDirectoryMetadataProperties),
+	}
+	// TODO CHANGE ONCE WE HAVE FULL PROPERTY MAP
+	payload["data"]["clientID"] = d.Get("client_id").(string)
+
 	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.UpdateGoogleDirectory(id, parentAka, data)
+	turbotMetadata, err := client.UpdateGoogleDirectory(id, parentAka, payload)
 	if err != nil {
 		return err
 	}
 	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(turbotMetadata.ParentId, d, meta); err != nil {
+	parentAkas, err := client.GetResourceAkas(turbotMetadata.ParentId)
+	if err != nil {
 		return err
 	}
+	// assign parent_akas
+	d.Set("parent_akas", parentAkas)
 	return nil
 }
 
@@ -152,9 +177,12 @@ func resourceTurbotGoogleDirectoryRead(d *schema.ResourceData, meta interface{})
 	// assign results back into ResourceData
 
 	// set parent_akas property by loading parent resource and fetching the akas
-	if err = setParentAkas(googleDirectory.Turbot.ParentId, d, meta); err != nil {
+	parentAkas, err := client.GetResourceAkas(googleDirectory.Turbot.ParentId)
+	if err != nil {
 		return err
 	}
+	// assign parent_akas
+	d.Set("parent_akas", parentAkas)
 	d.Set("parent", googleDirectory.Parent)
 	d.Set("title", googleDirectory.Title)
 	d.Set("profile_id_template", googleDirectory.ProfileIdTemplate)

@@ -4,12 +4,9 @@ import (
 	"fmt"
 )
 
-func (client *Client) CreateGoogleDirectory(parent string, data map[string]interface{}) (*TurbotMetadata, error) {
+func (client *Client) CreateGoogleDirectory(parent string, commandPayload map[string]map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := createResourceMutation()
 	responseData := &CreateResourceResponse{}
-	var commandPayload = map[string]interface{}{
-		"data": data,
-	}
 	commandMeta := map[string]string{
 		"typeAka":   "tmod:@turbot/turbot-iam#/resource/types/googleDirectory",
 		"parentAka": parent,
@@ -52,15 +49,11 @@ func (client *Client) ReadGoogleDirectory(id string) (*GoogleDirectory, error) {
 	return &responseData.Resource, nil
 }
 
-func (client *Client) UpdateGoogleDirectory(id, parent string, data map[string]interface{}) (*TurbotMetadata, error) {
+func (client *Client) UpdateGoogleDirectory(id, parent string, commandPayload map[string]map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := updateResourceMutation()
 	responseData := &UpdateResourceResponse{}
-	var commandPayload = map[string]map[string]interface{}{
-		"data": data,
-		"turbotData": {
-			"akas": []string{id},
-		},
-	}
+	// add akas to turbotData
+	commandPayload["turbotData"]["akas"] = []string{id}
 	commandMeta := map[string]interface{}{
 		"typeAka":   "tmod:@turbot/turbot-iam#/resource/types/localDirectory",
 		"parentAka": parent,

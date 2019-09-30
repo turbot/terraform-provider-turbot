@@ -1,4 +1,3 @@
 #!/bin/bash
-go clean
-go build -o terraform-provider-turbot
+make build
 terraform init

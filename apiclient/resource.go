@@ -4,14 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/mitchellh/mapstructure"
+	"log"
 )
 
-func (client *Client) CreateResource(typeAka, parentAka, payload string) (*TurbotMetadata, error) {
+func (client *Client) CreateResource(typeAka, parentAka, body string, turbotData map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := createResourceMutation()
 	responseData := &CreateResourceResponse{}
 
 	data := map[string]interface{}{}
-	if err := json.Unmarshal([]byte(payload), &data); err != nil {
+	if err := json.Unmarshal([]byte(body), &data); err != nil {
 		return nil, fmt.Errorf("error creating resource: %s", err.Error())
 	}
 
@@ -25,7 +26,8 @@ func (client *Client) CreateResource(typeAka, parentAka, payload string) (*Turbo
 	variables := map[string]interface{}{
 		"command": map[string]interface{}{
 			"payload": map[string]interface{}{
-				"data": data,
+				"data":       data,
+				"turbotData": turbotData,
 			},
 			"meta": commandMeta,
 		},
@@ -55,7 +57,7 @@ func (client *Client) ReadResource(aka string, properties map[string]string) (*R
 	return resource, nil
 }
 
-// todo replace with empty get()
+// todo replace with empty get() https://github.com/turbotio/terraform-provider-turbot/issues/58
 func (client *Client) ReadFullResource(aka string) (*FullResource, error) {
 	query := readFullResourceQuery(aka)
 	var responseData = &ReadFullResourceResponse{}
@@ -68,15 +70,25 @@ func (client *Client) ReadFullResource(aka string) (*FullResource, error) {
 	return &responseData.Resource, nil
 }
 
-func (client *Client) UpdateResource(id, typeAka, parentAka, payload string) (*TurbotMetadata, error) {
+func (client *Client) ReadResourceList(filter string, properties map[string]string) ([]Resource, error) {
+	query := readResourceListQuery(filter, properties)
+	var responseData = &ReadResourceListResponse{}
+
+	// execute api call
+	if err := client.doRequest(query, nil, responseData); err != nil {
+		return nil, fmt.Errorf("error fetching resource list: %s", err.Error())
+	}
+
+	return responseData.ResourceList.Items, nil
+}
+
+func (client *Client) UpdateResource(id, typeAka, parentAka, body string, turbotData map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := updateResourceMutation()
 	responseData := &UpdateResourceResponse{}
 	data := map[string]interface{}{}
-	if err := json.Unmarshal([]byte(payload), &data); err != nil {
+	if err := json.Unmarshal([]byte(body), &data); err != nil {
 		return nil, fmt.Errorf("error updating resource: %s", err.Error())
 	}
-
-	// todo extract turbotData
 
 	commandMeta := map[string]string{
 		"typeAka":   typeAka,
@@ -86,7 +98,8 @@ func (client *Client) UpdateResource(id, typeAka, parentAka, payload string) (*T
 	variables := map[string]interface{}{
 		"command": map[string]interface{}{
 			"payload": map[string]interface{}{
-				"data": data,
+				"data":       data,
+				"turbotData": turbotData,
 			},
 			"meta": commandMeta,
 		},
@@ -130,12 +143,18 @@ func (client *Client) ResourceExists(id string) (bool, error) {
 	return exists, nil
 }
 
-func (client *Client) GetResourceAkas(id string) ([]string, error) {
-	resource, err := client.ReadResource(id, nil)
+func (client *Client) GetResourceAkas(resourceAka string) ([]string, error) {
+	resource, err := client.ReadResource(resourceAka, nil)
 	if err != nil {
+		log.Printf("[ERROR] Failed to load target resource; %s", err)
 		return nil, err
 	}
-	return resource.Turbot.Akas, nil
+	resource_Akas := resource.Turbot.Akas
+	// if this resource has no akas, just use the one passed in
+	if resource_Akas == nil {
+		resource_Akas = []string{resourceAka}
+	}
+	return resource_Akas, nil
 }
 
 // assign the ReadResource results into a Resource object, based on the 'properties' map

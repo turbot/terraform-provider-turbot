@@ -4,13 +4,9 @@ import (
 	"fmt"
 )
 
-func (client *Client) CreateFolder(parent string, data map[string]interface{}) (*TurbotMetadata, error) {
+func (client *Client) CreateFolder(parent string, commandPayload map[string]map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := createResourceMutation()
 	responseData := &CreateResourceResponse{}
-	var commandPayload = map[string]interface{}{
-		"data": data,
-	}
-
 	commandMeta := map[string]string{
 		"typeAka":   "tmod:@turbot/turbot#/resource/types/folder",
 		"parentAka": parent,
@@ -46,15 +42,11 @@ func (client *Client) ReadFolder(id string) (*Folder, error) {
 	return &responseData.Resource, nil
 }
 
-func (client *Client) UpdateFolder(id, parent string, data map[string]interface{}) (*TurbotMetadata, error) {
+func (client *Client) UpdateFolder(id, parent string, commandPayload map[string]map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := updateResourceMutation()
 	responseData := &UpdateResourceResponse{}
-	var commandPayload = map[string]map[string]interface{}{
-		"data": data,
-		"turbotData": {
-			"akas": []string{id},
-		},
-	}
+	// add akas to turbotData
+	commandPayload["turbotData"]["akas"] = []string{id}
 	commandMeta := map[string]interface{}{
 		"typeAka":   "tmod:@turbot/turbot#/resource/types/folder",
 		"parentAka": parent,

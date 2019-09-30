@@ -5,6 +5,13 @@ import (
 	"fmt"
 )
 
+var turbotMetadataQuery = `turbot {
+  id
+  parentId
+  akas
+  tags
+}`
+
 // return query and matching response object to receive query result
 
 func validationQuery() (string, ValidationResponse) {
@@ -100,7 +107,79 @@ func deletePolicySettingMutation() string {
 		}
 	}
 }`
+}
 
+// create smart folder mutation
+func createSmartFolderMutation() string {
+	return fmt.Sprintf(`mutation CreateSmartFolder($command: SmartFolderCommandInput) {
+		smartFolder: smartFolderCreate(command: $command) {
+			turbot {
+				id
+				parentId
+				akas
+			}
+		}
+	}`)
+}
+
+//update smart folder mutation
+
+func updateSmartFolderMutation() string {
+	return fmt.Sprintf(`mutation UpdateSmartFolder($command: SmartFolderCommandInput) {
+		smartFolder: smartFolderUpdate(command: $command) {
+			turbot {
+				id
+				parentId
+				akas
+			}
+		}
+	}`)
+}
+
+// attach folderResource Mutation
+
+func createSmartFolderAttachmentMutation() string {
+	return fmt.Sprintf(`mutation AttachSmartFolder($command: SmartFolderCommandInput) {
+		smartFolderAttach(command: $command) {
+			turbot {
+				id
+			}
+		}
+	}`)
+}
+
+// detach FolderResource mutation
+
+func detachSmartFolderAttachment() string {
+	return fmt.Sprintf(`mutation DetachSmartFolder($command: SmartFolderCommandInput) {
+		detachSmartFolder: smartFolderDetach(command: $command) {
+    		turbot {
+				id
+			}
+  		}
+	}`)
+}
+
+// read Smart Folder attached to multiple Resources
+
+func readSmartFolderQuery(id string) string {
+	return fmt.Sprintf(`{
+	smartFolder: resource(id:"%s") {
+		title: get(path:"title")
+		description: get(path:"description")
+		filter: get(path:"filters")
+		parent:	get(path:"turbot.id")
+		turbot: get(path:"turbot")
+   		attachedResources{
+			items{
+				turbot{
+					id
+					akas
+			}
+		}
+	}
+ }
+}`, id)
 }
 
 func findPolicySettingQuery(policyTypeUri, resourceAka string) string {
@@ -196,14 +275,24 @@ func readModQuery(modId string) string {
 
 // create resource
 func createResourceMutation() string {
-	return `mutation CreateResource($command: ResourceCommandInput) {
+	return fmt.Sprintf(`mutation CreateResource($command: ResourceCommandInput) {
   resource: resourceCreate(command: $command) {
-    turbot {
-      id
-      parentId
-      akas
-    }
+%s
   }
+}`, turbotMetadataQuery)
+}
+
+// create grant
+func createGrantMutation() string {
+	return `mutation CreateGrant($command: GrantCommandInput) {
+	grants: grantCreate(command: $command) {
+		items{
+			turbot{
+				id
+				resourceId
+			}
+		}
+	}
 }`
 }
 
@@ -214,7 +303,7 @@ func updateResourceMutation() string {
 		turbot {
 		  id
 		  parentId
-          akas
+      akas
 		}
 	}
 }`
@@ -247,6 +336,23 @@ func readResourceQuery(aka string, properties map[string]string) string {
 }`, aka, propertiesString.String())
 }
 
+func readResourceListQuery(filter string, properties map[string]string) string {
+	var propertiesString bytes.Buffer
+	if properties != nil {
+		for alias, propertyPath := range properties {
+			propertiesString.WriteString(fmt.Sprintf("    %s: get(path: \"%s\")\n", alias, propertyPath))
+		}
+	}
+	return fmt.Sprintf(`{
+  resourceList(filter:"%s") {
+	items{
+		%s
+    turbot: get(path:"turbot")
+  	}
+	}
+}`, filter, propertiesString.String())
+}
+
 func readFullResourceQuery(aka string) string {
 	return fmt.Sprintf(`{
   resource(id:"%s") {
@@ -254,4 +360,31 @@ func readFullResourceQuery(aka string) string {
     turbot: get(path:"turbot")
   }
 }`, aka)
+}
+
+func readGrantQuery(aka string) string {
+	return fmt.Sprintf(`{
+		grant: grant(id:"%s") {
+			permissionTypeId
+			permissionLevelId
+				turbot{
+                    id
+					resourceId,
+					profileId
+				}
+		}
+	  }`, aka)
+}
+
+// delete resource
+func deleteGrantMutation() string {
+	return `mutation DeleteGrant($command: GrantCommandInput) {
+ 	grant: grantDelete(command: $command) {
+		items {
+			turbot {
+		  		id
+			}
+		}
+	}
+}`
 }

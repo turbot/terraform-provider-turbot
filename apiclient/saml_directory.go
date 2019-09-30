@@ -2,16 +2,11 @@ package apiclient
 
 import (
 	"fmt"
-	"log"
 )
 
-func (client *Client) CreateSamlDirectory(parent string, data map[string]interface{}) (*TurbotMetadata, error) {
+func (client *Client) CreateSamlDirectory(parent string, commandPayload map[string]map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := createResourceMutation()
 	responseData := &CreateResourceResponse{}
-	log.Println("data%%%: ", data)
-	var commandPayload = map[string]interface{}{
-		"data": data,
-	}
 	commandMeta := map[string]string{
 		"typeAka":   "tmod:@turbot/turbot-iam#/resource/types/samlDirectory",
 		"parentAka": parent,
@@ -50,15 +45,11 @@ func (client *Client) ReadSamlDirectory(id string) (*SamlDirectory, error) {
 	return &responseData.Resource, nil
 }
 
-func (client *Client) UpdateSamlDirectory(id, parent string, data map[string]interface{}) (*TurbotMetadata, error) {
+func (client *Client) UpdateSamlDirectory(id, parent string, commandPayload map[string]map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := updateResourceMutation()
 	responseData := &UpdateResourceResponse{}
-	var commandPayload = map[string]map[string]interface{}{
-		"data": data,
-		"turbotData": {
-			"akas": []string{id},
-		},
-	}
+	// add akas to turbotData
+	commandPayload["turbotData"]["akas"] = []string{id}
 	commandMeta := map[string]interface{}{
 		"typeAka":   "tmod:@turbot/turbot-iam#/resource/types/samlDirectory",
 		"parentAka": parent,

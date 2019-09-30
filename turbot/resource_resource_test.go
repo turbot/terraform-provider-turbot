@@ -10,7 +10,7 @@ package turbot
 //)
 //
 //// test suites
-//// TODO these fail currently - awaiting a mod update
+//// TODO these fail currently - awaiting a mod update - turbot is currently a required property
 //func TestAccResourceAwsAccount(t *testing.T) {
 //	resource.Test(t, resource.TestCase{
 //		PreCheck:     func() { testAccPreCheck(t) },

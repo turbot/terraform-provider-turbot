@@ -44,13 +44,25 @@ type PolicySetting struct {
 	Note               string
 	ValidFromTimestamp string
 	ValidToTimestamp   string
-	Turbot             TurbotMetadata
+	Turbot             TurbotPolicyMetadata
 }
 
-type TurbotMetadata struct {
+type TurbotResourceMetadata struct {
 	Id       string
 	ParentId string
 	Akas     []string
+}
+
+type TurbotPolicyMetadata struct {
+	Id       string
+	ParentId string
+	Akas     []string
+}
+
+type TurbotGrantMetadata struct {
+	Id         string
+	ProfileId  string
+	ResourceId string
 }
 
 // PolicyValueResponse: must be consistent with fields defined in readPolicyValueQuery
@@ -65,7 +77,7 @@ type PolicyValue struct {
 	Reason     string
 	Details    string
 	Setting    PolicySetting
-	Turbot     TurbotMetadata
+	Turbot     TurbotPolicyMetadata
 }
 
 // InstallModResponse: must be consistent with with fields defined in installModMutation
@@ -75,7 +87,7 @@ type InstallModResponse struct {
 
 type InstallModData struct {
 	Build  string
-	Turbot TurbotMetadata
+	Turbot TurbotResourceMetadata
 }
 
 type ReadModResponse struct {
@@ -109,13 +121,21 @@ type Mod struct {
 
 type CreateResourceResponse struct {
 	Resource struct {
-		Turbot TurbotMetadata
+		Turbot TurbotResourceMetadata
+	}
+}
+
+type CreateGrantResponse struct {
+	Grants struct {
+		Items []struct {
+			Turbot TurbotGrantMetadata
+		}
 	}
 }
 
 type UpdateResourceResponse struct {
 	Resource struct {
-		Turbot TurbotMetadata
+		Turbot TurbotResourceMetadata
 	}
 }
 
@@ -129,14 +149,20 @@ type ReadFullResourceResponse struct {
 	Resource FullResource
 }
 
+type ReadResourceListResponse struct {
+	ResourceList struct {
+		Items []Resource
+	}
+}
+
 type Resource struct {
-	Turbot TurbotMetadata
+	Turbot TurbotResourceMetadata
 	Data   map[string]interface{}
 }
 
 type FullResource struct {
 	Object interface{}
-	Turbot TurbotMetadata
+	Turbot TurbotResourceMetadata
 }
 
 type ReadFolderResponse struct {
@@ -144,7 +170,7 @@ type ReadFolderResponse struct {
 }
 
 type Profile struct {
-	Turbot          TurbotMetadata
+	Turbot          TurbotResourceMetadata
 	Title           string
 	Parent          string
 	Status          string
@@ -160,17 +186,39 @@ type ReadProfileResponse struct {
 	Resource Profile
 }
 
-type FindFolderResponse struct {
-	Folders struct {
-		Items []Folder
-	}
-}
-
 type Folder struct {
-	Turbot      TurbotMetadata
+	Turbot      TurbotResourceMetadata
 	Title       string
 	Description string
 	Parent      string
+}
+
+type ReadSmartFolderResponse struct {
+	SmartFolder SmartFolder
+}
+type CreateSmartFolderResponse struct {
+	SmartFolder struct {
+		Turbot TurbotResourceMetadata
+	}
+}
+
+type UpdateSmartFolderResponse struct {
+	SmartFolder struct {
+		Turbot TurbotResourceMetadata
+	}
+}
+
+type SmartFolder struct {
+	Turbot            TurbotResourceMetadata
+	Title             string
+	Description       string
+	Filters           []string
+	Parent            string
+	AttachedResources struct {
+		Items []struct {
+			Turbot TurbotResourceMetadata
+		}
+	}
 }
 
 type ReadLocalDirectoryResponse struct {
@@ -178,7 +226,7 @@ type ReadLocalDirectoryResponse struct {
 }
 
 type LocalDirectory struct {
-	Turbot            TurbotMetadata
+	Turbot            TurbotResourceMetadata
 	Title             string
 	Description       string
 	Parent            string
@@ -192,7 +240,7 @@ type ReadSamlDirectoryResponse struct {
 }
 
 type SamlDirectory struct {
-	Turbot            TurbotMetadata
+	Turbot            TurbotResourceMetadata
 	Title             string
 	Description       string
 	Parent            string
@@ -207,7 +255,7 @@ type ReadLocalDirectoryUserResponse struct {
 }
 
 type LocalDirectoryUser struct {
-	Turbot      TurbotMetadata
+	Turbot      TurbotResourceMetadata
 	Parent      string
 	Title       string
 	Email       string
@@ -224,7 +272,7 @@ type ReadGoogleDirectoryResponse struct {
 }
 
 type GoogleDirectory struct {
-	Turbot            TurbotMetadata
+	Turbot            TurbotResourceMetadata
 	Parent            string
 	Title             string
 	ProfileIdTemplate string
@@ -237,4 +285,28 @@ type GoogleDirectory struct {
 	GroupIdTemplate   string
 	LoginNameTemplate string
 	HostedName        string
+}
+
+type SmartFolderAttachment struct {
+	Turbot      TurbotResourceMetadata
+	Title       string
+	Description string
+	Filters     map[string]interface{}
+	Parent      string
+}
+
+type CreateSmartFolderAttachResponse struct {
+	SmartFolderAttach struct {
+		Turbot TurbotResourceMetadata
+	}
+}
+
+type ReadGrantResponse struct {
+	Grant Grant
+}
+
+type Grant struct {
+	Turbot            TurbotGrantMetadata
+	PermissionTypeId  string
+	PermissionLevelId string
 }
