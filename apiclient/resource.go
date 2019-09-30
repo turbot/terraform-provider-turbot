@@ -90,9 +90,10 @@ func (client *Client) UpdateResource(id, typeAka, parentAka, body string, turbot
 		return nil, fmt.Errorf("error updating resource: %s", err.Error())
 	}
 
-	commandMeta := map[string]string{
+	commandMeta := map[string]interface{}{
 		"typeAka":   typeAka,
 		"parentAka": parentAka,
+		"akas":      []string{id},
 	}
 
 	variables := map[string]interface{}{

@@ -87,9 +87,6 @@ func resourceTurbotResourceCreate(d *schema.ResourceData, meta interface{}) erro
 
 	// assign the id
 	d.SetId(turbotMetadata.Id)
-	// save formatted version of the body for consistency
-	d.Set("body", formatBody(body))
-
 	return nil
 }
 
@@ -129,7 +126,6 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("parent_akas", parent_Akas)
 	d.Set("parent", resource.Turbot.ParentId)
 	d.Set("body", body)
-
 	return nil
 }
 
@@ -208,7 +204,10 @@ func suppressIfBodyMatches(k, old, new string, d *schema.ResourceData) bool {
 	if old == "" || new == "" {
 		return false
 	}
-	return formatBody(old) == formatBody(new)
+
+	oldFormatted := formatBody(old)
+	newFormatted := formatBody(new)
+	return oldFormatted == newFormatted
 }
 
 // given a json string, unmarshal into a map and return a map of alias ->  propertyName

@@ -282,20 +282,6 @@ func createResourceMutation() string {
 }`, turbotMetadataQuery)
 }
 
-// create grant
-func createGrantMutation() string {
-	return `mutation CreateGrant($command: GrantCommandInput) {
-	grants: grantCreate(command: $command) {
-		items{
-			turbot{
-				id
-				resourceId
-			}
-		}
-	}
-}`
-}
-
 // update resource
 func updateResourceMutation() string {
 	return `mutation UpsertResource($command: ResourceCommandInput) {
@@ -360,6 +346,20 @@ func readFullResourceQuery(aka string) string {
     turbot: get(path:"turbot")
   }
 }`, aka)
+}
+
+// create grant
+func createGrantMutation() string {
+	return `mutation CreateGrant($command: GrantCommandInput) {
+	grants: grantCreate(command: $command) {
+		items{
+			turbot{
+				id
+				resourceId
+			}
+		}
+	}
+}`
 }
 
 func readGrantQuery(aka string) string {
