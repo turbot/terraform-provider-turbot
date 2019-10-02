@@ -6,8 +6,8 @@ import (
 )
 
 // properties which must be passed to a create/update call
-var folderDataProperties = []string{"title", "description"}
-var folderMetadataProperties = []string{"tags"}
+var folderDataProperties = []interface{}{"title", "description"}
+var folderMetadataProperties = []interface{}{"tags"}
 
 func resourceTurbotFolder() *schema.Resource {
 	return &schema.Resource{

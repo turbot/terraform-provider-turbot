@@ -6,7 +6,7 @@ import (
 )
 
 // properties which must be passed to a create/update call
-var profileProperties = []string{"title", "status", "display_name", "given_name", "family_name", "email", "directory_pool_id", "profile_id"}
+var profileProperties = []interface{}{"title", "status", "display_name", "given_name", "family_name", "email", "directory_pool_id", "profile_id"}
 
 func resourceTurbotProfile() *schema.Resource {
 	return &schema.Resource{

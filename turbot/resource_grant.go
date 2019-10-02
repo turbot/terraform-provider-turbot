@@ -6,6 +6,7 @@ import (
 )
 
 // map of Terraform properties to Turbot properties that we pass to create and update mutations
+// NOTE: use a map instead of an array like other resources as we cannot automatically map the names
 var grantDataMap = map[string]string{
 	"permission_type":  "permissionTypeAka",
 	"permission_level": "permissionLevelAka",

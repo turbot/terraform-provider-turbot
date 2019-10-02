@@ -25,7 +25,7 @@ func TestAccResourceFolder(t *testing.T) {
 						"turbot_resource.test", "body", folderBody),
 				),
 			},
-
+			// TODO this fails as when upserting an existing folder a new folder is created
 			{
 				Config: testAccResourceConfig(folderType, folderBodyUpdatedDescription),
 				Check: resource.ComposeTestCheckFunc(

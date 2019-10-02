@@ -6,10 +6,10 @@ import (
 )
 
 // these are the properties which must be passed to a create/update call
-var samlDirectoryProperties = []string{"description", "directory_type", "status", "entry_point", "issuer", "certificate", "profile_id_template", "group_id_template", "name_id_format", "sign_requests", "signature_private_key", "signature_algorithm", "pool_id"}
-var samlDirectoryMetadataProperties = []string{"tags"}
+var samlDirectoryProperties = []interface{}{"description", "directory_type", "status", "entry_point", "issuer", "certificate", "profile_id_template", "group_id_template", "name_id_format", "sign_requests", "signature_private_key", "signature_algorithm", "pool_id"}
+var samlDirectoryMetadataProperties = []interface{}{"tags"}
 
-func getSamlDirectoryUpdateProperties() []string {
+func getSamlDirectoryUpdateProperties() []interface{} {
 	excludedProperties := []string{"directory_type"}
 	return removeProperties(samlDirectoryProperties, excludedProperties)
 }
