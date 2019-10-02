@@ -37,6 +37,14 @@ func resourceTurbotPolicySetting() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"value_key_fingerprint": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"value_source_key_fingerprint": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"precedence": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -127,6 +135,10 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 		// update state value setting with yaml parsed valueSource
 		setValueFromValueSource(commandPayload["valueSource"], d)
 	}
+	// if this policy setting is secret, and a pgp_key has been supplied, encrypt value and value_source
+	if setting.SecretValue != nil {
+		storeSecretValue(d)
+	}
 
 	// assign the id
 	d.SetId(setting.Turbot.Id)
@@ -154,6 +166,7 @@ func resourceTurbotPolicySettingRead(d *schema.ResourceData, meta interface{}) e
 	// - valueSource is the yaml representation of the policy.
 	//
 	if setting.Value != nil {
+		// format the value as a string to allow us to handle object/array values using a string schema
 		d.Set("value", fmt.Sprintf("%v", setting.Value))
 	}
 	d.Set("id", id)
@@ -205,7 +218,7 @@ func resourceTurbotPolicySettingUpdate(d *schema.ResourceData, meta interface{})
 func setValueFromValueSource(valueSource string, d *schema.ResourceData) {
 	var i interface{}
 	yaml.Unmarshal([]byte(valueSource), &i)
-	d.Set("value", i)
+	d.Set("value", fmt.Sprintf("%v", i))
 	d.Set("value_source", valueSource)
 	d.Set("value_source_used", true)
 }
@@ -257,4 +270,28 @@ func supressIfValueSourceMatches(_, old, new string, d *schema.ResourceData) boo
 		old = d.Get("value_source").(string)
 	}
 	return new == old
+}
+
+// write client secret to ResourceData, encrypting if a pgp key was provided
+func storeSecretValue(d *schema.ResourceData) error {
+	if pgpKey, ok := d.GetOk("pgp_key"); ok {
+		value := d.Get("value").(string)
+		valueSource := d.Get("value_source").(string)
+
+		valueFingerprint, encryptedValue, err := encryptValue(pgpKey.(string), value)
+		if err != nil {
+			return err
+		}
+		d.Set("value", encryptedValue)
+		d.Set("value_key_fingerprint", valueFingerprint)
+
+		valueSourceFingerprint, encryptedValueSource, err := encryptValue(pgpKey.(string), valueSource)
+		if err != nil {
+			return err
+		}
+		d.Set("value_source", encryptedValueSource)
+		d.Set("value_source_key_fingerprint", valueSourceFingerprint)
+	}
+
+	return nil
 }

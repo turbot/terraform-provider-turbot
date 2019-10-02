@@ -1,6 +1,7 @@
 package apiclient
 
-// Validation response - returned by API validation call
+// Validation response
+// returned by API validation call
 type ValidationResponse struct {
 	Schema struct {
 		QueryType struct {
@@ -14,15 +15,19 @@ func (response *ValidationResponse) isValid() bool {
 	return response.Schema.QueryType.Name == "Query"
 }
 
-// ApiResponse: used to unmarshall API error responses
+///////////////////////////////////////////////////////////////////////////////
+// ApiResponse
+// used to unmarshall API error responses
 type ApiResponse struct {
 	Errors []Error
 }
+
 type Error struct {
 	Message string
 }
 
-// PolicySettingResponse: must be consistent with fields defined in readPolicySettingQuery
+///////////////////////////////////////////////////////////////////////////////
+// PolicySetting
 type PolicySettingResponse struct {
 	PolicySetting PolicySetting
 }
@@ -35,7 +40,8 @@ type FindPolicySettingResponse struct {
 
 type PolicySetting struct {
 	Value              interface{}
-	ValueSource        string
+	SecretValue        interface{}
+	ValueSource        interface{}
 	Default            bool
 	Precedence         string
 	Template           string
@@ -47,40 +53,25 @@ type PolicySetting struct {
 	Turbot             TurbotPolicyMetadata
 }
 
-type TurbotResourceMetadata struct {
-	Id       string
-	ParentId string
-	Akas     []string
-}
-
-type TurbotPolicyMetadata struct {
-	Id       string
-	ParentId string
-	Akas     []string
-}
-
-type TurbotGrantMetadata struct {
-	Id         string
-	ProfileId  string
-	ResourceId string
-}
-
-// PolicyValueResponse: must be consistent with fields defined in readPolicyValueQuery
+///////////////////////////////////////////////////////////////////////////////
+// PolicyValue
 type PolicyValueResponse struct {
 	PolicyValue PolicyValue
 }
 
 type PolicyValue struct {
-	Value      interface{}
-	Precedence string
-	State      string
-	Reason     string
-	Details    string
-	Setting    PolicySetting
-	Turbot     TurbotPolicyMetadata
+	Value       interface{}
+	SecretValue interface{}
+	Precedence  string
+	State       string
+	Reason      string
+	Details     string
+	Setting     PolicySetting
+	Turbot      TurbotPolicyMetadata
 }
 
-// InstallModResponse: must be consistent with with fields defined in installModMutation
+///////////////////////////////////////////////////////////////////////////////
+// Mod
 type InstallModResponse struct {
 	Mod InstallModData
 }
@@ -119,17 +110,11 @@ type Mod struct {
 	Uri     string
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Resource
 type CreateResourceResponse struct {
 	Resource struct {
 		Turbot TurbotResourceMetadata
-	}
-}
-
-type CreateGrantResponse struct {
-	Grants struct {
-		Items []struct {
-			Turbot TurbotGrantMetadata
-		}
 	}
 }
 
@@ -165,8 +150,43 @@ type FullResource struct {
 	Turbot TurbotResourceMetadata
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Grant
+type CreateGrantResponse struct {
+	Grants struct {
+		Items []struct {
+			Turbot TurbotGrantMetadata
+		}
+	}
+}
+
+type ReadGrantResponse struct {
+	Grant Grant
+}
+
+type Grant struct {
+	Turbot            TurbotGrantMetadata
+	PermissionTypeId  string
+	PermissionLevelId string
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Folder
 type ReadFolderResponse struct {
 	Resource Folder
+}
+
+type Folder struct {
+	Turbot      TurbotResourceMetadata
+	Title       string
+	Description string
+	Parent      string
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Profile
+type ReadProfileResponse struct {
+	Resource Profile
 }
 
 type Profile struct {
@@ -182,20 +202,12 @@ type Profile struct {
 	ProfileId       string
 }
 
-type ReadProfileResponse struct {
-	Resource Profile
-}
-
-type Folder struct {
-	Turbot      TurbotResourceMetadata
-	Title       string
-	Description string
-	Parent      string
-}
-
+///////////////////////////////////////////////////////////////////////////////
+// Smart folder
 type ReadSmartFolderResponse struct {
 	SmartFolder SmartFolder
 }
+
 type CreateSmartFolderResponse struct {
 	SmartFolder struct {
 		Turbot TurbotResourceMetadata
@@ -221,6 +233,24 @@ type SmartFolder struct {
 	}
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Smart folder attachment
+type SmartFolderAttachment struct {
+	Turbot      TurbotResourceMetadata
+	Title       string
+	Description string
+	Filters     map[string]interface{}
+	Parent      string
+}
+
+type CreateSmartFolderAttachResponse struct {
+	SmartFolderAttach struct {
+		Turbot TurbotResourceMetadata
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Local directory
 type ReadLocalDirectoryResponse struct {
 	Resource LocalDirectory
 }
@@ -235,21 +265,8 @@ type LocalDirectory struct {
 	ProfileIdTemplate string
 }
 
-type ReadSamlDirectoryResponse struct {
-	Resource SamlDirectory
-}
-
-type SamlDirectory struct {
-	Turbot            TurbotResourceMetadata
-	Title             string
-	Description       string
-	Parent            string
-	Status            string
-	DirectoryType     string
-	ProfileIdTemplate string
-	EntryPoint        string
-	Certificate       string
-}
+///////////////////////////////////////////////////////////////////////////////
+// Local directory user
 type ReadLocalDirectoryUserResponse struct {
 	Resource LocalDirectoryUser
 }
@@ -267,8 +284,28 @@ type LocalDirectoryUser struct {
 	Picture     string
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Saml directory
+type ReadSamlDirectoryResponse struct {
+	Resource SamlDirectory
+}
+
+type SamlDirectory struct {
+	Turbot            TurbotResourceMetadata
+	Title             string
+	Description       string
+	Parent            string
+	Status            string
+	DirectoryType     string
+	ProfileIdTemplate string
+	EntryPoint        string
+	Certificate       string
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Google directory
 type ReadGoogleDirectoryResponse struct {
-	Resource GoogleDirectory
+	Directory GoogleDirectory
 }
 
 type GoogleDirectory struct {
@@ -287,26 +324,22 @@ type GoogleDirectory struct {
 	HostedName        string
 }
 
-type SmartFolderAttachment struct {
-	Turbot      TurbotResourceMetadata
-	Title       string
-	Description string
-	Filters     map[string]interface{}
-	Parent      string
+///////////////////////////////////////////////////////////////////////////////
+// Metadata
+type TurbotResourceMetadata struct {
+	Id       string
+	ParentId string
+	Akas     []string
 }
 
-type CreateSmartFolderAttachResponse struct {
-	SmartFolderAttach struct {
-		Turbot TurbotResourceMetadata
-	}
+type TurbotPolicyMetadata struct {
+	Id       string
+	ParentId string
+	Akas     []string
 }
 
-type ReadGrantResponse struct {
-	Grant Grant
-}
-
-type Grant struct {
-	Turbot            TurbotGrantMetadata
-	PermissionTypeId  string
-	PermissionLevelId string
+type TurbotGrantMetadata struct {
+	Id         string
+	ProfileId  string
+	ResourceId string
 }

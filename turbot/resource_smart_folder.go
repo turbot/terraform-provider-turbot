@@ -7,7 +7,7 @@ import (
 
 // properties which must be passed to a create/update call
 // TODO add filters here once we are consistent with the db
-var smartFolderProperties = []string{"title", "description"}
+var smartFolderProperties = []interface{}{"title", "description"}
 
 func resourceTurbotSmartFolder() *schema.Resource {
 	return &schema.Resource{

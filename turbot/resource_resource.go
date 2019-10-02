@@ -3,13 +3,14 @@ package turbot
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/encryption"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/iancoleman/strcase"
 	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"sort"
 )
 
-var resourceMetadataProperties = []string{"tags"}
+var resourceMetadataProperties = []interface{}{"tags"}
 
 func resourceTurbotResource() *schema.Resource {
 	return &schema.Resource{
@@ -249,15 +250,28 @@ func formatBody(body string) string {
 
 }
 
-func mapFromResourceData(d *schema.ResourceData, properties []string) map[string]interface{} {
+// construct a map of property values to pass to a graphql mutation
+func mapFromResourceData(d *schema.ResourceData, properties []interface{}) map[string]interface{} {
+	// each element in the 'properties' array is either a map defining explicit name mappings, or a string containing the terraform property name.
+	// this is converted to the turbot property name by performing a snake case -> lowerCamelCase conversion
+	// to build the output map:
+	// 1) extract the value from ResourceData using the terraform property name
+	// 2) add the property to a map using the turbot property name
 	var propertyMap = map[string]interface{}{}
-	for _, terraformProperty := range properties {
-		// get schema for property
-		value, propertySet := d.GetOk(terraformProperty)
-		if propertySet {
-			// converted property from snake case (Terraform format) to lowerCamelCase (Turbot format).
-			var turbotProperty = strcase.ToLowerCamel(terraformProperty)
-			propertyMap[turbotProperty] = value
+	for _, element := range properties {
+		terraformToTurbotMap, ok := element.(map[string]string)
+		if ok {
+			// if terraformProperty is a map, perform explicit mapping and merge result with existing map
+			mergeMaps(propertyMap, mapFromResourceDataWithPropertyMap(d, terraformToTurbotMap))
+		} else {
+			// otherwise perform automatic mapping from snake case (Terraform format) to lowerCamelCase (Turbot format).
+			terraformProperty := element.(string)
+			value, propertySet := d.GetOk(terraformProperty)
+			// if property is set, map it
+			if propertySet {
+				var turbotProperty = strcase.ToLowerCamel(terraformProperty)
+				propertyMap[turbotProperty] = value
+			}
 		}
 	}
 	return propertyMap
@@ -275,13 +289,27 @@ func mapFromResourceDataWithPropertyMap(d *schema.ResourceData, terraformToTurbo
 	return resourcePropertyMap
 }
 
-// given a property list, remove the excluded properties
-func removeProperties(properties, excluded []string) []string {
+func mergeMaps(m1, m2 map[string]interface{}) {
+	for k, v := range m2 {
+		m1[k] = v
+	}
+}
+
+// given a list of properties or property maps, remove the excluded properties
+func removeProperties(properties []interface{}, excluded []string) []interface{} {
 	for _, excludedProperty := range excluded {
-		for i, property := range properties {
-			if property == excludedProperty {
-				properties = append(properties[:i], properties[i+1:]...)
-				break
+		for i, element := range properties {
+			// each element may be either a map, or a single property name
+			terraformToTurbotMap, ok := element.(map[string]string)
+			if ok {
+				// if the element is a map, remove excluded items from map
+				properties[i] = removePropertiesFromMap(terraformToTurbotMap, excluded)
+			} else {
+				// otherwise check if this property is excluded and remove if so
+				if element.(string) == excludedProperty {
+					properties = append(properties[:i], properties[i+1:]...)
+					break
+				}
 			}
 		}
 	}
@@ -289,29 +317,29 @@ func removeProperties(properties, excluded []string) []string {
 }
 
 // given a property list, remove the excluded properties
-//func removePropertiesFromMap(propertyMap map[string]string, excluded []string) map[string]string {
-//	var result = map[string]string{}
-//	for k, v := range propertyMap {
-//		if !sliceContains(excluded, k) {
-//			result[k] = v
-//		}
-//	}
-//	return result
-//}
+func removePropertiesFromMap(propertyMap map[string]string, excluded []string) map[string]string {
+	var result = map[string]string{}
+	for k, v := range propertyMap {
+		if !sliceContains(excluded, k) {
+			result[k] = v
+		}
+	}
+	return result
+}
 
 // no native contains in golang :/
-//func sliceContains(s []string, searchterm string) bool {
-//	i := sort.SearchStrings(s, searchterm)
-//	return i < len(s) && s[i] == searchterm
-//
-//}
+func sliceContains(s []string, searchterm string) bool {
+	i := sort.SearchStrings(s, searchterm)
+	return i < len(s) && s[i] == searchterm
 
-func encryptedKey(d, pgp string) (string, string, error) {
-	encryptionKey, err := encryption.RetrieveGPGKey(pgp)
+}
+
+func encryptValue(pgpKey, value string) (string, string, error) {
+	encryptionKey, err := encryption.RetrieveGPGKey(pgpKey)
 	if err != nil {
 		return "", "", err
 	}
-	fingerprint, encrypted, err := encryption.EncryptValue(encryptionKey, d, "Secret Key")
+	fingerprint, encrypted, err := encryption.EncryptValue(encryptionKey, value, "Secret Key")
 	if err != nil {
 		return "", "", err
 	}
