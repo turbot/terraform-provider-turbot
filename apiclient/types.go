@@ -40,8 +40,7 @@ type FindPolicySettingResponse struct {
 
 type PolicySetting struct {
 	Value              interface{}
-	SecretValue        interface{}
-	ValueSource        interface{}
+	ValueSource        string
 	Default            bool
 	Precedence         string
 	Template           string
@@ -60,14 +59,13 @@ type PolicyValueResponse struct {
 }
 
 type PolicyValue struct {
-	Value       interface{}
-	SecretValue interface{}
-	Precedence  string
-	State       string
-	Reason      string
-	Details     string
-	Setting     PolicySetting
-	Turbot      TurbotPolicyMetadata
+	Value      interface{}
+	Precedence string
+	State      string
+	Reason     string
+	Details    string
+	Setting    PolicySetting
+	Turbot     TurbotPolicyMetadata
 }
 
 ///////////////////////////////////////////////////////////////////////////////

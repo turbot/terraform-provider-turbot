@@ -31,7 +31,7 @@ func resourceTurbotPolicySetting() *schema.Resource {
 			"value": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				DiffSuppressFunc: supressIfValueSourceMatches,
+				DiffSuppressFunc: suppressIfEncryptedOrValueSourceMatches,
 			},
 			"value_source": {
 				Type:     schema.TypeString,
@@ -39,7 +39,7 @@ func resourceTurbotPolicySetting() *schema.Resource {
 			},
 			"value_key_fingerprint": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 			"value_source_key_fingerprint": {
 				Type:     schema.TypeString,
@@ -73,6 +73,11 @@ func resourceTurbotPolicySetting() *schema.Resource {
 			"value_source_used": {
 				Type:     schema.TypeBool,
 				Computed: true,
+			},
+			"pgp_key": {
+				Type:     schema.TypeString,
+				ForceNew: true,
+				Optional: true,
 			},
 		},
 	}
@@ -135,10 +140,8 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 		// update state value setting with yaml parsed valueSource
 		setValueFromValueSource(commandPayload["valueSource"], d)
 	}
-	// if this policy setting is secret, and a pgp_key has been supplied, encrypt value and value_source
-	if setting.SecretValue != nil {
-		storeSecretValue(d)
-	}
+	// if pgp_key has been supplied, encrypt value and value_source
+	storeValue(d, setting)
 
 	// assign the id
 	d.SetId(setting.Turbot.Id)
@@ -161,15 +164,8 @@ func resourceTurbotPolicySettingRead(d *schema.ResourceData, meta interface{}) e
 
 	// assign results back into ResourceData
 
-	// NOTE: turbot policy settings have a value and a valueSource property
-	// - value is the type property value, with the type dependent on the policy schema
-	// - valueSource is the yaml representation of the policy.
-	//
-	if setting.Value != nil {
-		// format the value as a string to allow us to handle object/array values using a string schema
-		d.Set("value", fmt.Sprintf("%v", setting.Value))
-	}
-	d.Set("id", id)
+	// if pgp_key has been supplied, encrypt value and value_source
+	storeValue(d, setting)
 	d.Set("precedence", setting.Precedence)
 	d.Set("template", setting.Template)
 	d.Set("template_input", setting.TemplateInput)
@@ -263,35 +259,56 @@ func buildPayload(d *schema.ResourceData) map[string]string {
 	return commandPayload
 }
 
+// If a pgp key is present, value will be encrypted so we cannot perform diff
 // If valueSource was used, suppress diff if value source matches
-func supressIfValueSourceMatches(_, old, new string, d *schema.ResourceData) bool {
+func suppressIfEncryptedOrValueSourceMatches(_, old, new string, d *schema.ResourceData) bool {
+	// if old value is not set, do not suppress - cannot be encrypted and value source will not have been used
+	if old == "" {
+		return false
+	}
+
+	_, keyPresent := d.GetOk("pgp_key")
+
 	// Return true if the diff should be suppressed, false to retain it.
 	if d.Get("value_source_used").(bool) {
 		old = d.Get("value_source").(string)
 	}
-	return new == old
+	return keyPresent || new == old
 }
 
-// write client secret to ResourceData, encrypting if a pgp key was provided
-func storeSecretValue(d *schema.ResourceData) error {
-	if pgpKey, ok := d.GetOk("pgp_key"); ok {
-		value := d.Get("value").(string)
-		valueSource := d.Get("value_source").(string)
+// write value and value_source to ResourceData, encrypting if a pgp key was provided
+func storeValue(d *schema.ResourceData, setting *apiclient.PolicySetting) error {
+	// NOTE: turbot policy settings have a value and a valueSource property
+	// - value is the type property value, with the type dependent on the policy schema
+	// - valueSource is the yaml representation of the policy.
 
-		valueFingerprint, encryptedValue, err := encryptValue(pgpKey.(string), value)
+	if pgpKey, ok := d.GetOk("pgp_key"); ok {
+		// format the value as a string to allow us to handle object/array values using a string schema
+		valueFingerprint, encryptedValue, err := encryptValue(pgpKey.(string), settingValueToString(setting.Value))
 		if err != nil {
 			return err
 		}
 		d.Set("value", encryptedValue)
 		d.Set("value_key_fingerprint", valueFingerprint)
 
-		valueSourceFingerprint, encryptedValueSource, err := encryptValue(pgpKey.(string), valueSource)
+		valueSourceFingerprint, encryptedValueSource, err := encryptValue(pgpKey.(string), setting.ValueSource)
 		if err != nil {
 			return err
 		}
 		d.Set("value_source", encryptedValueSource)
 		d.Set("value_source_key_fingerprint", valueSourceFingerprint)
+	} else {
+		d.Set("value", settingValueToString(setting.Value))
+		d.Set("value_source", setting.ValueSource)
 	}
 
 	return nil
+}
+
+// convert value to a string. If it is a complex type (object/array) then the diff calculation will use the value_source so the precise format is not critical
+func settingValueToString(value interface{}) string {
+	if value == nil {
+		return ""
+	}
+	return fmt.Sprintf("%v", value)
 }

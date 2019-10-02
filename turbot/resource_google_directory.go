@@ -68,8 +68,9 @@ func resourceGoogleDirectory() *schema.Resource {
 				Required: true,
 			},
 			"client_secret": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:             schema.TypeString,
+				Required:         true,
+				DiffSuppressFunc: suppressIfPgpKeyPresent,
 			},
 			"pgp_key": {
 				Type:     schema.TypeString,
@@ -171,16 +172,10 @@ func resourceTurbotGoogleDirectoryRead(d *schema.ResourceData, meta interface{})
 	}
 	// assign parent_akas
 	d.Set("parent_akas", parentAkas)
-	// store client secret, encrypting if a pgp key was provided
-	// TODO CHECK THIS - NEEDED?
-	//storeClientSecret(d, googleDirectory.ClientSecret)
-
 	d.Set("parent", googleDirectory.Parent)
 	d.Set("title", googleDirectory.Title)
 	d.Set("profile_id_template", googleDirectory.ProfileIdTemplate)
 	d.Set("description", googleDirectory.Description)
-	d.Set("status", googleDirectory.Status)
-	d.Set("directory_type", googleDirectory.DirectoryType)
 	d.Set("client_id", googleDirectory.ClientID)
 	d.Set("pool_id", googleDirectory.PoolId)
 	d.Set("group_id_template", googleDirectory.GroupIdTemplate)
@@ -254,4 +249,10 @@ func storeClientSecret(d *schema.ResourceData, clientSecret string) error {
 		d.Set("client_secret", clientSecret)
 	}
 	return nil
+}
+
+// if the value is encrypted we cannot perform drift detection - suppress the diff if a pgp key has been specified
+func suppressIfPgpKeyPresent(k, old, new string, d *schema.ResourceData) bool {
+	_, keyPresent := d.GetOk("pgp_key")
+	return old != "" && keyPresent
 }

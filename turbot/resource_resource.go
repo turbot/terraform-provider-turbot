@@ -260,8 +260,8 @@ func mapFromResourceData(d *schema.ResourceData, properties []interface{}) map[s
 	var propertyMap = map[string]interface{}{}
 	for _, element := range properties {
 		terraformToTurbotMap, ok := element.(map[string]string)
+		// if terraformProperty is a map, perform explicit mapping and merge result with existing map
 		if ok {
-			// if terraformProperty is a map, perform explicit mapping and merge result with existing map
 			mergeMaps(propertyMap, mapFromResourceDataWithPropertyMap(d, terraformToTurbotMap))
 		} else {
 			// otherwise perform automatic mapping from snake case (Terraform format) to lowerCamelCase (Turbot format).
@@ -328,9 +328,9 @@ func removePropertiesFromMap(propertyMap map[string]string, excluded []string) m
 }
 
 // no native contains in golang :/
-func sliceContains(s []string, searchterm string) bool {
-	i := sort.SearchStrings(s, searchterm)
-	return i < len(s) && s[i] == searchterm
+func sliceContains(s []string, searchTerm string) bool {
+	i := sort.SearchStrings(s, searchTerm)
+	return i < len(s) && s[i] == searchTerm
 
 }
 

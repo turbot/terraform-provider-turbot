@@ -31,9 +31,8 @@ func validationQuery() (string, ValidationResponse) {
 func createPolicySettingMutation() string {
 	return `mutation Create($command: PolicyCommandInput) {
 	policySetting: policyCreate(command: $command ) {
-		value
-		secretValue
-		valueSource
+		value: secretValue
+		valueSource: secretValueSource
 		template
 		precedence
 		templateInput
@@ -52,9 +51,8 @@ func createPolicySettingMutation() string {
 func readPolicySettingQuery(policySettingId string) string {
 	return fmt.Sprintf(`{
 	policySetting(id:"%s") {
-		value
-		secretValue
-		valueSource
+		value: secretValue
+		valueSource: secretValueSource
 		template
         default
 		precedence
@@ -73,9 +71,8 @@ func readPolicySettingQuery(policySettingId string) string {
 func updatePolicySettingMutation() string {
 	return `mutation Update($command: PolicyCommandInput) {
 	policySetting: policyUpdate(command: $command ) {
-		value
-		secretValue
-		valueSource
+		value: secretValue
+		valueSource: secretValueSource
 		template
 		precedence
 		templateInput
@@ -94,8 +91,8 @@ func updatePolicySettingMutation() string {
 func deletePolicySettingMutation() string {
 	return `mutation Delete($command: PolicyCommandInput) {
 	policySetting: policyDelete(command: $command ) {
-		value
-		valueSource
+		value: secretValue
+		valueSource: secretValueSource
 		template
 		precedence
 		templateInput
@@ -137,7 +134,7 @@ func findPolicySettingQuery(policyTypeUri, resourceAka string) string {
 func readPolicyValueQuery(policyTypeUri string, resourceId string) string {
 	return fmt.Sprintf(`{
 	policyValue(uri:"%s", resourceId:"%s"){
-		value
+		value: secretValue
 		secretValue
 		precedence
 	    state
