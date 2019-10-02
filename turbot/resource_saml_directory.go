@@ -47,11 +47,11 @@ func resourceTurbotSamlDirectory() *schema.Resource {
 			},
 			"directory_type": {
 				Type:     schema.TypeString,
-				Required: true,
+				Computed: true,
 			},
 			"status": {
 				Type:     schema.TypeString,
-				Required: true,
+				Computed: true,
 			},
 			"entry_point": {
 				Type:     schema.TypeString,

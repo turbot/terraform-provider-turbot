@@ -46,7 +46,7 @@ func resourceTurbotLocalDirectoryUser() *schema.Resource {
 			},
 			"status": {
 				Type:     schema.TypeString,
-				Required: true,
+				Computed: true,
 			},
 			"display_name": {
 				Type:     schema.TypeString,

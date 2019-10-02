@@ -50,11 +50,11 @@ func resourceGoogleDirectory() *schema.Resource {
 			},
 			"status": {
 				Type:     schema.TypeString,
-				Required: true,
+				Computed: true,
 			},
 			"directory_type": {
 				Type:     schema.TypeString,
-				Required: true,
+				Computed: true,
 			},
 			"client_id": {
 				Type:     schema.TypeString,
