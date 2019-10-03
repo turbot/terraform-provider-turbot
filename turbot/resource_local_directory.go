@@ -100,7 +100,7 @@ func resourceTurbotLocalDirectoryCreate(d *schema.ResourceData, meta interface{}
 	// assign the id
 	d.SetId(turbotMetadata.Id)
 	d.Set("status", payload["data"]["status"])
-	d.Set("directoryType", payload["data"]["directoryType"])
+	d.Set("directory_type", payload["data"]["directoryType"])
 	return nil
 }
 
@@ -153,6 +153,8 @@ func resourceTurbotLocalDirectoryRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("parent_akas", parent_Akas)
 	d.Set("parent", localDirectory.Parent)
 	d.Set("title", localDirectory.Title)
+	d.Set("status", localDirectory.Status)
+	d.Set("directory_type", localDirectory.DirectoryType)
 	return nil
 }
 
