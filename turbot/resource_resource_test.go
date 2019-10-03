@@ -69,7 +69,7 @@ var folderBodyUpdatedDescription = `{
 `
 
 func testAccResourceConfig(resourceType, body string) string {
-	return fmt.Sprintf(`
+	config := fmt.Sprintf(`
 resource "turbot_resource" "test" {
  parent = "tmod:@turbot/turbot#/"
  type = "%s"
@@ -77,6 +77,7 @@ resource "turbot_resource" "test" {
 %sEOF
 }
 `, resourceType, body)
+	return config
 }
 
 // helper functions

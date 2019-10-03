@@ -4,18 +4,18 @@ import (
 	"fmt"
 )
 
-func (client *Client) CreateGrant(profileAka, resource string, data map[string]interface{}) (*TurbotGrantMetadata, error) {
-	query := createGrantMutation()
-	responseData := &CreateGrantResponse{}
+func (client *Client) CreateGrantActivation(grant, resourceAka string) (*TurbotActiveGrantMetadata, error) {
+	query := activateGrantMutation()
+	responseData := &ActivateGrantResponse{}
+	//var responseData interface{}
 	commandMeta := map[string]interface{}{
-		"resourceAka": resource,
-		"profileAka":  profileAka,
+		"resourceAka": resourceAka,
+		"grantId":     grant,
 	}
 	variables := map[string]interface{}{
 		"command": map[string]interface{}{
 			"commands": []map[string]interface{}{{
-				"payload": data,
-				"meta":    commandMeta,
+				"meta": commandMeta,
 			}},
 		},
 	}
@@ -24,26 +24,25 @@ func (client *Client) CreateGrant(profileAka, resource string, data map[string]i
 	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error creating grant: %s", err.Error())
 	}
-	return &responseData.Grants.Items[0].Turbot, nil
+	return &responseData.GrantActivate.Items[0].Turbot, nil
 }
 
-func (client *Client) ReadGrant(id string) (*Grant, error) {
-	query := readGrantQuery(id)
-	responseData := &ReadGrantResponse{}
-
+func (client *Client) ReadGrantActivation(id string) (*ActiveGrant, error) {
+	query := readActiveGrantQuery(id)
+	responseData := &ReadActiveGrantResponse{}
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
 		return nil, fmt.Errorf("error reading folder: %s", err.Error())
 	}
-	return &responseData.Grant, nil
+	return &responseData.ActiveGrant, nil
 }
 
-func (client *Client) DeleteGrant(id string) error {
-	query := deleteGrantMutation()
+func (client *Client) DeleteGrantActivation(id string) error {
+	query := deactivateGrantMutation()
 	var responseData interface{}
 
 	commandMeta := map[string]interface{}{
-		"grantId": id,
+		"activationId": id,
 	}
 	variables := map[string]interface{}{
 		"command": map[string]interface{}{
@@ -60,11 +59,11 @@ func (client *Client) DeleteGrant(id string) error {
 	return nil
 }
 
-func (client *Client) GrantExists(id string) (bool, error) {
-	grant, err := client.ReadGrant(id)
+func (client *Client) GrantActivationExists(id string) (bool, error) {
+	grantActivate, err := client.ReadGrantActivation(id)
 	if err != nil {
 		return false, err
 	}
-	exists := grant.Turbot.Id != ""
+	exists := grantActivate.Turbot.Id != ""
 	return exists, nil
 }

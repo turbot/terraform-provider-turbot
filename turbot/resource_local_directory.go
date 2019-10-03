@@ -24,11 +24,11 @@ func resourceTurbotLocalDirectory() *schema.Resource {
 			"parent": {
 				Type:     schema.TypeString,
 				Required: true,
-				// when doing a diff, the state file will contain the id of the parent bu tthe config contains the aka,
+				// when doing a diff, the state file will contain the id of the parent but the config contains the aka,
 				// so we need custom diff code
-				DiffSuppressFunc: suppressIfParentAkaMatches,
+				DiffSuppressFunc: suppressIfAkaMatches("parent_akas"),
 			},
-			// when doing a read, fetch the parent akas to use in suppressIfParentAkaMatches()
+			// when doing a read, fetch the parent akas to use in suppressIfAkaMatches
 			"parent_akas": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -82,21 +82,17 @@ func resourceTurbotLocalDirectoryCreate(d *schema.ResourceData, meta interface{}
 		"turbotData": mapFromResourceData(d, localDirectoryMetadataProperties),
 	}
 	// set computed properties
-	payload["data"]["status"] = "New"
+	payload["data"]["status"] = "Active"
 	payload["data"]["directoryType"] = "local"
 	turbotMetadata, err := client.CreateLocalDirectory(parentAka, payload)
 	if err != nil {
 		return err
 	}
 
-	// set parent_akas property by loading resource resource and fetching the akas
-	parent_Akas, err := client.GetResourceAkas(turbotMetadata.ParentId)
-	if err != nil {
+	// set parent_akas property by loading resource and fetching the akas
+	if err := storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
-	// assign parent_akas
-	d.Set("parent_akas", parent_Akas)
-
 	// assign the id
 	d.SetId(turbotMetadata.Id)
 	d.Set("status", payload["data"]["status"])
@@ -119,14 +115,8 @@ func resourceTurbotLocalDirectoryUpdate(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return err
 	}
-	// set parent_akas property by loading resource resource and fetching the akas
-	parent_Akas, err := client.GetResourceAkas(turbotMetadata.ParentId)
-	if err != nil {
-		return err
-	}
-	// assign parent_akas
-	d.Set("parent_akas", parent_Akas)
-	return nil
+	// set parent_akas property by loading resource and fetching the akas
+	return storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
 }
 
 func resourceTurbotLocalDirectoryRead(d *schema.ResourceData, meta interface{}) error {
@@ -143,19 +133,12 @@ func resourceTurbotLocalDirectoryRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	// assign results back into ResourceData
-
-	// set parent_akas property by loading resource resource and fetching the akas
-	parent_Akas, err := client.GetResourceAkas(localDirectory.Turbot.ParentId)
-	if err != nil {
-		return err
-	}
-	// assign parent_akas
-	d.Set("parent_akas", parent_Akas)
 	d.Set("parent", localDirectory.Parent)
 	d.Set("title", localDirectory.Title)
 	d.Set("status", localDirectory.Status)
 	d.Set("directory_type", localDirectory.DirectoryType)
-	return nil
+	// set parent_akas property by loading resource and fetching the akas
+	return storeAkas(localDirectory.Turbot.ParentId, "parent_akas", d, meta)
 }
 
 func resourceTurbotLocalDirectoryDelete(d *schema.ResourceData, meta interface{}) error {

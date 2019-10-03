@@ -169,6 +169,24 @@ type Grant struct {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Active Grant
+type ActivateGrantResponse struct {
+	GrantActivate struct {
+		Items []struct {
+			Turbot TurbotActiveGrantMetadata
+		}
+	}
+}
+
+type ReadActiveGrantResponse struct {
+	ActiveGrant ActiveGrant
+}
+
+type ActiveGrant struct {
+	Turbot TurbotActiveGrantMetadata
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Folder
 type ReadFolderResponse struct {
 	Resource Folder
@@ -339,5 +357,11 @@ type TurbotPolicyMetadata struct {
 type TurbotGrantMetadata struct {
 	Id         string
 	ProfileId  string
+	ResourceId string
+}
+
+type TurbotActiveGrantMetadata struct {
+	Id         string
+	GrantId    string
 	ResourceId string
 }

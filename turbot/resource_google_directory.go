@@ -33,9 +33,9 @@ func resourceGoogleDirectory() *schema.Resource {
 				Required: true,
 				// when doing a diff, the state file will contain the id of the parent but the config contains the aka,
 				// so we need custom diff code
-				DiffSuppressFunc: suppressIfParentAkaMatches,
+				DiffSuppressFunc: suppressIfAkaMatches("parent_akas"),
 			},
-			// when doing a read, fetch the parent akas to use in suppressIfParentAkaMatches()
+			// when doing a read, fetch the parent akas to use in suppressIfAkaMatches
 			"parent_akas": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -131,12 +131,9 @@ func resourceTurbotGoogleDirectoryCreate(d *schema.ResourceData, meta interface{
 		return err
 	}
 	// set parent_akas property by loading parent resource and fetching the akas
-	parentAkas, err := client.GetResourceAkas(turbotMetadata.ParentId)
-	if err != nil {
+	if err := storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
-	// assign parent_akas
-	d.Set("parent_akas", parentAkas)
 	// store client secret, encrypting if a pgp key was provided
 	err = storeClientSecret(d, payload["data"]["clientSecret"].(string))
 	if err != nil {
@@ -164,14 +161,6 @@ func resourceTurbotGoogleDirectoryRead(d *schema.ResourceData, meta interface{})
 	}
 
 	// assign results back into ResourceData
-
-	// set parent_akas property by loading parent resource and fetching the akas
-	parentAkas, err := client.GetResourceAkas(googleDirectory.Turbot.ParentId)
-	if err != nil {
-		return err
-	}
-	// assign parent_akas
-	d.Set("parent_akas", parentAkas)
 	d.Set("parent", googleDirectory.Parent)
 	d.Set("title", googleDirectory.Title)
 	d.Set("profile_id_template", googleDirectory.ProfileIdTemplate)
@@ -181,8 +170,8 @@ func resourceTurbotGoogleDirectoryRead(d *schema.ResourceData, meta interface{})
 	d.Set("group_id_template", googleDirectory.GroupIdTemplate)
 	d.Set("login_name_template", googleDirectory.LoginNameTemplate)
 	d.Set("hosted_name", googleDirectory.HostedName)
-
-	return nil
+	// set parent_akas property by loading parent resource and fetching the akas
+	return storeAkas(googleDirectory.Turbot.ParentId, "parent_akas", d, meta)
 }
 
 func resourceTurbotGoogleDirectoryUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -202,18 +191,11 @@ func resourceTurbotGoogleDirectoryUpdate(d *schema.ResourceData, meta interface{
 		return err
 	}
 	// set parent_akas property by loading parent resource and fetching the akas
-	parentAkas, err := client.GetResourceAkas(turbotMetadata.ParentId)
-	if err != nil {
+	if err := storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
 	// store client secret, encrypting if a pgp key was provided
-	err = storeClientSecret(d, payload["data"]["clientSecret"].(string))
-	if err != nil {
-		return err
-	}
-	// assign parent_akas
-	d.Set("parent_akas", parentAkas)
-	return nil
+	return storeClientSecret(d, payload["data"]["clientSecret"].(string))
 }
 
 func resourceTurbotGoogleDirectoryDelete(d *schema.ResourceData, meta interface{}) error {

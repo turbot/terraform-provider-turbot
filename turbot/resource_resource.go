@@ -27,11 +27,11 @@ func resourceTurbotResource() *schema.Resource {
 			"parent": {
 				Type:     schema.TypeString,
 				Required: true,
-				// when doing a diff, the state file will contain the id of the parent bu tthe config contains the aka,
+				// when doing a diff, the state file will contain the id of the parent but the config contains the aka,
 				// so we need custom diff code
-				DiffSuppressFunc: suppressIfParentAkaMatches,
+				DiffSuppressFunc: suppressIfAkaMatches("parent_akas"),
 			},
-			// when doing a read, fetch the parent akas to use in suppressIfParentAkaMatches()
+			// when doing a read, fetch the parent akas to use in suppressIfAkaMatches
 			"parent_akas": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -79,14 +79,10 @@ func resourceTurbotResourceCreate(d *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 
-	// set parent_akas property by loading resource resource and fetching the akas
-	parent_Akas, err := client.GetResourceAkas(turbotMetadata.ParentId)
-	if err != nil {
+	// set parent_akas property by loading resource and fetching the akas
+	if err := storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
-	// assign parent_akas
-	d.Set("parent_akas", parent_Akas)
-
 	// assign the id
 	d.SetId(turbotMetadata.Id)
 	return nil
@@ -119,13 +115,10 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 
 	// assign results back into ResourceData
 
-	// set parent_akas property by loading resource resource and fetching the akas
-	parent_Akas, err := client.GetResourceAkas(resource.Turbot.ParentId)
-	if err != nil {
+	// set parent_akas property by loading resource and fetching the akas
+	if err := storeAkas(resource.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
-	// assign parent_akas
-	d.Set("parent_akas", parent_Akas)
 	d.Set("parent", resource.Turbot.ParentId)
 	d.Set("body", body)
 	return nil
@@ -142,14 +135,8 @@ func resourceTurbotResourceUpdate(d *schema.ResourceData, meta interface{}) erro
 	if err != nil {
 		return err
 	}
-	// set parent_akas property by loading resource resource and fetching the akas
-	parent_Akas, err := client.GetResourceAkas(turbotMetadata.ParentId)
-	if err != nil {
-		return err
-	}
-	// assign parent_akas
-	d.Set("parent_akas", parent_Akas)
-	return nil
+	// set parent_akas property by loading resource and fetching the akas
+	return storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
 }
 
 func resourceTurbotResourceDelete(d *schema.ResourceData, meta interface{}) error {
@@ -173,27 +160,30 @@ func resourceTurbotResourceImport(d *schema.ResourceData, meta interface{}) ([]*
 	return []*schema.ResourceData{d}, nil
 }
 
-// the 'parent' in the config is an aka - however the state file will have an id.
-// to perform a diff we also store parent_akas in state file, which is the list of akas for the parent
-// if the new value of parent exists in parent_akas, then suppress diff
-func suppressIfParentAkaMatches(k, old, new string, d *schema.ResourceData) bool {
-	parentAkasProperty, parentAkasSet := d.GetOk("parent_akas")
-	// if parent_id has not been set yet, do not suppress the diff
-	if !parentAkasSet {
+// the property in the config is an aka - however the state file will have an id.
+// to perform a diff we also store the list of akas in state file
+// if the new value of th eproperty exists in the akas list, then suppress diff
+func suppressIfAkaMatches(propertyName string) func(k, old, new string, d *schema.ResourceData) bool {
+	return func(k, old, new string, d *schema.ResourceData) bool {
+		akasProperty, akasSet := d.GetOk(propertyName)
+		// if parent_id has not been set yet, do not suppress the diff
+		if !akasSet {
+			return false
+		}
+
+		akas, ok := akasProperty.([]interface{})
+		if !ok {
+			return false
+		}
+		// if parentAkas contains 'new', suppress diff
+		for _, aka := range akas {
+			if aka.(string) == new {
+				return true
+			}
+		}
 		return false
 	}
 
-	parentAkas, ok := parentAkasProperty.([]interface{})
-	if !ok {
-		return false
-	}
-	// if parentAkas contains 'new', suppress diff
-	for _, aka := range parentAkas {
-		if aka.(string) == new {
-			return true
-		}
-	}
-	return false
 }
 
 func suppressIfClientSecret(k, old, new string, d *schema.ResourceData) bool {
@@ -344,4 +334,15 @@ func encryptValue(pgpKey, value string) (string, string, error) {
 		return "", "", err
 	}
 	return fingerprint, encrypted, nil
+}
+
+func storeAkas(aka, propertyName string, d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*apiclient.Client)
+	akas, err := client.GetResourceAkas(aka)
+	if err != nil {
+		return err
+	}
+	// assign  akas
+	d.Set(propertyName, akas)
+	return nil
 }

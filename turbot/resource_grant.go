@@ -26,34 +26,63 @@ func resourceTurbotGrant() *schema.Resource {
 			"resource": {
 				Type:     schema.TypeString,
 				Required: true,
-				// when doing a diff, the state file will contain the id of the resource bu tthe config contains the aka,
+				// when doing a diff, the state file will contain the id of the resource but the config contains the aka,
 				// so we need custom diff code
-				DiffSuppressFunc: supressIfResourceAkaMatches,
+				DiffSuppressFunc: suppressIfAkaMatches("resource_akas"),
 				ForceNew:         true,
 			},
-			// when doing a read, fetch the resource akas to use in supressIfResourceAkaMatches()
+			"permission_type": {
+				Type:     schema.TypeString,
+				Required: true,
+				// when doing a diff, the state file will contain the id of the permission type but the config contains the aka,
+				// so we need custom diff code
+				DiffSuppressFunc: suppressIfAkaMatches("permission_type_akas"),
+				ForceNew:         true,
+			},
+			"permission_level": {
+				Type:     schema.TypeString,
+				Required: true,
+				// when doing a diff, the state file will contain the id of the permission level but the config contains the aka,
+				// so we need custom diff code
+				DiffSuppressFunc: suppressIfAkaMatches("permission_level_akas"),
+				ForceNew:         true,
+			},
+			"profile": {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+				// when doing a diff, the state file will contain the id of the profile but the config contains the aka,
+				// so we need custom diff code
+				DiffSuppressFunc: suppressIfAkaMatches("profile_akas"),
+			},
 			"resource_akas": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				ForceNew: true,
 			},
-			"permission_type": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+			"permission_type_akas": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
-			"permission_level": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+			"permission_level_akas": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
-			"profile_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+			// we need to store resource, profile, permisisonTyp and permissionLevel akas to use in suppressIfAkaMatches
+			"profile_akas": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 		},
 	}
@@ -68,22 +97,30 @@ func resourceTurbotGrantExists(d *schema.ResourceData, meta interface{}) (b bool
 func resourceTurbotGrantCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiclient.Client)
 	resourceAka := d.Get("resource").(string)
-	profileId := d.Get("profile_id").(string)
+	profileAka := d.Get("profile").(string)
+	permissionTypeAka := d.Get("permission_type").(string)
+	permissionLevelAka := d.Get("permission_level").(string)
 	// build map of Grant properties
 	data := mapFromResourceDataWithPropertyMap(d, grantDataMap)
 	// create Grant returns turbot resource metadata containing the id
-	TurbotGrantMetadata, err := client.CreateGrant(profileId, resourceAka, data)
+	TurbotGrantMetadata, err := client.CreateGrant(profileAka, resourceAka, data)
 	if err != nil {
 		return err
 	}
 
-	// set resource_akas property by loading resource resource and fetching the akas
-	resource_akas, err := client.GetResourceAkas(resourceAka)
-	if err != nil {
+	// set akas properties by loading resource and fetching the akas
+	if err := storeAkas(resourceAka, "resource_akas", d, meta); err != nil {
 		return err
 	}
-	// assign resource akas
-	d.Set("resource_akas", resource_akas)
+	if err := storeAkas(profileAka, "profile_akas", d, meta); err != nil {
+		return err
+	}
+	if err := storeAkas(permissionTypeAka, "permission_type_akas", d, meta); err != nil {
+		return err
+	}
+	if err := storeAkas(permissionLevelAka, "permission_level_akas", d, meta); err != nil {
+		return err
+	}
 
 	// assign the id
 	d.SetId(TurbotGrantMetadata.Id)
@@ -104,18 +141,22 @@ func resourceTurbotGrantRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// assign results back into ResourceData
+	d.Set("permission_level", Grant.PermissionLevelId)
+	d.Set("permission_type", Grant.PermissionTypeId)
+	d.Set("profile", Grant.Turbot.ProfileId)
+	d.Set("resource", Grant.Turbot.ResourceId)
 
-	// set resource_akas property by loading resource resource and fetching the akas
-	resource_akas, err := client.GetResourceAkas(Grant.Turbot.ResourceId)
-	if err != nil {
+	// set akas properties by loading resource and fetching the akas
+	if err := storeAkas(Grant.Turbot.ResourceId, "resource_akas", d, meta); err != nil {
 		return err
 	}
-	d.Set("permission_level_id", Grant.PermissionLevelId)
-	d.Set("permission_type_id", Grant.PermissionTypeId)
-	d.Set("profile_id", Grant.Turbot.ProfileId)
-	d.Set("resource", Grant.Turbot.ResourceId)
-	d.Set("resource_akas", resource_akas)
-	return nil
+	if err := storeAkas(Grant.Turbot.ProfileId, "profile_akas", d, meta); err != nil {
+		return err
+	}
+	if err := storeAkas(Grant.PermissionTypeId, "permission_type_akas", d, meta); err != nil {
+		return err
+	}
+	return storeAkas(Grant.PermissionLevelId, "permission_level_akas", d, meta)
 }
 
 func resourceTurbotGrantDelete(d *schema.ResourceData, meta interface{}) error {
@@ -137,24 +178,4 @@ func resourceTurbotGrantImport(d *schema.ResourceData, meta interface{}) ([]*sch
 		return nil, err
 	}
 	return []*schema.ResourceData{d}, nil
-}
-
-func supressIfResourceAkaMatches(k, old, new string, d *schema.ResourceData) bool {
-	resourceAkasProperty, resourceAkasSet := d.GetOk("resource_akas")
-	// if resource_id has not been set yet, do not suppress the diff
-	if !resourceAkasSet {
-		return false
-	}
-
-	resource_Akas, ok := resourceAkasProperty.([]interface{})
-	if !ok {
-		return false
-	}
-	// if resource_akas contains the 'new' aka, suppress diff
-	for _, aka := range resource_Akas {
-		if aka.(string) == new {
-			return true
-		}
-	}
-	return false
 }

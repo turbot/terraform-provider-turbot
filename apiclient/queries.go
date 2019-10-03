@@ -3,14 +3,43 @@ package apiclient
 import (
 	"bytes"
 	"fmt"
+	"strings"
 )
 
-var turbotMetadataQuery = `turbot {
+var turbotResourceMetadataFragment = `turbot {
   id
   parentId
   akas
   tags
 }`
+
+var turbotPolicyMetadataFragment = `turbot {
+  id
+  parentId
+  akas
+  tags
+}`
+
+func turbotGrantMetadataFragment(prefix string) string {
+	return applyPrefix(prefix,
+		`turbot {
+  id
+  profileId  
+  resourceId 
+}`)
+}
+
+func turbotActiveGrantMetadataFragment(prefix string) string {
+	return applyPrefix(prefix, `turbot {
+  id
+  grantId
+  resourceId
+}`)
+}
+
+func applyPrefix(prefix, inputString string) string {
+	return strings.Replace(inputString, "\n", "\n"+prefix, -1)
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // validation
@@ -271,7 +300,7 @@ func createResourceMutation() string {
   resource: resourceCreate(command: $command) {
 %s
   }
-}`, turbotMetadataQuery)
+}`, turbotResourceMetadataFragment)
 }
 
 func readResourceQuery(aka string, properties map[string]string) string {
@@ -359,41 +388,64 @@ func readFullResourceQuery(aka string) string {
 
 ///////////////////////////////////////////////////////////////////////////////
 // grant
-func createGrantMutation() string {
-	return `mutation CreateGrant($command: GrantCommandInput) {
-	grants: grantCreate(command: $command) {
-		items{
-			turbot{
-				id
-				resourceId
-			}
-		}
-	}
-}`
-}
-
 func readGrantQuery(aka string) string {
 	return fmt.Sprintf(`{
-		grant: grant(id:"%s") {
-			permissionTypeId
-			permissionLevelId
-				turbot{
-                    id
-					resourceId,
-					profileId
-				}
+	grant: grant(id:"%s") {
+		permissionTypeId
+		permissionLevelId
+		%s
+	}
+  }`, aka, turbotGrantMetadataFragment("\t\t"))
+}
+
+func createGrantMutation() string {
+	return fmt.Sprintf(`mutation CreateGrant($command: GrantCommandInput) {
+	grants: grantCreate(command: $command) {
+		items{
+			%s
 		}
-	  }`, aka)
+	}
+}`, turbotGrantMetadataFragment("\t\t\t"))
 }
 
 func deleteGrantMutation() string {
-	return `mutation DeleteGrant($command: GrantCommandInput) {
+	return fmt.Sprintf(`mutation DeleteGrant($command: GrantCommandInput) {
  	grant: grantDelete(command: $command) {
 		items {
-			turbot {
-		  		id
-			}
+			%s
 		}
 	}
-}`
+}`, turbotGrantMetadataFragment("\t\t\t"))
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// active grant
+
+func readActiveGrantQuery(aka string) string {
+	return fmt.Sprintf(`{
+	activeGrant: activeGrant(id:"%s"){
+		%s
+	}
+}`, aka, turbotActiveGrantMetadataFragment("\t\t"))
+}
+
+func activateGrantMutation() string {
+	return fmt.Sprintf(`mutation ActivateGrant($command: GrantCommandInput) {
+	grantActivate: grantActivate(command: $command) {
+		items {
+			%s
+		}
+	}
+}`, turbotActiveGrantMetadataFragment("\t\t\t"))
+}
+
+// deactivate grant mutation
+func deactivateGrantMutation() string {
+	return fmt.Sprintf(`mutation DeactivateGrant($command: GrantCommandInput) {
+	grantDeactivate(command: $command) {
+		items {
+			%s
+		}
+	}
+}`, turbotActiveGrantMetadataFragment("\t\t\t"))
 }

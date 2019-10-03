@@ -150,12 +150,12 @@ func (client *Client) GetResourceAkas(resourceAka string) ([]string, error) {
 		log.Printf("[ERROR] Failed to load target resource; %s", err)
 		return nil, err
 	}
-	resource_Akas := resource.Turbot.Akas
+	resourceAkas := resource.Turbot.Akas
 	// if this resource has no akas, just use the one passed in
-	if resource_Akas == nil {
-		resource_Akas = []string{resourceAka}
+	if resourceAkas == nil {
+		resourceAkas = []string{resourceAka}
 	}
-	return resource_Akas, nil
+	return resourceAkas, nil
 }
 
 // assign the ReadResource results into a Resource object, based on the 'properties' map

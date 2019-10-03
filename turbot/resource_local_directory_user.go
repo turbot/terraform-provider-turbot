@@ -24,11 +24,11 @@ func resourceTurbotLocalDirectoryUser() *schema.Resource {
 			"parent": {
 				Type:     schema.TypeString,
 				Required: true,
-				// when doing a diff, the state file will contain the id of the parent bu tthe config contains the aka,
+				// when doing a diff, the state file will contain the id of the parent but the config contains the aka,
 				// so we need custom diff code
-				DiffSuppressFunc: suppressIfParentAkaMatches,
+				DiffSuppressFunc: suppressIfAkaMatches("parent_akas"),
 			},
-			// when doing a read, fetch the parent akas to use in suppressIfParentAkaMatches()
+			// when doing a read, fetch the parent akas to use in suppressIfAkaMatches
 			"parent_akas": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -97,18 +97,18 @@ func resourceTurbotLocalDirectoryUserCreate(d *schema.ResourceData, meta interfa
 		"data":       mapFromResourceData(d, localDirectoryUserProperties),
 		"turbotData": mapFromResourceData(d, localDirectoryUserMetadataProperties),
 	}
+	// set computed properties
+	payload["data"]["status"] = "Active"
+
 	// CreateLocalDirectoryUser returns turbot resource metadata containing the id
 	turbotMetadata, err := client.CreateLocalDirectoryUser(parentAka, payload)
 	if err != nil {
 		return err
 	}
 	// set parent_akas property by loading parent resource and fetching the akas
-	parentAkas, err := client.GetResourceAkas(turbotMetadata.ParentId)
-	if err != nil {
+	if err := storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
-	// assign parent_akas
-	d.Set("parent_akas", parentAkas)
 	// assign the id
 	d.SetId(turbotMetadata.Id)
 	return nil
@@ -129,13 +129,7 @@ func resourceTurbotLocalDirectoryUserUpdate(d *schema.ResourceData, meta interfa
 		return err
 	}
 	// set parent_akas property by loading parent resource and fetching the akas
-	parentAkas, err := client.GetResourceAkas(turbotMetadata.ParentId)
-	if err != nil {
-		return err
-	}
-	// assign parent_akas
-	d.Set("parent_akas", parentAkas)
-	return nil
+	return storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
 }
 
 func resourceTurbotLocalDirectoryUserRead(d *schema.ResourceData, meta interface{}) error {
@@ -151,12 +145,9 @@ func resourceTurbotLocalDirectoryUserRead(d *schema.ResourceData, meta interface
 	}
 	// assign results back into ResourceData
 	// set parent_akas property by loading parent resource and fetching the akas
-	parentAkas, err := client.GetResourceAkas(localDirectoryUser.Turbot.ParentId)
-	if err != nil {
+	if err := storeAkas(localDirectoryUser.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
-	d.Set("parent_akas", parentAkas)
-
 	d.Set("parent", localDirectoryUser.Parent)
 	d.Set("title", localDirectoryUser.Title)
 	d.Set("email", localDirectoryUser.Email)

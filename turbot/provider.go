@@ -42,6 +42,7 @@ func Provider() terraform.ResourceProvider {
 			"turbot_smart_folder":            resourceTurbotSmartFolder(),
 			"turbot_smart_folder_attachment": resourceTurbotSmartFolderAttachemnt(),
 			"turbot_grant":                   resourceTurbotGrant(),
+			"turbot_grant_activation":        resourceTurbotGrantActivation(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"turbot_policy_value": dataSourceTurbotPolicyValue(),

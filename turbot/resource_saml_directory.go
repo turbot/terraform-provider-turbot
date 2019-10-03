@@ -29,11 +29,11 @@ func resourceTurbotSamlDirectory() *schema.Resource {
 			"parent": {
 				Type:     schema.TypeString,
 				Required: true,
-				// when doing a diff, the state file will contain the id of the parent bu the config contains the aka,
+				// when doing a diff, the state file will contain the id of the parent but he config contains the aka,
 				// so we need custom diff code
-				DiffSuppressFunc: suppressIfParentAkaMatches,
+				DiffSuppressFunc: suppressIfAkaMatches("parent_akas"),
 			},
-			// when doing a read, fetch the parent akas to use in suppressIfParentAkaMatches()
+			// when doing a read, fetch the parent akas to use in suppressIfAkaMatches("parent_akas")()
 			"parent_akas": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -128,11 +128,9 @@ func resourceTurbotSamlDirectoryCreate(d *schema.ResourceData, meta interface{})
 	}
 
 	// set parent_akas property by loading parent resource and fetching the akas
-	parentAkas, err := client.GetResourceAkas(turbotMetadata.ParentId)
-	if err != nil {
+	if err := storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
-	d.Set("parent_akas", parentAkas)
 	// assign the id
 	d.SetId(turbotMetadata.Id)
 	d.Set("status", payload["data"]["status"])
@@ -156,12 +154,7 @@ func resourceTurbotSamlDirectoryUpdate(d *schema.ResourceData, meta interface{})
 		return err
 	}
 	// set parent_akas property by loading parent resource and fetching the akas
-	parentAkas, err := client.GetResourceAkas(turbotMetadata.ParentId)
-	if err != nil {
-		return err
-	}
-	d.Set("parent_akas", parentAkas)
-	return nil
+	return storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
 }
 
 func resourceTurbotSamlDirectoryRead(d *schema.ResourceData, meta interface{}) error {
@@ -180,11 +173,9 @@ func resourceTurbotSamlDirectoryRead(d *schema.ResourceData, meta interface{}) e
 	// assign results back into ResourceData
 
 	// set parent_akas property by loading parent resource and fetching the akas
-	parentAkas, err := client.GetResourceAkas(samlDirectory.Turbot.ParentId)
-	if err != nil {
+	if err := storeAkas(samlDirectory.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
-	d.Set("parent_akas", parentAkas)
 	d.Set("parent", samlDirectory.Parent)
 	d.Set("title", samlDirectory.Title)
 	return nil
