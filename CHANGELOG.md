@@ -2,6 +2,9 @@
 
 ## 1.0.0-beta.5 (October 03, 2019)
 
+BUGFIXES: 
+* turbot_mod failing to install mods. Add error handling to the code to check for existing mod. ([#82](https://github.com/turbotio/terraform-provider-turbot/issues/82))
+
 FEATURES:
 * **New Resource:** `turbot_grant_activation` ([#79](https://github.com/turbotio/terraform-provider-turbot/issues/79))
 
