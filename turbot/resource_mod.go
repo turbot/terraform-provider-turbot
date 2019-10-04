@@ -115,13 +115,14 @@ func resourceTurbotModInstall(d *schema.ResourceData, meta interface{}) error {
 
 	// install should only be called if the mod is not already installed
 	mod, err := client.ReadResource(modAka, nil)
-	if err != nil {
-		return err
+	if err == nil {
+		// if there is no error, the mod is already installed
+		id := mod.Turbot.Id
+		return fmt.Errorf("mod %s is already installed ( id: %s ). To manage this mod using Terraform, import the mod using command 'terraform import <resource_address> <id>'", modAka, id)
 	}
-	id := mod.Turbot.Id
-	if id != "" {
-		// TODO extract terraform name
-		return fmt.Errorf("Mod %s is already installed ( id: %s ). To manage this mod using Terraform, import the mod using command 'terraform import <resource_address> <id>'", modAka, id)
+	if !apiclient.NotFoundError(err) {
+		// if the error is not a 'not found' error, the mod is already installed
+		return err
 	}
 
 	return modInstall(d, meta)
