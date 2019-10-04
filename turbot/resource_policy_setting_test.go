@@ -200,10 +200,10 @@ func TestAccPolicySetting_SecretEncrypted(t *testing.T) {
 }
 
 // configs
-var stringPolicyType = "tmod:@turbot/provider-test#/policy/types/stringPolicy"
-var intPolicyType = "tmod:@turbot/provider-test#/policy/types/integerPolicy"
-var stringArrayPolicyType = "tmod:@turbot/provider-test#/policy/types/stringArrayPolicy"
-var secretPolicyType = "tmod:@turbot/provider-test#/policy/types/secretPolicy"
+var stringPolicyType = "tmod:@turbot/provider-policy-test#/policy/types/stringPolicy"
+var intPolicyType = "tmod:@turbot/provider-policy-test#/policy/types/integerPolicy"
+var stringArrayPolicyType = "tmod:@turbot/provider-policy-test#/policy/types/stringArrayPolicy"
+var secretPolicyType = "tmod:@turbot/provider-policy-test#/policy/types/secretPolicy"
 var stringPolicyTemplate = "{% if $.account.Id == '650022101893' %}Skip{% else %}'Check: Configured'{% endif %}"
 var stringPolicyTemplateInput = "{ account{ Id } }"
 
