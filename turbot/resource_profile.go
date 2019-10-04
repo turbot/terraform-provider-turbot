@@ -6,7 +6,7 @@ import (
 )
 
 // properties which must be passed to a create/update call
-var profileProperties = []string{"title", "status", "display_name", "given_name", "family_name", "email", "directory_pool_id", "profile_id"}
+var profileProperties = []interface{}{"title", "status", "display_name", "given_name", "family_name", "email", "directory_pool_id", "profile_id"}
 
 func resourceTurbotProfile() *schema.Resource {
 	return &schema.Resource{
@@ -23,11 +23,11 @@ func resourceTurbotProfile() *schema.Resource {
 			"parent": {
 				Type:     schema.TypeString,
 				Required: true,
-				// when doing a diff, the state file will contain the id of the parent bu tthe config contains the aka,
+				// when doing a diff, the state file will contain the id of the parent but the config contains the aka,
 				// so we need custom diff code
-				DiffSuppressFunc: suppressIfParentAkaMatches,
+				DiffSuppressFunc: suppressIfAkaMatches("parent_akas"),
 			},
-			// when doing a read, fetch the parent akas to use in suppressIfParentAkaMatches()
+			// when doing a read, fetch the parent akas to use in suppressIfAkaMatches
 			"parent_akas": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -106,14 +106,10 @@ func resourceTurbotProfileCreate(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	// set parent_akas property by loading resource resource and fetching the akas
-	parent_Akas, err := client.GetResourceAkas(turbotMetadata.ParentId)
-	if err != nil {
+	// set parent_akas property by loading resource and fetching the akas
+	if err := storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
-	// assign parent_akas
-	d.Set("parent_akas", parent_Akas)
-
 	// assign the id
 	d.SetId(turbotMetadata.Id)
 
@@ -133,14 +129,8 @@ func resourceTurbotProfileUpdate(d *schema.ResourceData, meta interface{}) error
 	if err != nil {
 		return err
 	}
-	// set parent_akas property by loading resource resource and fetching the akas
-	parent_Akas, err := client.GetResourceAkas(turbotMetadata.ParentId)
-	if err != nil {
-		return err
-	}
-	// assign parent_akas
-	d.Set("parent_akas", parent_Akas)
-	return nil
+	// set parent_akas property by loading resource and fetching the akas
+	return storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
 }
 
 func resourceTurbotProfileRead(d *schema.ResourceData, meta interface{}) error {
@@ -157,14 +147,6 @@ func resourceTurbotProfileRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// assign results back into ResourceData
-
-	/// set parent_akas property by loading resource resource and fetching the akas
-	parent_Akas, err := client.GetResourceAkas(profile.Turbot.ParentId)
-	if err != nil {
-		return err
-	}
-	// assign parent_akas
-	d.Set("parent_akas", parent_Akas)
 	d.Set("parent", profile.Parent)
 	d.Set("title", profile.Title)
 	d.Set("status", profile.Status)
@@ -172,8 +154,8 @@ func resourceTurbotProfileRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("given_name", profile.GivenName)
 	d.Set("family_name", profile.FamilyName)
 	d.Set("directory_pool_id", profile.DirectoryPoolId)
-
-	return nil
+	/// set parent_akas property by loading resource and fetching the akas
+	return storeAkas(profile.Turbot.ParentId, "parent_akas", d, meta)
 }
 
 func resourceTurbotProfileDelete(d *schema.ResourceData, meta interface{}) error {

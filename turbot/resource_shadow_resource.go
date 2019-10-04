@@ -9,7 +9,7 @@ import (
 )
 
 // properties which must be passed to a create/update call
-var shadowResourceProperties = []string{"filter", "resource"}
+var shadowResourceProperties = []interface{}{"filter", "resource"}
 
 func resourceTurbotShadowResource() *schema.Resource {
 	return &schema.Resource{

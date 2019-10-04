@@ -11,7 +11,7 @@ import (
 // test suites
 
 func TestAccMod(t *testing.T) {
-	latestProviderTestVersion := "5.0.3"
+	latestProviderTestVersion := "5.0.15"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -103,7 +103,7 @@ func TestAccMod(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "mod", "provider-test"),
 					resource.TestCheckResourceAttr(
-						"turbot_mod.test", "version_current", "5.0.3"),
+						"turbot_mod.test", "version_current", latestProviderTestVersion),
 				),
 			},
 		},

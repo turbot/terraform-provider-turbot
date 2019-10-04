@@ -1,5 +1,33 @@
 
 
+## 1.0.0-beta.5 (October 03, 2019)
+
+FEATURES:
+* **New Resource:** `turbot_grant_activation` ([#79](https://github.com/turbotio/terraform-provider-turbot/issues/79))
+
+ENHANCEMENTS:
+* Add support for terraform 0.12. ([#75](https://github.com/turbotio/terraform-provider-turbot/issues/75))
+* Update all directory resource schemas to make status and directory_type computed.([#76](https://github.com/turbotio/terraform-provider-turbot/issues/76)) 
+* Update turbot_policy_setting - support encryption of value and value_source in state file. ([#77](https://github.com/turbotio/terraform-provider-turbot/issues/77))
+* Update turbot_google_directory - support encryption of client_secret in state file. ([#47](https://github.com/turbotio/terraform-provider-turbot/issues/47))
+
+## 1.0.0-beta.4 (September 30, 2019)
+
+FEATURES:
+* **New Resource:** `turbot_grant` ([#31](https://github.com/turbotio/terraform-provider-turbot/issues/31))
+* **New Resource:** `turbot_smart_folder` ([#39](https://github.com/turbotio/terraform-provider-turbot/issues/39))
+* **New Resource:** `turbot_smart_folder_attachment` ([#39](https://github.com/turbotio/terraform-provider-turbot/issues/39))
+* **New Resource:** `turbot_shadow_resource` ([#62](https://github.com/turbotio/terraform-provider-turbot/issues/62))
+
+ENHANCEMENTS:
+* Add tags support to various resources  ([#55](https://github.com/turbotio/terraform-provider-turbot/issues/55)): 
+  * turbot_folder
+  * turbot_resource 
+  * turbot_local_directory
+  * turbot_saml_directory
+  * turbot_google_directory
+  
+
 ## 1.0.0-beta.3 (September 20, 2019)
 
 FEATURES:

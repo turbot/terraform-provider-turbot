@@ -22,7 +22,7 @@ func TestAccLocalDirectory(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_local_directory.test", "title", "provider_test"),
 					resource.TestCheckResourceAttr(
-						"turbot_local_directory.test", "description", "test Directory"),
+						"turbot_local_directory.test", "description", "test directory"),
 				),
 			},
 			{
@@ -32,7 +32,7 @@ func TestAccLocalDirectory(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_local_directory.test", "title", "provider_test_refactor"),
 					resource.TestCheckResourceAttr(
-						"turbot_local_directory.test", "description", "test Directory"),
+						"turbot_local_directory.test", "description", "test directory"),
 				),
 			},
 			{
@@ -42,7 +42,7 @@ func TestAccLocalDirectory(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_local_directory.test", "title", "provider_test"),
 					resource.TestCheckResourceAttr(
-						"turbot_local_directory.test", "description", "test Directory for turbot terraform provider"),
+						"turbot_local_directory.test", "description", "test directory for turbot terraform provider"),
 				),
 			}, {
 				Config: testAccDirectoryTagsConfig(),
@@ -51,7 +51,7 @@ func TestAccLocalDirectory(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_local_directory.test", "title", "provider_test_refactor"),
 					resource.TestCheckResourceAttr(
-						"turbot_local_directory.test", "description", "test Directory"),
+						"turbot_local_directory.test", "description", "test directory"),
 					resource.TestCheckResourceAttr(
 						"turbot_local_directory.test", "tags.Name", "tags test"),
 					resource.TestCheckResourceAttr(
@@ -68,7 +68,7 @@ func testAccLocalDirectoryConfig() string {
 resource "turbot_local_directory" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	title = "provider_test"
-	description = "test Directory"
+	description = "test directory"
 	profile_id_template = "{{profile.email}}"
 }
 `
@@ -79,7 +79,7 @@ func testAccLocalDirectoryUpdateDescConfig() string {
 resource "turbot_local_directory" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	title = "provider_test"
-	description = "test Directory for turbot terraform provider"
+	description = "test directory for turbot terraform provider"
 	profile_id_template = "{{profile.email}}"
 }
 `
@@ -90,7 +90,7 @@ func testAccDirectoryUpdateTitleConfig() string {
 resource "turbot_local_directory" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	title = "provider_test_refactor"
-	description = "test Directory"
+	description = "test directory"
 	profile_id_template = "{{profile.email}}"
 }
 `
@@ -101,7 +101,7 @@ func testAccDirectoryTagsConfig() string {
 resource "turbot_local_directory" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	title = "provider_test_refactor"
-	description = "test Directory"
+	description = "test directory"
 	profile_id_template = "{{profile.email}}"
 	tags = {
 		  "Name" = "tags test"

@@ -25,28 +25,14 @@ func (client *Client) CreateGoogleDirectory(parent string, commandPayload map[st
 }
 
 func (client *Client) ReadGoogleDirectory(id string) (*GoogleDirectory, error) {
-	// create a map of the properties we want the graphql query to return
-	properties := map[string]string{
-		"title":             "title",
-		"parent":            "turbot.parentId",
-		"description":       "description",
-		"status":            "status",
-		"directoryType":     "directoryType",
-		"profileIdTemplate": "profileIdTemplate",
-		"clientID":          "clientID",
-		"poolId":            "poolId",
-		"groupIdTemplate":   "groupIdTemplate",
-		"loginNameTemplate": "loginNameTemplate",
-		"hostedName":        "hostedName",
-	}
-	query := readResourceQuery(id, properties)
+	query := readGoogleDirectoryQuery(id)
 	responseData := &ReadGoogleDirectoryResponse{}
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
 		return nil, fmt.Errorf("error reading folder: %s", err.Error())
 	}
-	return &responseData.Resource, nil
+	return &responseData.Directory, nil
 }
 
 func (client *Client) UpdateGoogleDirectory(id, parent string, commandPayload map[string]map[string]interface{}) (*TurbotResourceMetadata, error) {

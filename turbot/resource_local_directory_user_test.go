@@ -18,31 +18,31 @@ func TestAccLocalDirectoryUser(t *testing.T) {
 			{
 				Config: testAccLocalDirectoryUserConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLocalDirectoryUserExists("turbot_local_directory_user.test"),
+					testAccCheckLocalDirectoryUserExists("turbot_local_directory_user.test_user"),
 					resource.TestCheckResourceAttr(
-						"turbot_local_directory_user.test", "title", "provider_test"),
+						"turbot_local_directory_user.test_user", "title", "Kai Daguerre"),
 					resource.TestCheckResourceAttr(
-						"turbot_local_directory_user.test", "email", "test@turbot.com"),
+						"turbot_local_directory_user.test_user", "email", "kai@turbot.com"),
 				),
 			},
 			{
 				Config: testAccLocalDirectoryUserUpdateEmailConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLocalDirectoryUserExists("turbot_local_directory_user.test"),
+					testAccCheckLocalDirectoryUserExists("turbot_local_directory_user.test_user"),
 					resource.TestCheckResourceAttr(
-						"turbot_local_directory_user.test", "title", "provider_test"),
+						"turbot_local_directory_user.test_user", "title", "Kai Daguerre"),
 					resource.TestCheckResourceAttr(
-						"turbot_local_directory_user.test", "email", "test2@turbot.com"),
+						"turbot_local_directory_user.test_user", "email", "kai2@turbot.com"),
 				),
 			},
 			{
 				Config: testAccLocalDirectoryUserUpdateTitleConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLocalDirectoryUserExists("turbot_local_directory_user.test"),
+					testAccCheckLocalDirectoryUserExists("turbot_local_directory_user.test_user"),
 					resource.TestCheckResourceAttr(
-						"turbot_local_directory_user.test", "title", "provider_test_upd"),
+						"turbot_local_directory_user.test_user", "title", "Kai Daguerre2"),
 					resource.TestCheckResourceAttr(
-						"turbot_local_directory_user.test", "email", "test@turbot.com"),
+						"turbot_local_directory_user.test_user", "email", "kai@turbot.com"),
 				),
 			},
 		},
@@ -52,38 +52,54 @@ func TestAccLocalDirectoryUser(t *testing.T) {
 // configs
 func testAccLocalDirectoryUserConfig() string {
 	return `
-	resource "turbot_local_directory_user" "test" {
-		title = "provider_test"
-		email = "test@turbot.com"
-		status = "Active"
-		display_name = "ProviderTest"
-		parent = "170772056456165"
-} 
+resource "turbot_local_directory" "test_dir" {
+	parent              = "tmod:@turbot/turbot#/"
+	title               = "provider_test_directory"
+	description         = "provider_test_directory"
+	profile_id_template = "{{profile.email}}"
+}
+
+resource "turbot_local_directory_user" "test_user" {
+	title        = "Kai Daguerre"
+	email        = "kai@turbot.com"
+	display_name = "Kai Daguerre"
+	parent       = turbot_local_directory.test_dir.id
+}
 `
 }
 
 func testAccLocalDirectoryUserUpdateTitleConfig() string {
 	return `
-	resource "turbot_local_directory_user" "test" {
-		title = "provider_test_upd"
-		email = "test@turbot.com"
-		status = "Active"
-		display_name = "ProviderTest"
-		parent = "170772056456165"
+resource "turbot_local_directory" "test_dir" {
+	parent              = "tmod:@turbot/turbot#/"
+	title               = "provider_test_directory"
+	description         = "provider_test_directory"
+	profile_id_template = "{{profile.email}}"
 }
-`
+
+resource "turbot_local_directory_user" "test_user" {
+	title        = "Kai Daguerre2"
+	email        = "kai@turbot.com"
+	display_name = "Kai Daguerre"
+	parent       = turbot_local_directory.test_dir.id
+}`
 }
 
 func testAccLocalDirectoryUserUpdateEmailConfig() string {
 	return `
-	resource "turbot_local_directory_user" "test" {
-		title = "provider_test"
-		email = "test2@turbot.com"
-		status = "Active"
-		display_name = "ProviderTest"
-		parent = "170772056456165"
+resource "turbot_local_directory" "test_dir" {
+	parent              = "tmod:@turbot/turbot#/"
+	title               = "provider_test_directory"
+	description         = "provider_test_directory"
+	profile_id_template = "{{profile.email}}"
 }
-`
+
+resource "turbot_local_directory_user" "test_user" {
+	title        = "Kai Daguerre"
+	email        = "kai2@turbot.com"
+	display_name = "Kai Daguerre"
+	parent       = turbot_local_directory.test_dir.id
+}`
 }
 
 // helper functions

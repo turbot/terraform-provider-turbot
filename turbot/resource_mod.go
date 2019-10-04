@@ -25,12 +25,12 @@ func resourceTurbotMod() *schema.Resource {
 			"parent": {
 				Type:     schema.TypeString,
 				Required: true,
-				// when doing a diff, the state file will contain the id of the parent bu tthe config contains the aka,
+				// when doing a diff, the state file will contain the id of the parent but the config contains the aka,
 				// so we need custom diff code
-				DiffSuppressFunc: suppressIfParentAkaMatches,
+				DiffSuppressFunc: suppressIfAkaMatches("parent_akas"),
 				ForceNew:         true,
 			},
-			// when doing a read, fetch the parent akas to use in suppressIfParentAkaMatches()
+			// when doing a read, fetch the parent akas to use in suppressIfAkaMatches
 			"parent_akas": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -115,13 +115,14 @@ func resourceTurbotModInstall(d *schema.ResourceData, meta interface{}) error {
 
 	// install should only be called if the mod is not already installed
 	mod, err := client.ReadResource(modAka, nil)
-	if err != nil {
-		return err
+	if err == nil {
+		// if there is no error, the mod is already installed
+		id := mod.Turbot.Id
+		return fmt.Errorf("mod %s is already installed ( id: %s ). To manage this mod using Terraform, import the mod using command 'terraform import <resource_address> <id>'", modAka, id)
 	}
-	id := mod.Turbot.Id
-	if id != "" {
-		// TODO extract terraform name
-		return fmt.Errorf("Mod %s is already installed ( id: %s ). To manage this mod using Terraform, import the mod using command 'terraform import <resource_address> <id>'", modAka, id)
+	if !apiclient.NotFoundError(err) {
+		// if the error is not a 'not found' error, the mod is already installed
+		return err
 	}
 
 	return modInstall(d, meta)
@@ -154,13 +155,10 @@ func modInstall(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	// set parent_akas property by loading resource resource and fetching the akas
-	parent_Akas, err := client.GetResourceAkas(mod.Turbot.ParentId)
-	if err != nil {
+	// set parent_akas property by loading resource and fetching the akas
+	if err := storeAkas(mod.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
-	// assign parent_akas
-	d.Set("parent_akas", parent_Akas)
 	// assign the id
 	d.SetId(modId)
 	d.Set("version_latest", installedVersion)
@@ -199,13 +197,6 @@ func resourceTurbotModRead(d *schema.ResourceData, meta interface{}) error {
 
 	// assign results back into ResourceData
 
-	// set parent_akas property by loading resource resource and fetching the akas
-	parent_Akas, err := client.GetResourceAkas(mod.Parent)
-	if err != nil {
-		return err
-	}
-	// assign parent_akas
-	d.Set("parent_akas", parent_Akas)
 	d.Set("parent", mod.Parent)
 	d.Set("org", mod.Org)
 	d.Set("mod", mod.Mod)
@@ -213,7 +204,8 @@ func resourceTurbotModRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("version_latest", targetVersion)
 	d.Set("uri", mod.Uri)
 
-	return nil
+	// set parent_akas property by loading resource and fetching the akas
+	return storeAkas(mod.Parent, "parent_akas", d, meta)
 }
 
 func resourceTurbotModUninstall(d *schema.ResourceData, meta interface{}) error {
