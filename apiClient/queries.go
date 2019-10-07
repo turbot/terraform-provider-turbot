@@ -41,7 +41,6 @@ func applyPrefix(prefix, inputString string) string {
 	return strings.Replace(inputString, "\n", "\n"+prefix, -1)
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // validation
 func validationQuery() (string, ValidationResponse) {
 	query := `{
@@ -55,7 +54,6 @@ func validationQuery() (string, ValidationResponse) {
 	return query, ValidationResponse{}
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // policySetting
 func createPolicySettingMutation() string {
 	return `mutation Create($command: PolicyCommandInput) {
@@ -158,7 +156,6 @@ func findPolicySettingQuery(policyTypeUri, resourceAka string) string {
 `, policyTypeUri, resourceAka)
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // policy value
 func readPolicyValueQuery(policyTypeUri string, resourceId string) string {
 	return fmt.Sprintf(`{
@@ -183,7 +180,6 @@ func readPolicyValueQuery(policyTypeUri string, resourceId string) string {
 `, policyTypeUri, resourceId)
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // smart folder
 func createSmartFolderMutation() string {
 	return fmt.Sprintf(`mutation CreateSmartFolder($command: SmartFolderCommandInput) {
@@ -249,7 +245,6 @@ func detachSmartFolderAttachment() string {
 	}`)
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // mod
 func installModMutation() string {
 	return `mutation InstallMod($command: ModCommandInput) {
@@ -293,7 +288,6 @@ func modVersionsQuery(org, mod string) string {
 }`, org, mod)
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // resource
 func createResourceMutation() string {
 	return fmt.Sprintf(`mutation CreateResource($command: ResourceCommandInput) {
@@ -386,7 +380,6 @@ func readFullResourceQuery(aka string) string {
 }`, aka)
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // grant
 func readGrantQuery(aka string) string {
 	return fmt.Sprintf(`{
@@ -418,9 +411,7 @@ func deleteGrantMutation() string {
 }`, turbotGrantMetadataFragment("\t\t\t"))
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // active grant
-
 func readActiveGrantQuery(aka string) string {
 	return fmt.Sprintf(`{
 	activeGrant: activeGrant(id:"%s"){
@@ -439,7 +430,6 @@ func activateGrantMutation() string {
 }`, turbotActiveGrantMetadataFragment("\t\t\t"))
 }
 
-// deactivate grant mutation
 func deactivateGrantMutation() string {
 	return fmt.Sprintf(`mutation DeactivateGrant($command: GrantCommandInput) {
 	grantDeactivate(command: $command) {

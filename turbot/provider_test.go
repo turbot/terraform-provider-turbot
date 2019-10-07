@@ -3,8 +3,7 @@ package turbot
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
-	"log"
-	"os"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 	"testing"
 )
 
@@ -29,13 +28,8 @@ func TestProvider_impl(t *testing.T) {
 }
 
 func testAccPreCheck(t *testing.T) {
-	if v := os.Getenv("TURBOT_ACCESS_KEY_ID"); v == "" {
-		t.Fatal("TURBOT_ACCESS_KEY_ID must be set for acceptance tests")
-	}
-	if v := os.Getenv("TURBOT_SECRET_ACCESS_KEY"); v == "" {
-		t.Fatal("TURBOT_SECRET_ACCESS_KEY must be set for acceptance tests")
-	}
-	if v := os.Getenv("TURBOT_WORKSPACE"); v == "" {
-		log.Fatal("TURBOT_WORKSPACE must be set for acceptance tests")
+	_, err := apiClient.GetCredentials(apiClient.ClientConfig{})
+	if err != nil {
+		t.Fatal("No credentials are set - either set TURBOT_ACCESS_KEY_ID, TURBOT_SECRET_ACCESS_KEY and TURBOT_WORKSPACE or populate the file ~/.config/turbot/credentials.yml")
 	}
 }

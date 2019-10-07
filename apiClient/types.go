@@ -1,7 +1,6 @@
 package apiClient
 
 // Validation response
-// returned by API validation call
 type ValidationResponse struct {
 	Schema struct {
 		QueryType struct {
@@ -15,7 +14,6 @@ func (response *ValidationResponse) isValid() bool {
 	return response.Schema.QueryType.Name == "Query"
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // ApiResponse
 // used to unmarshall API error responses
 type ApiResponse struct {
@@ -26,7 +24,6 @@ type Error struct {
 	Message string
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // PolicySetting
 type PolicySettingResponse struct {
 	PolicySetting PolicySetting
@@ -52,7 +49,6 @@ type PolicySetting struct {
 	Turbot             TurbotPolicyMetadata
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // PolicyValue
 type PolicyValueResponse struct {
 	PolicyValue PolicyValue
@@ -68,7 +64,6 @@ type PolicyValue struct {
 	Turbot     TurbotPolicyMetadata
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // Mod
 type InstallModResponse struct {
 	Mod InstallModData
@@ -108,7 +103,6 @@ type Mod struct {
 	Uri     string
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // Resource
 type CreateResourceResponse struct {
 	Resource struct {
@@ -148,7 +142,6 @@ type FullResource struct {
 	Turbot TurbotResourceMetadata
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // Grant
 type CreateGrantResponse struct {
 	Grants struct {
@@ -168,7 +161,6 @@ type Grant struct {
 	PermissionLevelId string
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // Active Grant
 type ActivateGrantResponse struct {
 	GrantActivate struct {
@@ -186,7 +178,6 @@ type ActiveGrant struct {
 	Turbot TurbotActiveGrantMetadata
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // Folder
 type ReadFolderResponse struct {
 	Resource Folder
@@ -199,7 +190,6 @@ type Folder struct {
 	Parent      string
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // Profile
 type ReadProfileResponse struct {
 	Resource Profile
@@ -218,7 +208,6 @@ type Profile struct {
 	ProfileId       string
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // Smart folder
 type ReadSmartFolderResponse struct {
 	SmartFolder SmartFolder
@@ -249,7 +238,6 @@ type SmartFolder struct {
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // Smart folder attachment
 type SmartFolderAttachment struct {
 	Turbot      TurbotResourceMetadata
@@ -265,7 +253,6 @@ type CreateSmartFolderAttachResponse struct {
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // Local directory
 type ReadLocalDirectoryResponse struct {
 	Resource LocalDirectory
@@ -281,7 +268,6 @@ type LocalDirectory struct {
 	ProfileIdTemplate string
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // Local directory user
 type ReadLocalDirectoryUserResponse struct {
 	Resource LocalDirectoryUser
@@ -300,7 +286,6 @@ type LocalDirectoryUser struct {
 	Picture     string
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // Saml directory
 type ReadSamlDirectoryResponse struct {
 	Resource SamlDirectory
@@ -318,7 +303,6 @@ type SamlDirectory struct {
 	Certificate       string
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // Google directory
 type ReadGoogleDirectoryResponse struct {
 	Directory GoogleDirectory
@@ -340,7 +324,6 @@ type GoogleDirectory struct {
 	HostedName        string
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // Metadata
 type TurbotResourceMetadata struct {
 	Id       string

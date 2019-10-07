@@ -4,27 +4,32 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
-	apiClient "github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 	"log"
 )
 
 func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"access_key_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("TURBOT_ACCESS_KEY_ID", nil),
+			"access_key": {
+				Type:     schema.TypeString,
+				Optional: true,
 			},
-			"secret_access_key": {
-				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("TURBOT_SECRET_ACCESS_KEY", nil),
+			"secret_key": {
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 			"workspace": {
-				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("TURBOT_WORKSPACE", nil),
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"profile": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"credentials_file": {
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 		},
 
@@ -54,10 +59,17 @@ func Provider() terraform.ResourceProvider {
 }
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
-	client, err := apiClient.CreateClient(
-		d.Get("access_key_id").(string),
-		d.Get("secret_access_key").(string),
-		d.Get("workspace").(string))
+	config := apiClient.ClientConfig{
+		Credentials: apiClient.ClientCredentials{
+			AccessKey: d.Get("access_key").(string),
+			SecretKey: d.Get("secret_key").(string),
+			Workspace: d.Get("workspace").(string),
+		},
+		Profile:         d.Get("profile").(string),
+		CredentialsPath: d.Get("credentials_file").(string),
+	}
+
+	client, err := apiClient.CreateClient(config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create client: %s", err.Error())
 	}
