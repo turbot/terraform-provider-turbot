@@ -18,7 +18,7 @@ func resourceTurbotPolicySetting() *schema.Resource {
 			State: resourceTurbotPolicySettingImport,
 		},
 		Schema: map[string]*schema.Schema{
-			"policy_type": {
+			"type": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -101,7 +101,7 @@ func resourceTurbotPolicySettingExists(d *schema.ResourceData, meta interface{})
 
 func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
-	policyTypeUri := d.Get("policy_type").(string)
+	policyTypeUri := d.Get("type").(string)
 	resourceAka := d.Get("resource").(string)
 
 	// first check if the folder exists - search by parent and foldere title

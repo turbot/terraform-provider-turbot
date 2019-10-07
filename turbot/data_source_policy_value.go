@@ -15,7 +15,7 @@ func dataSourceTurbotPolicyValue() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"policy_type": {
+			"type": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
@@ -52,7 +52,7 @@ func dataSourceTurbotPolicyValue() *schema.Resource {
 }
 func dataSourceTurbotPolicyValueRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
-	policyTypeUri := d.Get("policy_type").(string)
+	policyTypeUri := d.Get("type").(string)
 	resourceAka := d.Get("resource").(string)
 
 	policyValue, err := client.ReadPolicyValue(policyTypeUri, resourceAka)
