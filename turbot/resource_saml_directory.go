@@ -2,7 +2,7 @@ package turbot
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 )
 
 // these are the properties which must be passed to a create/update call
@@ -105,13 +105,13 @@ func resourceTurbotSamlDirectory() *schema.Resource {
 }
 
 func resourceTurbotSamlDirectoryExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	return client.ResourceExists(id)
 }
 
 func resourceTurbotSamlDirectoryCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	parentAka := d.Get("parent").(string)
 	// build mutation payload
 	payload := map[string]map[string]interface{}{
@@ -139,7 +139,7 @@ func resourceTurbotSamlDirectoryCreate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceTurbotSamlDirectoryUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	parentAka := d.Get("parent").(string)
 	id := d.Id()
 
@@ -158,12 +158,12 @@ func resourceTurbotSamlDirectoryUpdate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceTurbotSamlDirectoryRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 
 	samlDirectory, err := client.ReadSamlDirectory(id)
 	if err != nil {
-		if apiclient.NotFoundError(err) {
+		if apiClient.NotFoundError(err) {
 			// saml directory was not found - clear id
 			d.SetId("")
 		}
@@ -182,7 +182,7 @@ func resourceTurbotSamlDirectoryRead(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceTurbotSamlDirectoryDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	err := client.DeleteResource(id)
 	if err != nil {

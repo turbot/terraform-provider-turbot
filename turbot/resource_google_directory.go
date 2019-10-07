@@ -2,7 +2,7 @@ package turbot
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 )
 
 // these are the properties which must be passed to a create/update call
@@ -109,13 +109,13 @@ func resourceGoogleDirectory() *schema.Resource {
 }
 
 func resourceTurbotGoogleDirectoryExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	return client.ResourceExists(id)
 }
 
 func resourceTurbotGoogleDirectoryCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	parentAka := d.Get("parent").(string)
 	// build map of local directory properties
 	payload := map[string]map[string]interface{}{
@@ -148,12 +148,12 @@ func resourceTurbotGoogleDirectoryCreate(d *schema.ResourceData, meta interface{
 }
 
 func resourceTurbotGoogleDirectoryRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 
 	googleDirectory, err := client.ReadGoogleDirectory(id)
 	if err != nil {
-		if apiclient.NotFoundError(err) {
+		if apiClient.NotFoundError(err) {
 			// directory was not found - clear id
 			d.SetId("")
 		}
@@ -175,7 +175,7 @@ func resourceTurbotGoogleDirectoryRead(d *schema.ResourceData, meta interface{})
 }
 
 func resourceTurbotGoogleDirectoryUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	parentAka := d.Get("parent").(string)
 	id := d.Id()
 
@@ -199,7 +199,7 @@ func resourceTurbotGoogleDirectoryUpdate(d *schema.ResourceData, meta interface{
 }
 
 func resourceTurbotGoogleDirectoryDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	err := client.DeleteResource(id)
 	if err != nil {

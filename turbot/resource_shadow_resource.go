@@ -3,7 +3,7 @@ package turbot
 import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 	"log"
 	"time"
 )
@@ -35,7 +35,7 @@ func resourceTurbotShadowResource() *schema.Resource {
 }
 
 func resourceTurbotShadowResourceCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 
 	filter := d.Get("filter").(string)
 	resourceAka := d.Get("resource").(string)
@@ -62,7 +62,7 @@ func resourceTurbotShadowResourceCreate(d *schema.ResourceData, meta interface{}
 	return nil
 }
 
-func waitForResource(filter string, client *apiclient.Client) (*apiclient.Resource, error) {
+func waitForResource(filter string, client *apiClient.Client) (*apiClient.Resource, error) {
 	retryCount := 0
 	// retry for 5 minutes
 	timeoutMins := 5
@@ -85,7 +85,7 @@ func waitForResource(filter string, client *apiclient.Client) (*apiclient.Resour
 	return nil, fmt.Errorf("fetching resource with filter timed out after %d minutes", timeoutMins)
 }
 
-func getResource(filter string, client *apiclient.Client) (*apiclient.Resource, error) {
+func getResource(filter string, client *apiClient.Client) (*apiClient.Resource, error) {
 	resourceList, err := client.ReadResourceList(filter, nil)
 	if err != nil {
 		return nil, err
@@ -101,7 +101,7 @@ func getResource(filter string, client *apiclient.Client) (*apiclient.Resource, 
 }
 
 func resourceTurbotShadowResourceRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	exists, err := client.ResourceExists(id)
 	if err != nil {

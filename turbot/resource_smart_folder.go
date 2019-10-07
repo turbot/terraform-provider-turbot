@@ -2,7 +2,7 @@ package turbot
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 )
 
 // properties which must be passed to a create/update call
@@ -53,13 +53,13 @@ func resourceTurbotSmartFolder() *schema.Resource {
 }
 
 func resourceTurbotSmartFolderExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	return client.ResourceExists(id)
 }
 
 func resourceTurbotSmartFolderCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	parentAka := d.Get("parent").(string)
 	// build map of folder properties
 	data := mapFromResourceData(d, smartFolderProperties)
@@ -84,7 +84,7 @@ func resourceTurbotSmartFolderCreate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceTurbotSmartFolderUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	parentAka := d.Get("parent").(string)
 	id := d.Id()
 
@@ -106,12 +106,12 @@ func resourceTurbotSmartFolderUpdate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceTurbotSmartFolderRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 
 	smartFolder, err := client.ReadSmartFolder(id)
 	if err != nil {
-		if apiclient.NotFoundError(err) {
+		if apiClient.NotFoundError(err) {
 			// folder was not found - clear id
 			d.SetId("")
 		}
@@ -135,7 +135,7 @@ func resourceTurbotSmartFolderRead(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceTurbotSmartFolderDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	err := client.DeleteResource(id)
 	if err != nil {

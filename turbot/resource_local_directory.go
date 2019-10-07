@@ -2,7 +2,7 @@ package turbot
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 )
 
 // these are the properties which must be passed to a create/update call
@@ -68,13 +68,13 @@ func resourceTurbotLocalDirectory() *schema.Resource {
 }
 
 func resourceTurbotLocalDirectoryExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	return client.ResourceExists(id)
 }
 
 func resourceTurbotLocalDirectoryCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	parentAka := d.Get("parent").(string)
 	// build mutation payload
 	payload := map[string]map[string]interface{}{
@@ -101,7 +101,7 @@ func resourceTurbotLocalDirectoryCreate(d *schema.ResourceData, meta interface{}
 }
 
 func resourceTurbotLocalDirectoryUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	parentAka := d.Get("parent").(string)
 	id := d.Id()
 
@@ -120,12 +120,12 @@ func resourceTurbotLocalDirectoryUpdate(d *schema.ResourceData, meta interface{}
 }
 
 func resourceTurbotLocalDirectoryRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 
 	localDirectory, err := client.ReadLocalDirectory(id)
 	if err != nil {
-		if apiclient.NotFoundError(err) {
+		if apiClient.NotFoundError(err) {
 			// local directoery was not found - clear id
 			d.SetId("")
 		}
@@ -142,7 +142,7 @@ func resourceTurbotLocalDirectoryRead(d *schema.ResourceData, meta interface{}) 
 }
 
 func resourceTurbotLocalDirectoryDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	err := client.DeleteResource(id)
 	if err != nil {

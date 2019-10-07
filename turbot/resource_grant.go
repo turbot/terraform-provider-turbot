@@ -2,7 +2,7 @@ package turbot
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 )
 
 // map of Terraform properties to Turbot properties that we pass to create and update mutations
@@ -89,13 +89,13 @@ func resourceTurbotGrant() *schema.Resource {
 }
 
 func resourceTurbotGrantExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	return client.GrantExists(id)
 }
 
 func resourceTurbotGrantCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	resourceAka := d.Get("resource").(string)
 	profileAka := d.Get("profile").(string)
 	permissionTypeAka := d.Get("permission_type").(string)
@@ -128,12 +128,12 @@ func resourceTurbotGrantCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceTurbotGrantRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 
 	Grant, err := client.ReadGrant(id)
 	if err != nil {
-		if apiclient.NotFoundError(err) {
+		if apiClient.NotFoundError(err) {
 			// Grant was not found - clear id
 			d.SetId("")
 		}
@@ -160,7 +160,7 @@ func resourceTurbotGrantRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceTurbotGrantDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	err := client.DeleteGrant(id)
 	if err != nil {

@@ -1,18 +1,14 @@
-package apiclient
+package apiClient
 
 import (
 	"fmt"
-	"log"
 )
 
-func (client *Client) CreateProfile(parent string, data map[string]interface{}) (*TurbotResourceMetadata, error) {
+func (client *Client) CreateFolder(parent string, commandPayload map[string]map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := createResourceMutation()
 	responseData := &CreateResourceResponse{}
-	var commandPayload = map[string]interface{}{
-		"data": data,
-	}
 	commandMeta := map[string]string{
-		"typeAka":   "tmod:@turbot/turbot-iam#/resource/types/profile",
+		"typeAka":   "tmod:@turbot/turbot#/resource/types/folder",
 		"parentAka": parent,
 	}
 	variables := map[string]interface{}{
@@ -21,45 +17,36 @@ func (client *Client) CreateProfile(parent string, data map[string]interface{}) 
 			"meta":    commandMeta,
 		},
 	}
-	log.Println("[INFO} resourceTurbotProfileCreate", variables)
+
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating profile: %s", err.Error())
+		return nil, fmt.Errorf("error creating folder: %s", err.Error())
 	}
 	return &responseData.Resource.Turbot, nil
 }
 
-func (client *Client) ReadProfile(id string) (*Profile, error) {
+func (client *Client) ReadFolder(id string) (*Folder, error) {
 	// create a map of the properties we want the graphql query to return
 	properties := map[string]string{
-		"title":           "title",
-		"parent":          "turbot.parentId",
-		"status":          "status",
-		"displayName":     "displayName",
-		"email":           "email",
-		"givenName":       "givenName",
-		"familyName":      "familyName",
-		"directoryPoolId": "directoryPoolId",
+		"title":       "title",
+		"parent":      "turbot.parentId",
+		"description": "description",
 	}
 	query := readResourceQuery(id, properties)
-	responseData := &ReadProfileResponse{}
+	responseData := &ReadFolderResponse{}
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, fmt.Errorf("error reading profile: %s", err.Error())
+		return nil, fmt.Errorf("error reading folder: %s", err.Error())
 	}
 	return &responseData.Resource, nil
 }
 
-func (client *Client) UpdateProfile(id, parent string, data map[string]interface{}) (*TurbotResourceMetadata, error) {
+func (client *Client) UpdateFolder(id, parent string, commandPayload map[string]map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := updateResourceMutation()
 	responseData := &UpdateResourceResponse{}
-	var commandPayload = map[string]map[string]interface{}{
-		"data": data,
-		"turbotData": {
-			"akas": []string{id},
-		},
-	}
+	// add akas to turbotData
+	commandPayload["turbotData"]["akas"] = []string{id}
 	commandMeta := map[string]interface{}{
 		"typeAka":   "tmod:@turbot/turbot#/resource/types/folder",
 		"parentAka": parent,
@@ -70,9 +57,10 @@ func (client *Client) UpdateProfile(id, parent string, data map[string]interface
 			"meta":    commandMeta,
 		},
 	}
+
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating profile: %s", err.Error())
+		return nil, fmt.Errorf("error creating folder: %s", err.Error())
 	}
 	return &responseData.Resource.Turbot, nil
 }

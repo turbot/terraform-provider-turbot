@@ -3,7 +3,7 @@ package turbot
 import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 )
 
 func dataSourceTurbotPolicyValue() *schema.Resource {
@@ -51,13 +51,13 @@ func dataSourceTurbotPolicyValue() *schema.Resource {
 	}
 }
 func dataSourceTurbotPolicyValueRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	policyTypeUri := d.Get("policy_type").(string)
 	resourceAka := d.Get("resource").(string)
 
 	policyValue, err := client.ReadPolicyValue(policyTypeUri, resourceAka)
 	if err != nil {
-		if apiclient.NotFoundError(err) {
+		if apiClient.NotFoundError(err) {
 			// setting was not found - clear id
 			d.SetId("")
 		}

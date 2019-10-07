@@ -2,7 +2,7 @@ package turbot
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 )
 
 // properties which must be passed to a create/update call
@@ -89,13 +89,13 @@ func resourceTurbotProfile() *schema.Resource {
 }
 
 func resourceTurbotProfileExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	return client.ResourceExists(id)
 }
 
 func resourceTurbotProfileCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	parentAka := d.Get("parent").(string)
 
 	// build map of profile properties
@@ -117,7 +117,7 @@ func resourceTurbotProfileCreate(d *schema.ResourceData, meta interface{}) error
 }
 
 func resourceTurbotProfileUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	parentAka := d.Get("parent").(string)
 	id := d.Id()
 
@@ -134,12 +134,12 @@ func resourceTurbotProfileUpdate(d *schema.ResourceData, meta interface{}) error
 }
 
 func resourceTurbotProfileRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 
 	profile, err := client.ReadProfile(id)
 	if err != nil {
-		if apiclient.NotFoundError(err) {
+		if apiClient.NotFoundError(err) {
 			// profile was not found - clear id
 			d.SetId("")
 		}
@@ -159,7 +159,7 @@ func resourceTurbotProfileRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceTurbotProfileDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	err := client.DeleteResource(id)
 	if err != nil {

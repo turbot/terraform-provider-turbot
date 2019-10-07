@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform/helper/encryption"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/iancoleman/strcase"
-	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 	"sort"
 )
 
@@ -61,13 +61,13 @@ func resourceTurbotResource() *schema.Resource {
 }
 
 func resourceTurbotResourceExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	return client.ResourceExists(id)
 }
 
 func resourceTurbotResourceCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	parent := d.Get("parent").(string)
 	resourceType := d.Get("type").(string)
 	body := d.Get("body").(string)
@@ -89,7 +89,7 @@ func resourceTurbotResourceCreate(d *schema.ResourceData, meta interface{}) erro
 }
 
 func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 
 	// build required properties from body
@@ -100,7 +100,7 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 
 	resource, err := client.ReadResource(id, properties)
 	if err != nil {
-		if apiclient.NotFoundError(err) {
+		if apiClient.NotFoundError(err) {
 			// resource was not found - clear id
 			d.SetId("")
 		}
@@ -125,7 +125,7 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceTurbotResourceUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	body := d.Get("body").(string)
 	parent := d.Get("parent").(string)
 	resourceType := d.Get("type").(string)
@@ -140,7 +140,7 @@ func resourceTurbotResourceUpdate(d *schema.ResourceData, meta interface{}) erro
 }
 
 func resourceTurbotResourceDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	err := client.DeleteResource(id)
 	if err != nil {
@@ -337,7 +337,7 @@ func encryptValue(pgpKey, value string) (string, string, error) {
 }
 
 func storeAkas(aka, propertyName string, d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	akas, err := client.GetResourceAkas(aka)
 	if err != nil {
 		return err

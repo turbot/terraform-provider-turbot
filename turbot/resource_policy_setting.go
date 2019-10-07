@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/go-yaml/yaml"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 )
 
 func resourceTurbotPolicySetting() *schema.Resource {
@@ -86,12 +86,12 @@ func resourceTurbotPolicySetting() *schema.Resource {
 func resourceTurbotPolicySettingExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
 	// Exists - This is called to verify a resource still exists. It is called prior to Read,
 	// and lowers the burden of Read to be able to assume the resource exists.
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 
 	_, err := client.ReadPolicySetting(id)
 	if err != nil {
-		if apiclient.NotFoundError(err) {
+		if apiClient.NotFoundError(err) {
 			return false, nil
 		}
 		return false, err
@@ -100,7 +100,7 @@ func resourceTurbotPolicySettingExists(d *schema.ResourceData, meta interface{})
 }
 
 func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	policyTypeUri := d.Get("policy_type").(string)
 	resourceAka := d.Get("resource").(string)
 
@@ -124,7 +124,7 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 	commandPayload := buildPayload(d)
 	setting, err := client.CreatePolicySetting(policyTypeUri, resourceAka, commandPayload)
 	if err != nil {
-		if !apiclient.FailedValidationError(err) {
+		if !apiClient.FailedValidationError(err) {
 			d.SetId("")
 			return err
 		}
@@ -150,12 +150,12 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceTurbotPolicySettingRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 
 	setting, err := client.ReadPolicySetting(id)
 	if err != nil {
-		if apiclient.NotFoundError(err) {
+		if apiClient.NotFoundError(err) {
 			// setting was not found - clear id
 			d.SetId("")
 		}
@@ -177,7 +177,7 @@ func resourceTurbotPolicySettingRead(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceTurbotPolicySettingUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 
 	// NOTE:  turbot policy settings have a value and a valueSource property
@@ -191,7 +191,7 @@ func resourceTurbotPolicySettingUpdate(d *schema.ResourceData, meta interface{})
 
 	err := client.UpdatePolicySetting(id, commandPayload)
 	if err != nil {
-		if !apiclient.FailedValidationError(err) {
+		if !apiClient.FailedValidationError(err) {
 			d.SetId("")
 			return err
 		}
@@ -220,7 +220,7 @@ func setValueFromValueSource(valueSource string, d *schema.ResourceData) {
 }
 
 func resourceTurbotPolicySettingDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	err := client.DeletePolicySetting(id)
 	if err != nil {
@@ -277,7 +277,7 @@ func suppressIfEncryptedOrValueSourceMatches(_, old, new string, d *schema.Resou
 }
 
 // write value and value_source to ResourceData, encrypting if a pgp key was provided
-func storeValue(d *schema.ResourceData, setting *apiclient.PolicySetting) error {
+func storeValue(d *schema.ResourceData, setting *apiClient.PolicySetting) error {
 	// NOTE: turbot policy settings have a value and a valueSource property
 	// - value is the type property value, with the type dependent on the policy schema
 	// - valueSource is the yaml representation of the policy.

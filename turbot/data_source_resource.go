@@ -3,7 +3,7 @@ package turbot
 import (
 	"encoding/json"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 )
 
 func dataSourceTurbotResource() *schema.Resource {
@@ -38,11 +38,11 @@ func dataSourceTurbotResource() *schema.Resource {
 }
 
 func dataSourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	aka := d.Get("aka").(string)
 
 	resource, err := client.ReadFullResource(aka)
-	if err != nil && !apiclient.NotFoundError(err) {
+	if err != nil && !apiClient.NotFoundError(err) {
 		return err
 	}
 

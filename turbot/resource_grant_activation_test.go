@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 	"testing"
 )
 
@@ -90,7 +90,7 @@ func testAccCheckLocalGrantExists(resource string) resource.TestCheckFunc {
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No Record ID is set")
 		}
-		client := testAccProvider.Meta().(*apiclient.Client)
+		client := testAccProvider.Meta().(*apiClient.Client)
 		_, err := client.ReadGrant(rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("error fetching item with resource %s. %s", resource, err)
@@ -100,7 +100,7 @@ func testAccCheckLocalGrantExists(resource string) resource.TestCheckFunc {
 }
 
 func testAccCheckLocalGrantDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*apiclient.Client)
+	client := testAccProvider.Meta().(*apiClient.Client)
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "Grant" {
 			continue
@@ -109,7 +109,7 @@ func testAccCheckLocalGrantDestroy(s *terraform.State) error {
 		if err == nil {
 			return fmt.Errorf("Alert still exists")
 		}
-		if !apiclient.NotFoundError(err) {
+		if !apiClient.NotFoundError(err) {
 			return fmt.Errorf("expected 'not found' error, got %s", err)
 		}
 	}
@@ -126,7 +126,7 @@ func testAccCheckActiveGrantExists(resource string) resource.TestCheckFunc {
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No Record ID is set")
 		}
-		client := testAccProvider.Meta().(*apiclient.Client)
+		client := testAccProvider.Meta().(*apiClient.Client)
 		_, err := client.ReadGrantActivation(rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("error fetching item with resource %s. %s", resource, err)
@@ -136,7 +136,7 @@ func testAccCheckActiveGrantExists(resource string) resource.TestCheckFunc {
 }
 
 func testAccCheckActiveGrantDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*apiclient.Client)
+	client := testAccProvider.Meta().(*apiClient.Client)
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "Grant" {
 			continue
@@ -145,7 +145,7 @@ func testAccCheckActiveGrantDestroy(s *terraform.State) error {
 		if err == nil {
 			return fmt.Errorf("Alert still exists")
 		}
-		if !apiclient.NotFoundError(err) {
+		if !apiClient.NotFoundError(err) {
 			return fmt.Errorf("expected 'not found' error, got %s", err)
 		}
 	}
