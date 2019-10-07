@@ -3,6 +3,7 @@ package turbot
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
+	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 )
 
 // these are the properties which must be passed to a create/update call
@@ -11,7 +12,7 @@ var samlDirectoryMetadataProperties = []interface{}{"tags"}
 
 func getSamlDirectoryUpdateProperties() []interface{} {
 	excludedProperties := []string{"directory_type"}
-	return removeProperties(samlDirectoryProperties, excludedProperties)
+	return helpers.RemoveProperties(samlDirectoryProperties, excludedProperties)
 }
 
 func resourceTurbotSamlDirectory() *schema.Resource {

@@ -5,6 +5,7 @@ import (
 	"github.com/go-yaml/yaml"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
+	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 )
 
 func resourceTurbotPolicySetting() *schema.Resource {
@@ -284,14 +285,14 @@ func storeValue(d *schema.ResourceData, setting *apiClient.PolicySetting) error 
 
 	if pgpKey, ok := d.GetOk("pgp_key"); ok {
 		// format the value as a string to allow us to handle object/array values using a string schema
-		valueFingerprint, encryptedValue, err := encryptValue(pgpKey.(string), settingValueToString(setting.Value))
+		valueFingerprint, encryptedValue, err := helpers.EncryptValue(pgpKey.(string), settingValueToString(setting.Value))
 		if err != nil {
 			return err
 		}
 		d.Set("value", encryptedValue)
 		d.Set("value_key_fingerprint", valueFingerprint)
 
-		valueSourceFingerprint, encryptedValueSource, err := encryptValue(pgpKey.(string), setting.ValueSource)
+		valueSourceFingerprint, encryptedValueSource, err := helpers.EncryptValue(pgpKey.(string), setting.ValueSource)
 		if err != nil {
 			return err
 		}

@@ -3,11 +3,10 @@ package turbot
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform/helper/encryption"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/iancoleman/strcase"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
-	"sort"
+	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 )
 
 var resourceMetadataProperties = []interface{}{"tags"}
@@ -252,7 +251,7 @@ func mapFromResourceData(d *schema.ResourceData, properties []interface{}) map[s
 		terraformToTurbotMap, ok := element.(map[string]string)
 		// if terraformProperty is a map, perform explicit mapping and merge result with existing map
 		if ok {
-			mergeMaps(propertyMap, mapFromResourceDataWithPropertyMap(d, terraformToTurbotMap))
+			helpers.MergeMaps(propertyMap, mapFromResourceDataWithPropertyMap(d, terraformToTurbotMap))
 		} else {
 			// otherwise perform automatic mapping from snake case (Terraform format) to lowerCamelCase (Turbot format).
 			terraformProperty := element.(string)
@@ -277,63 +276,6 @@ func mapFromResourceDataWithPropertyMap(d *schema.ResourceData, terraformToTurbo
 		}
 	}
 	return resourcePropertyMap
-}
-
-func mergeMaps(m1, m2 map[string]interface{}) {
-	for k, v := range m2 {
-		m1[k] = v
-	}
-}
-
-// given a list of properties or property maps, remove the excluded properties
-func removeProperties(properties []interface{}, excluded []string) []interface{} {
-	for _, excludedProperty := range excluded {
-		for i, element := range properties {
-			// each element may be either a map, or a single property name
-			terraformToTurbotMap, ok := element.(map[string]string)
-			if ok {
-				// if the element is a map, remove excluded items from map
-				properties[i] = removePropertiesFromMap(terraformToTurbotMap, excluded)
-			} else {
-				// otherwise check if this property is excluded and remove if so
-				if element.(string) == excludedProperty {
-					properties = append(properties[:i], properties[i+1:]...)
-					break
-				}
-			}
-		}
-	}
-	return properties
-}
-
-// given a property list, remove the excluded properties
-func removePropertiesFromMap(propertyMap map[string]string, excluded []string) map[string]string {
-	var result = map[string]string{}
-	for k, v := range propertyMap {
-		if !sliceContains(excluded, k) {
-			result[k] = v
-		}
-	}
-	return result
-}
-
-// no native contains in golang :/
-func sliceContains(s []string, searchTerm string) bool {
-	i := sort.SearchStrings(s, searchTerm)
-	return i < len(s) && s[i] == searchTerm
-
-}
-
-func encryptValue(pgpKey, value string) (string, string, error) {
-	encryptionKey, err := encryption.RetrieveGPGKey(pgpKey)
-	if err != nil {
-		return "", "", err
-	}
-	fingerprint, encrypted, err := encryption.EncryptValue(encryptionKey, value, "Secret Key")
-	if err != nil {
-		return "", "", err
-	}
-	return fingerprint, encrypted, nil
 }
 
 func storeAkas(aka, propertyName string, d *schema.ResourceData, meta interface{}) error {

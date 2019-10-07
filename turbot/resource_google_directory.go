@@ -3,6 +3,7 @@ package turbot
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
+	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 )
 
 // these are the properties which must be passed to a create/update call
@@ -221,7 +222,7 @@ func resourceTurbotGoogleDirectoryImport(d *schema.ResourceData, meta interface{
 // write client secret to ResourceData, encrypting if a pgp key was provided
 func storeClientSecret(d *schema.ResourceData, clientSecret string) error {
 	if pgpKey, ok := d.GetOk("pgp_key"); ok {
-		fingerprint, encrypted, err := encryptValue(pgpKey.(string), clientSecret)
+		fingerprint, encrypted, err := helpers.EncryptValue(pgpKey.(string), clientSecret)
 		if err != nil {
 			return err
 		}

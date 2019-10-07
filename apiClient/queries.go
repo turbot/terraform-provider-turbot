@@ -6,37 +6,33 @@ import (
 	"strings"
 )
 
-var turbotResourceMetadataFragment = `turbot {
-  id
-  parentId
-  akas
-  tags
-}`
-
-var turbotPolicyMetadataFragment = `turbot {
-  id
-  parentId
-  akas
-  tags
-}`
+func turbotPolicyMetadataFragment(prefix string) string {
+	return applyPrefix(prefix, `turbot {
+	id
+	parentId
+	akas
+	tags
+}`)
+}
 
 func turbotGrantMetadataFragment(prefix string) string {
 	return applyPrefix(prefix,
 		`turbot {
-  id
-  profileId  
-  resourceId 
+	id
+	profileId  
+	resourceId 
 }`)
 }
 
 func turbotActiveGrantMetadataFragment(prefix string) string {
 	return applyPrefix(prefix, `turbot {
-  id
-  grantId
-  resourceId
+	id
+	grantId
+	resourceId
 }`)
 }
 
+// add the given prefix to each line of the multi-line inputString
 func applyPrefix(prefix, inputString string) string {
 	return strings.Replace(inputString, "\n", "\n"+prefix, -1)
 }
@@ -77,21 +73,21 @@ func createPolicySettingMutation() string {
 
 func readPolicySettingQuery(policySettingId string) string {
 	return fmt.Sprintf(`{
-	policySetting(id:"%s") {
-		value: secretValue
-		valueSource: secretValueSource
-		template
-        default
-		precedence
-		templateInput
-		input
-		note
-		validFromTimestamp
-		validToTimestamp
-		turbot {
-		  id
-		}
+policySetting(id:"%s") {
+	value: secretValue
+	valueSource: secretValueSource
+	template
+	default
+	precedence
+	templateInput
+	input
+	note
+	validFromTimestamp
+	validToTimestamp
+	turbot {
+		id
 	}
+}
 }`, policySettingId)
 }
 
@@ -108,7 +104,7 @@ func updatePolicySettingMutation() string {
 		validFromTimestamp
 		validToTimestamp
 		turbot {
-		  id
+			id
 		}
 	}
 }`
@@ -128,7 +124,7 @@ func deletePolicySettingMutation() string {
 		validFromTimestamp
 		validToTimestamp
 		turbot {
-		  id
+			id
 		}
 	}
 }`
@@ -148,7 +144,7 @@ func findPolicySettingQuery(policyTypeUri, resourceAka string) string {
 		validFromTimestamp
 		validToTimestamp
 		turbot {
-		  id
+			id
 		}
     }
   }
@@ -163,15 +159,15 @@ func readPolicyValueQuery(policyTypeUri string, resourceId string) string {
 		value: secretValue
 		secretValue
 		precedence
-	    state
-        reason
-        details
-        setting {
-		  valueSource
-          turbot {
-            id
-          }
-        }
+		state
+		reason
+		details
+		setting {
+			valueSource
+			turbot {
+				id
+			}
+		}
 		turbot {
 			id
 		}
@@ -203,9 +199,7 @@ func readSmartFolderQuery(id string) string {
 		turbot: get(path:"turbot")
    		attachedResources{
 			items{
-				turbot{
-					id
-					akas
+				turbot: get(path:"turbot")
 			}
 		}
 	}
@@ -248,11 +242,11 @@ func detachSmartFolderAttachment() string {
 // mod
 func installModMutation() string {
 	return `mutation InstallMod($command: ModCommandInput) {
- 	mod: modInstall(command: $command) {
+	mod: modInstall(command: $command) {
 		turbot {
-		  id
-          parentId
-          akas
+			id
+			parentId
+			akas
 		}
 		build
 	}
@@ -261,17 +255,17 @@ func installModMutation() string {
 
 func readModQuery(modId string) string {
 	return fmt.Sprintf(`{
-  mod: resource(id:"%s") {
-    uri: get(path: "turbot.akas.0")
-    parent: get(path: "turbot.parentId")
-    version: get(path: "version")
-  }
+	mod: resource(id:"%s") {
+		uri: get(path: "turbot.akas.0")
+		parent: get(path: "turbot.parentId")
+		version: get(path: "version")
+	}
 }`, modId)
 }
 
 func uninstallModMutation() string {
 	return `mutation UninstallMod($command: ModCommandInput) {
- 	modUninstall(command: $command) {
+	modUninstall(command: $command) {
 		success
 	}
 }`
@@ -279,56 +273,56 @@ func uninstallModMutation() string {
 
 func modVersionsQuery(org, mod string) string {
 	return fmt.Sprintf(`{
-  versions: modVersionList(orgName: "%s", modName: "%s") {
-    items {
-      status
-      version
-    }
-  }
+	versions: modVersionList(orgName: "%s", modName: "%s") {
+		items {
+			status
+			version
+		}
+	}
 }`, org, mod)
 }
 
 // resource
 func createResourceMutation() string {
 	return fmt.Sprintf(`mutation CreateResource($command: ResourceCommandInput) {
-  resource: resourceCreate(command: $command) {
-%s
-  }
-}`, turbotResourceMetadataFragment)
+	resource: resourceCreate(command: $command) {
+		turbot: get(path:"turbot")
+	}
+}`)
 }
 
 func readResourceQuery(aka string, properties map[string]string) string {
 	var propertiesString bytes.Buffer
 	if properties != nil {
 		for alias, propertyPath := range properties {
-			propertiesString.WriteString(fmt.Sprintf("    %s: get(path: \"%s\")\n", alias, propertyPath))
+			propertiesString.WriteString(fmt.Sprintf("\t\t\t%s: get(path: \"%s\")\n", alias, propertyPath))
 		}
 	}
 	return fmt.Sprintf(`{
-  resource(id:"%s") {
+	resource(id:"%s") {
 %s
-    turbot: get(path:"turbot")
-  }
+		turbot: get(path:"turbot")
+  	}
 }`, aka, propertiesString.String())
 }
 
 func readGoogleDirectoryQuery(aka string) string {
 	return fmt.Sprintf(`{
-  directory: resource(id:"%s") {
-	title:             get(path:"title")
-	parent:            get(path:"turbot.parentId")
-	description:       get(path:"description")
-	status:            get(path:"status")
-	directoryType:     get(path:"directoryType")
-	profileIdTemplate: get(path:"profileIdTemplate")
-	clientID:          get(path:"clientID")
-	clientSecret:      getSecret(path:"clientSecret")
-	poolId:            get(path:"poolId")
-	groupIdTemplate:   get(path:"groupIdTemplate")
-	loginNameTemplate: get(path:"loginNameTemplate")
-	hostedName:        get(path:"hostedName")
-    turbot: get(path:"turbot")
-  }
+	directory: resource(id:"%s") {
+		title:             	get(path:"title")
+		parent:            	get(path:"turbot.parentId")
+		description:       	get(path:"description")
+		status:            	get(path:"status")
+		directoryType:     	get(path:"directoryType")
+		profileIdTemplate: 	get(path:"profileIdTemplate")
+		clientID:          	get(path:"clientID")
+		clientSecret:      	getSecret(path:"clientSecret")
+		poolId:            	get(path:"poolId")
+		groupIdTemplate:   	get(path:"groupIdTemplate")
+		loginNameTemplate: 	get(path:"loginNameTemplate")
+		hostedName:        	get(path:"hostedName")
+		turbot: 			get(path:"turbot")
+	}
 }`, aka)
 }
 
@@ -336,9 +330,9 @@ func updateResourceMutation() string {
 	return `mutation UpsertResource($command: ResourceCommandInput) {
  	resource: resourceUpsert(command: $command) {
 		turbot {
-		  id
-		  parentId
-      akas
+			id
+  			parentId
+     	 	akas
 		}
 	}
 }`
@@ -347,9 +341,7 @@ func updateResourceMutation() string {
 func deleteResourceMutation() string {
 	return `mutation DeleteResource($command: ResourceCommandInput) {
  	resource: resourceDelete(command: $command) {
-		turbot {
-		  id
-		}
+		turbot: get(path:"turbot")
 	}
 }`
 }
@@ -358,15 +350,15 @@ func readResourceListQuery(filter string, properties map[string]string) string {
 	var propertiesString bytes.Buffer
 	if properties != nil {
 		for alias, propertyPath := range properties {
-			propertiesString.WriteString(fmt.Sprintf("    %s: get(path: \"%s\")\n", alias, propertyPath))
+			propertiesString.WriteString(fmt.Sprintf("\t\t\t%s: get(path: \"%s\")\n", alias, propertyPath))
 		}
 	}
 	return fmt.Sprintf(`{
-  resourceList(filter:"%s") {
-	items{
-		%s
-    turbot: get(path:"turbot")
-  	}
+	resourceList(filter:"%s") {
+		items{
+%s
+			turbot: get(path:"turbot")
+		}
 	}
 }`, filter, propertiesString.String())
 }
@@ -395,7 +387,7 @@ func createGrantMutation() string {
 	return fmt.Sprintf(`mutation CreateGrant($command: GrantCommandInput) {
 	grants: grantCreate(command: $command) {
 		items{
-			%s
+%s
 		}
 	}
 }`, turbotGrantMetadataFragment("\t\t\t"))
@@ -405,7 +397,7 @@ func deleteGrantMutation() string {
 	return fmt.Sprintf(`mutation DeleteGrant($command: GrantCommandInput) {
  	grant: grantDelete(command: $command) {
 		items {
-			%s
+%s
 		}
 	}
 }`, turbotGrantMetadataFragment("\t\t\t"))
@@ -415,7 +407,7 @@ func deleteGrantMutation() string {
 func readActiveGrantQuery(aka string) string {
 	return fmt.Sprintf(`{
 	activeGrant: activeGrant(id:"%s"){
-		%s
+%s
 	}
 }`, aka, turbotActiveGrantMetadataFragment("\t\t"))
 }
@@ -424,7 +416,7 @@ func activateGrantMutation() string {
 	return fmt.Sprintf(`mutation ActivateGrant($command: GrantCommandInput) {
 	grantActivate: grantActivate(command: $command) {
 		items {
-			%s
+%s
 		}
 	}
 }`, turbotActiveGrantMetadataFragment("\t\t\t"))
@@ -434,7 +426,7 @@ func deactivateGrantMutation() string {
 	return fmt.Sprintf(`mutation DeactivateGrant($command: GrantCommandInput) {
 	grantDeactivate(command: $command) {
 		items {
-			%s
+%s
 		}
 	}
 }`, turbotActiveGrantMetadataFragment("\t\t\t"))

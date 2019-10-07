@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/mitchellh/mapstructure"
+	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 	"log"
 )
 
@@ -40,8 +41,13 @@ func (client *Client) CreateResource(typeAka, parentAka, body string, turbotData
 	return &responseData.Resource.Turbot, nil
 }
 
-func (client *Client) ReadResource(aka string, properties map[string]string) (*Resource, error) {
-	query := readResourceQuery(aka, properties)
+// properties is a map of terraform property name to turbot property path
+// it is used to add 'get' resolvers to the query
+// NOTE:
+// - if properties is null, no additional properties are requested
+// - if properties is an empty map, an empty get resolver call ius adde dto the query - this fetches the full
+func (client *Client) ReadResource(resourceAka string, properties map[string]string) (*Resource, error) {
+	query := readResourceQuery(resourceAka, properties)
 	var responseData = &ReadResourceResponse{}
 
 	// execute api call
@@ -57,17 +63,48 @@ func (client *Client) ReadResource(aka string, properties map[string]string) (*R
 	return resource, nil
 }
 
-// todo replace with empty get() https://github.com/turbotio/terraform-provider-turbot/issues/58
-func (client *Client) ReadFullResource(aka string) (*FullResource, error) {
-	query := readFullResourceQuery(aka)
-	var responseData = &ReadFullResourceResponse{}
+// read a resource including all properties, then convert into a 'serializable' resource, consisting of simple types and string maps
+func (client *Client) ReadSerializableResource(resourceAka string) (*SerializableResource, error) {
+	// read the resource, passing an empty string as the property path in the properties map to force a full read
+	properties := map[string]string{
+		"data": "",
+		"akas": "turbot.akas",
+		"tags": "turbot.tags",
+	}
+	query := readResourceQuery(resourceAka, properties)
+	var responseData = &ReadSerializableResourceResponse{}
 
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	err := client.doRequest(query, nil, responseData)
+	if err != nil {
 		return nil, fmt.Errorf("error reading resource: %s", err.Error())
 	}
+	resource := responseData.Resource
 
-	return &responseData.Resource, nil
+	// convert the data to JSON
+	// (NOTE: remove the 'turbot' properties as this has been read separately)
+	data := helpers.RemovePropertiesFromMap(resource.Data, []string{"turbot"})
+	dataJson, err := helpers.ConvertToJsonString(data)
+	if err != nil {
+		return nil, err
+	}
+	// create a copy of the turbot object with all complex properties converted to JSON (as terraform schema cannot handle complex nested maps :/)
+
+	// now convert to a map[string]string
+	turbotStringMap, err := helpers.ConvertToStringMap(resource.Turbot)
+	if err != nil {
+		return nil, err
+	}
+
+	result := SerializableResource{
+		Data:     dataJson,
+		Turbot:   turbotStringMap,
+		Tags:     resource.Tags,
+		Akas:     resource.Akas,
+		Metadata: turbotStringMap["custom"],
+	}
+
+	return &result, nil
 }
 
 func (client *Client) ReadResourceList(filter string, properties map[string]string) ([]Resource, error) {
@@ -173,6 +210,7 @@ func (client *Client) AssignResourceResults(responseData interface{}, properties
 			resource.Data[p] = responseData.(map[string]interface{})[p]
 		}
 	}
+
 	return &resource, nil
 
 }
