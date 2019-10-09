@@ -31,8 +31,8 @@ provider "turbot" {
 ```
 #####Environment Variables
 ```
-export TURBOT_SECRET_ACCESS_KEY=xxxxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx  
-export TURBOT_ACCESS_KEY_ID=xxxxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+export TURBOT_SECRET_KEY=xxxxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx  
+export TURBOT_ACCESS_KEY=xxxxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 export TURBOT_WORKSPACE=https://bananaman-turbot.putney.turbot.io
 ```
 

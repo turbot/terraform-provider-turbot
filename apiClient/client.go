@@ -44,10 +44,10 @@ func CreateClient(config ClientConfig) (*Client, error) {
 func GetCredentials(config ClientConfig) (ClientCredentials, error) {
 	credentials := config.Credentials
 	if len(credentials.AccessKey) == 0 {
-		credentials.AccessKey = os.Getenv("TURBOT_ACCESS_KEY_ID")
+		credentials.AccessKey = os.Getenv("TURBOT_ACCESS_KEY")
 	}
 	if len(credentials.SecretKey) == 0 {
-		credentials.SecretKey = os.Getenv("TURBOT_SECRET_ACCESS_KEY")
+		credentials.SecretKey = os.Getenv("TURBOT_SECRET_KEY")
 	}
 	if len(credentials.Workspace) == 0 {
 		credentials.Workspace = os.Getenv("TURBOT_WORKSPACE")

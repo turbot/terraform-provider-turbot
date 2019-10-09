@@ -30,6 +30,6 @@ func TestProvider_impl(t *testing.T) {
 func testAccPreCheck(t *testing.T) {
 	_, err := apiClient.GetCredentials(apiClient.ClientConfig{})
 	if err != nil {
-		t.Fatal("No credentials are set - either set TURBOT_ACCESS_KEY_ID, TURBOT_SECRET_ACCESS_KEY and TURBOT_WORKSPACE or populate the file ~/.config/turbot/credentials.yml")
+		t.Fatal("No credentials are set - either set TURBOT_ACCESS_KEY, TURBOT_SECRET_KEY and TURBOT_WORKSPACE or populate the file ~/.config/turbot/credentials.yml")
 	}
 }

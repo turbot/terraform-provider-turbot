@@ -9,23 +9,23 @@ import (
 
 /*
 [default]
-turbot_access_key_id=<valid key>
-turbot_secret_access_key=<valid secret>
+TURBOT_ACCESS_KEY=<valid key>
+TURBOT_SECRET_KEY=<valid secret>
 turbot_workspace=<valid workspace>
 
 [invalid-keys]
-turbot_access_key_id=invalid
-turbot_secret_access_key=invalid
+TURBOT_ACCESS_KEY=invalid
+TURBOT_SECRET_KEY=invalid
 turbot_workspace=https://bananaman-turbot.putney.turbot.io
 
 [invalid-workspace]
-turbot_access_key_id=034840a0-fa46-44fa-a445-954c39dxxxx
-turbot_secret_access_key=860c12c8-e8a5-4617-8771-7885a7cbxxxx
+TURBOT_ACCESS_KEY=034840a0-fa46-44fa-a445-954c39dxxxx
+TURBOT_SECRET_KEY=860c12c8-e8a5-4617-8771-7885a7cbxxxx
 turbot_workspace=https://bananaman-turbot.putney.turbot.io_invalid
 
 [unparseable-workspace]
-turbot_access_key_id=034840a0-fa46-44fa-a445-954c39d0xxxx
-turbot_secret_access_key=860c12c8-e8a5-4617-8771-7885a7cbxxxx
+TURBOT_ACCESS_KEY=034840a0-fa46-44fa-a445-954c39d0xxxx
+TURBOT_SECRET_KEY=860c12c8-e8a5-4617-8771-7885a7cbxxxx
 turbot_workspace=invalid
 */
 func TestValidateBadCredentials(t *testing.T) {
