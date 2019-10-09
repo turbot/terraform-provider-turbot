@@ -78,8 +78,8 @@ func resourceTurbotLocalDirectoryCreate(d *schema.ResourceData, meta interface{}
 	parentAka := d.Get("parent").(string)
 	// build mutation payload
 	payload := map[string]map[string]interface{}{
-		"data":       mapFromResourceData(d, localDirectoryProperties),
-		"turbotData": mapFromResourceData(d, localDirectoryMetadataProperties),
+		"data":       helpers.MapFromResourceData(d, localDirectoryProperties),
+		"turbotData": helpers.MapFromResourceData(d, localDirectoryMetadataProperties),
 	}
 	// set computed properties
 	payload["data"]["status"] = "Active"
@@ -90,7 +90,7 @@ func resourceTurbotLocalDirectoryCreate(d *schema.ResourceData, meta interface{}
 	}
 
 	// set parent_akas property by loading resource and fetching the akas
-	if err := storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
+	if err := helpers.StoreAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
 	// assign the id
@@ -107,8 +107,8 @@ func resourceTurbotLocalDirectoryUpdate(d *schema.ResourceData, meta interface{}
 
 	// build mutation payload
 	payload := map[string]map[string]interface{}{
-		"data":       mapFromResourceData(d, localDirectoryProperties),
-		"turbotData": mapFromResourceData(d, localDirectoryMetadataProperties),
+		"data":       helpers.MapFromResourceData(d, localDirectoryProperties),
+		"turbotData": helpers.MapFromResourceData(d, localDirectoryMetadataProperties),
 	}
 	// create folder returns turbot resource metadata containing the id
 	turbotMetadata, err := client.UpdateLocalDirectory(id, parentAka, payload)
@@ -116,7 +116,7 @@ func resourceTurbotLocalDirectoryUpdate(d *schema.ResourceData, meta interface{}
 		return err
 	}
 	// set parent_akas property by loading resource and fetching the akas
-	return storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
+	return helpers.StoreAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
 }
 
 func resourceTurbotLocalDirectoryRead(d *schema.ResourceData, meta interface{}) error {
@@ -138,7 +138,7 @@ func resourceTurbotLocalDirectoryRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("status", localDirectory.Status)
 	d.Set("directory_type", localDirectory.DirectoryType)
 	// set parent_akas property by loading resource and fetching the akas
-	return storeAkas(localDirectory.Turbot.ParentId, "parent_akas", d, meta)
+	return helpers.StoreAkas(localDirectory.Turbot.ParentId, "parent_akas", d, meta)
 }
 
 func resourceTurbotLocalDirectoryDelete(d *schema.ResourceData, meta interface{}) error {

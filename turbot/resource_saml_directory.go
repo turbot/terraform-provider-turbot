@@ -116,8 +116,8 @@ func resourceTurbotSamlDirectoryCreate(d *schema.ResourceData, meta interface{})
 	parentAka := d.Get("parent").(string)
 	// build mutation payload
 	payload := map[string]map[string]interface{}{
-		"data":       mapFromResourceData(d, samlDirectoryProperties),
-		"turbotData": mapFromResourceData(d, samlDirectoryMetadataProperties),
+		"data":       helpers.MapFromResourceData(d, samlDirectoryProperties),
+		"turbotData": helpers.MapFromResourceData(d, samlDirectoryMetadataProperties),
 	}
 	// set computed properties
 	payload["data"]["status"] = "New"
@@ -129,7 +129,7 @@ func resourceTurbotSamlDirectoryCreate(d *schema.ResourceData, meta interface{})
 	}
 
 	// set parent_akas property by loading parent resource and fetching the akas
-	if err := storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
+	if err := helpers.StoreAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
 	// assign the id
@@ -145,8 +145,8 @@ func resourceTurbotSamlDirectoryUpdate(d *schema.ResourceData, meta interface{})
 	id := d.Id()
 
 	payload := map[string]map[string]interface{}{
-		"data":       mapFromResourceData(d, getSamlDirectoryUpdateProperties()),
-		"turbotData": mapFromResourceData(d, samlDirectoryMetadataProperties),
+		"data":       helpers.MapFromResourceData(d, getSamlDirectoryUpdateProperties()),
+		"turbotData": helpers.MapFromResourceData(d, samlDirectoryMetadataProperties),
 	}
 
 	// create folder returns turbot resource metadata containing the id
@@ -155,7 +155,7 @@ func resourceTurbotSamlDirectoryUpdate(d *schema.ResourceData, meta interface{})
 		return err
 	}
 	// set parent_akas property by loading parent resource and fetching the akas
-	return storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
+	return helpers.StoreAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
 }
 
 func resourceTurbotSamlDirectoryRead(d *schema.ResourceData, meta interface{}) error {
@@ -174,7 +174,7 @@ func resourceTurbotSamlDirectoryRead(d *schema.ResourceData, meta interface{}) e
 	// assign results back into ResourceData
 
 	// set parent_akas property by loading parent resource and fetching the akas
-	if err := storeAkas(samlDirectory.Turbot.ParentId, "parent_akas", d, meta); err != nil {
+	if err := helpers.StoreAkas(samlDirectory.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
 	d.Set("parent", samlDirectory.Parent)

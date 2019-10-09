@@ -101,7 +101,7 @@ func resourceTurbotGrantCreate(d *schema.ResourceData, meta interface{}) error {
 	permissionTypeAka := d.Get("permission_type").(string)
 	permissionLevelAka := d.Get("permission_level").(string)
 	// build map of Grant properties
-	data := mapFromResourceDataWithPropertyMap(d, grantDataMap)
+	data := helpers.MapFromResourceDataWithPropertyMap(d, grantDataMap)
 	// create Grant returns turbot resource metadata containing the id
 	TurbotGrantMetadata, err := client.CreateGrant(profileAka, resourceAka, data)
 	if err != nil {
@@ -109,16 +109,16 @@ func resourceTurbotGrantCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// set akas properties by loading resource and fetching the akas
-	if err := storeAkas(resourceAka, "resource_akas", d, meta); err != nil {
+	if err := helpers.StoreAkas(resourceAka, "resource_akas", d, meta); err != nil {
 		return err
 	}
-	if err := storeAkas(profileAka, "profile_akas", d, meta); err != nil {
+	if err := helpers.StoreAkas(profileAka, "profile_akas", d, meta); err != nil {
 		return err
 	}
-	if err := storeAkas(permissionTypeAka, "permission_type_akas", d, meta); err != nil {
+	if err := helpers.StoreAkas(permissionTypeAka, "permission_type_akas", d, meta); err != nil {
 		return err
 	}
-	if err := storeAkas(permissionLevelAka, "permission_level_akas", d, meta); err != nil {
+	if err := helpers.StoreAkas(permissionLevelAka, "permission_level_akas", d, meta); err != nil {
 		return err
 	}
 
@@ -147,16 +147,16 @@ func resourceTurbotGrantRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("resource", Grant.Turbot.ResourceId)
 
 	// set akas properties by loading resource and fetching the akas
-	if err := storeAkas(Grant.Turbot.ResourceId, "resource_akas", d, meta); err != nil {
+	if err := helpers.StoreAkas(Grant.Turbot.ResourceId, "resource_akas", d, meta); err != nil {
 		return err
 	}
-	if err := storeAkas(Grant.Turbot.ProfileId, "profile_akas", d, meta); err != nil {
+	if err := helpers.StoreAkas(Grant.Turbot.ProfileId, "profile_akas", d, meta); err != nil {
 		return err
 	}
-	if err := storeAkas(Grant.PermissionTypeId, "permission_type_akas", d, meta); err != nil {
+	if err := helpers.StoreAkas(Grant.PermissionTypeId, "permission_type_akas", d, meta); err != nil {
 		return err
 	}
-	return storeAkas(Grant.PermissionLevelId, "permission_level_akas", d, meta)
+	return helpers.StoreAkas(Grant.PermissionLevelId, "permission_level_akas", d, meta)
 }
 
 func resourceTurbotGrantDelete(d *schema.ResourceData, meta interface{}) error {

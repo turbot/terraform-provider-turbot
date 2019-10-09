@@ -59,7 +59,7 @@ func resourceTurbotGrantActivateCreate(d *schema.ResourceData, meta interface{})
 	}
 
 	// set resource_akas property by loading resource and fetching the akas
-	if err := storeAkas(resourceAka, "resource_akas", d, meta); err != nil {
+	if err := helpers.StoreAkas(resourceAka, "resource_akas", d, meta); err != nil {
 		return err
 	}
 	// assign the id
@@ -84,7 +84,7 @@ func resourceTurbotGrantActivateRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("grant", activeGrant.Turbot.GrantId)
 	d.Set("resource", activeGrant.Turbot.ResourceId)
 	// set resource_akas property by loading resource and fetching the akas
-	return storeAkas(activeGrant.Turbot.ResourceId, "resource_akas", d, meta)
+	return helpers.StoreAkas(activeGrant.Turbot.ResourceId, "resource_akas", d, meta)
 }
 
 func resourceTurbotGrantActivateDelete(d *schema.ResourceData, meta interface{}) error {

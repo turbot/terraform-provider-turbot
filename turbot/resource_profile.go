@@ -99,7 +99,7 @@ func resourceTurbotProfileCreate(d *schema.ResourceData, meta interface{}) error
 	parentAka := d.Get("parent").(string)
 
 	// build map of profile properties
-	data := mapFromResourceData(d, profileProperties)
+	data := helpers.MapFromResourceData(d, profileProperties)
 	// create profile returns turbot resource metadata containing the id
 	turbotMetadata, err := client.CreateProfile(parentAka, data)
 	if err != nil {
@@ -107,7 +107,7 @@ func resourceTurbotProfileCreate(d *schema.ResourceData, meta interface{}) error
 	}
 
 	// set parent_akas property by loading resource and fetching the akas
-	if err := storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
+	if err := helpers.StoreAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
 	// assign the id
@@ -122,7 +122,7 @@ func resourceTurbotProfileUpdate(d *schema.ResourceData, meta interface{}) error
 	id := d.Id()
 
 	// build map of profile properties
-	data := mapFromResourceData(d, folderDataProperties)
+	data := helpers.MapFromResourceData(d, folderDataProperties)
 
 	// create profile returns turbot resource metadata containing the id
 	turbotMetadata, err := client.UpdateProfile(id, parentAka, data)
@@ -130,7 +130,7 @@ func resourceTurbotProfileUpdate(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 	// set parent_akas property by loading resource and fetching the akas
-	return storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
+	return helpers.StoreAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
 }
 
 func resourceTurbotProfileRead(d *schema.ResourceData, meta interface{}) error {
@@ -155,7 +155,7 @@ func resourceTurbotProfileRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("family_name", profile.FamilyName)
 	d.Set("directory_pool_id", profile.DirectoryPoolId)
 	/// set parent_akas property by loading resource and fetching the akas
-	return storeAkas(profile.Turbot.ParentId, "parent_akas", d, meta)
+	return helpers.StoreAkas(profile.Turbot.ParentId, "parent_akas", d, meta)
 }
 
 func resourceTurbotProfileDelete(d *schema.ResourceData, meta interface{}) error {

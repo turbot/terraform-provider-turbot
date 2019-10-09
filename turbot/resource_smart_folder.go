@@ -3,6 +3,7 @@ package turbot
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
+	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 )
 
 // properties which must be passed to a create/update call
@@ -62,7 +63,7 @@ func resourceTurbotSmartFolderCreate(d *schema.ResourceData, meta interface{}) e
 	client := meta.(*apiClient.Client)
 	parentAka := d.Get("parent").(string)
 	// build map of folder properties
-	data := mapFromResourceData(d, smartFolderProperties)
+	data := helpers.MapFromResourceData(d, smartFolderProperties)
 	// TODO currently turbot accepts array of filters but only uses the first
 	if filter := d.Get("filter").(string); filter != "" {
 		data["filters"] = []string{filter}
@@ -75,7 +76,7 @@ func resourceTurbotSmartFolderCreate(d *schema.ResourceData, meta interface{}) e
 	}
 
 	// set parent_akas property by loading resource and fetching the akas
-	if err := storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
+	if err := helpers.StoreAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
 	// assign the id
@@ -89,7 +90,7 @@ func resourceTurbotSmartFolderUpdate(d *schema.ResourceData, meta interface{}) e
 	id := d.Id()
 
 	// build map of folder properties
-	data := mapFromResourceData(d, smartFolderProperties)
+	data := helpers.MapFromResourceData(d, smartFolderProperties)
 	// TODO currently turbot accepts array of filters but only uses the first
 	if filter := d.Get("filter").(string); filter != "" {
 		data["filters"] = []string{filter}
@@ -102,7 +103,7 @@ func resourceTurbotSmartFolderUpdate(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 	// set parent_akas property by loading resource and fetching the akas
-	return storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
+	return helpers.StoreAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
 }
 
 func resourceTurbotSmartFolderRead(d *schema.ResourceData, meta interface{}) error {
@@ -120,7 +121,7 @@ func resourceTurbotSmartFolderRead(d *schema.ResourceData, meta interface{}) err
 
 	// assign results back into ResourceData
 	// set parent_akas property by loading resource and fetching the akas
-	if err := storeAkas(smartFolder.Turbot.ParentId, "parent_akas", d, meta); err != nil {
+	if err := helpers.StoreAkas(smartFolder.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
 	// TODO currently turbot accepts array of filters but only uses the first

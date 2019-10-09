@@ -65,13 +65,42 @@ func EncryptValue(pgpKey, value string) (string, string, error) {
 	return fingerprint, encrypted, nil
 }
 
-func ConvertToJsonString(data map[string]interface{}) (string, error) {
+func MapToJsonString(data map[string]interface{}) (string, error) {
 	dataBytes, err := json.MarshalIndent(data, "", " ")
 	if err != nil {
 		return "", err
 	}
 	jsonData := string(dataBytes)
 	return jsonData, nil
+}
+
+// apply standard formatting to a json string by unmarshalling into a map then marshalling back to JSON
+func FormatJson(body string) string {
+	data := map[string]interface{}{}
+	if err := json.Unmarshal([]byte(body), &data); err != nil {
+		// ignore error and just return original body
+		return body
+	}
+	body, err := MapToJsonString(data)
+	if err != nil {
+		// ignore error and just return original body
+		return body
+	}
+	return body
+
+}
+
+// given a json representation of an object, build a map of the property names: property alias -> property path
+func PropertyMapFromJson(body string) (map[string]string, error) {
+	data := map[string]interface{}{}
+	if err := json.Unmarshal([]byte(body), &data); err != nil {
+		return nil, err
+	}
+	var properties = map[string]string{}
+	for k := range data {
+		properties[k] = k
+	}
+	return properties, nil
 }
 
 // convert a map[string]interface{} to a map[string]string byt json encoding any non string fields

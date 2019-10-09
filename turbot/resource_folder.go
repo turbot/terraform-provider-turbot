@@ -3,6 +3,7 @@ package turbot
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
+	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 )
 
 // properties which must be passed to a create/update call
@@ -66,8 +67,8 @@ func resourceTurbotFolderCreate(d *schema.ResourceData, meta interface{}) error 
 	parentAka := d.Get("parent").(string)
 	// build mutation payload
 	payload := map[string]map[string]interface{}{
-		"data":       mapFromResourceData(d, folderDataProperties),
-		"turbotData": mapFromResourceData(d, folderMetadataProperties),
+		"data":       helpers.MapFromResourceData(d, folderDataProperties),
+		"turbotData": helpers.MapFromResourceData(d, folderMetadataProperties),
 	}
 
 	// create folder returns turbot resource metadata containing the id
@@ -77,7 +78,7 @@ func resourceTurbotFolderCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	// set parent_akas property by loading resource and fetching the akas
-	if err := storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
+	if err := helpers.StoreAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
 
@@ -93,8 +94,8 @@ func resourceTurbotFolderUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	// build mutation payload
 	payload := map[string]map[string]interface{}{
-		"data":       mapFromResourceData(d, folderDataProperties),
-		"turbotData": mapFromResourceData(d, folderMetadataProperties),
+		"data":       helpers.MapFromResourceData(d, folderDataProperties),
+		"turbotData": helpers.MapFromResourceData(d, folderMetadataProperties),
 	}
 	// create folder returns turbot resource metadata containing the id
 	turbotMetadata, err := client.UpdateFolder(id, parentAka, payload)
@@ -102,7 +103,7 @@ func resourceTurbotFolderUpdate(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 	// set parent_akas property by loading resource and fetching the akas
-	return storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
+	return helpers.StoreAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
 }
 
 func resourceTurbotFolderRead(d *schema.ResourceData, meta interface{}) error {
@@ -123,7 +124,7 @@ func resourceTurbotFolderRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("title", folder.Title)
 	d.Set("description", folder.Description)
 	// set parent_akas property by loading resource and fetching the akas
-	return storeAkas(folder.Turbot.ParentId, "parent_akas", d, meta)
+	return helpers.StoreAkas(folder.Turbot.ParentId, "parent_akas", d, meta)
 }
 
 func resourceTurbotFolderDelete(d *schema.ResourceData, meta interface{}) error {
