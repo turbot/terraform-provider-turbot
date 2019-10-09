@@ -1,15 +1,18 @@
 package turbot
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/iancoleman/strcase"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 )
 
-var resourceMetadataProperties = []interface{}{"tags"}
+var resourceProperties = []interface{}{"parent", "type", "tags", "akas"}
+
+func getResourceUpdateProperties() []interface{} {
+	excludedProperties := []string{"type"}
+	return helpers.RemoveProperties(resourceProperties, excludedProperties)
+}
 
 func resourceTurbotResource() *schema.Resource {
 	return &schema.Resource{
@@ -43,13 +46,25 @@ func resourceTurbotResource() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"body": {
+			"data": {
 				Type:             schema.TypeString,
 				Required:         true,
-				DiffSuppressFunc: suppressIfBodyMatches,
+				DiffSuppressFunc: suppressIfDataMatches,
+			},
+			"metadata": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: suppressIfDataMatches,
 			},
 			"tags": {
 				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"akas": {
+				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
@@ -67,13 +82,15 @@ func resourceTurbotResourceExists(d *schema.ResourceData, meta interface{}) (b b
 
 func resourceTurbotResourceCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
-	parent := d.Get("parent").(string)
-	resourceType := d.Get("type").(string)
-	body := d.Get("body").(string)
+	var err error
 
-	// populate turbot data
-	mutationTurbotData := mapFromResourceData(d, resourceMetadataProperties)
-	turbotMetadata, err := client.CreateResource(resourceType, parent, body, mutationTurbotData)
+	// build input map to pass to mutation
+	input, err := buildResourceInput(d, resourceProperties)
+	if err != nil {
+		return err
+	}
+
+	turbotMetadata, err := client.CreateResource(input)
 	if err != nil {
 		return err
 	}
@@ -84,6 +101,11 @@ func resourceTurbotResourceCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 	// assign the id
 	d.SetId(turbotMetadata.Id)
+	// save the formatted data: this is to ensure the acceptance tests behave in a consistent way regardless of the ordering of the json data
+	d.Set("data", helpers.FormatJson(d.Get("data").(string)))
+	if metadata, ok := d.GetOk("metadata"); ok {
+		d.Set("metadata", helpers.FormatJson(metadata.(string)))
+	}
 	return nil
 }
 
@@ -91,10 +113,12 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 	client := meta.(*apiClient.Client)
 	id := d.Id()
 
-	// build required properties from body
-	properties, err := propertiesFromBody(d.Get("body").(string))
+	// build required properties from data.
+	// properties is a map of property name -> property path
+	properties, err := helpers.PropertyMapFromJson(d.Get("data").(string))
+
 	if err != nil {
-		return fmt.Errorf("error retrieving properties from resource body: %s", err.Error())
+		return fmt.Errorf("error retrieving properties from resource data: %s", err.Error())
 	}
 
 	resource, err := client.ReadResource(id, properties)
@@ -106,10 +130,10 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 
-	// rebuild body from the resource
-	body, err := bodyFromProperties(resource.Data)
+	// rebuild data from the resource
+	data, err := helpers.MapToJsonString(resource.Data)
 	if err != nil {
-		return fmt.Errorf("error building resource body: %s", err.Error())
+		return fmt.Errorf("error building resource data: %s", err.Error())
 	}
 
 	// assign results back into ResourceData
@@ -119,20 +143,27 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 	d.Set("parent", resource.Turbot.ParentId)
-	d.Set("body", body)
+	d.Set("data", data)
 	return nil
 }
 
 func resourceTurbotResourceUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
-	body := d.Get("body").(string)
-	parent := d.Get("parent").(string)
-	resourceType := d.Get("type").(string)
-	id := d.Id()
-	mutationTurbotData := mapFromResourceData(d, resourceMetadataProperties)
-	turbotMetadata, err := client.UpdateResource(id, resourceType, parent, body, mutationTurbotData)
+	// build input map to pass to mutation
+	input, err := buildResourceInput(d, getResourceUpdateProperties())
 	if err != nil {
 		return err
+	}
+	input["id"] = d.Id()
+
+	turbotMetadata, err := client.UpdateResource(input)
+	if err != nil {
+		return err
+	}
+	// save the formatted data: this is to ensure the acceptance tests behave in a consistent way regardless of the ordering of the json data
+	d.Set("data", helpers.FormatJson(d.Get("data").(string)))
+	if metadata, ok := d.GetOk("metadata"); ok {
+		d.Set("metadata", helpers.FormatJson(metadata.(string)))
 	}
 	// set parent_akas property by loading resource and fetching the akas
 	return storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
@@ -157,6 +188,24 @@ func resourceTurbotResourceImport(d *schema.ResourceData, meta interface{}) ([]*
 		return nil, err
 	}
 	return []*schema.ResourceData{d}, nil
+}
+
+func buildResourceInput(d *schema.ResourceData, properties []interface{}) (map[string]interface{}, error) {
+	var err error
+	input := mapFromResourceData(d, properties)
+	// convert data from json string to map
+	dataString := d.Get("data").(string)
+	if input["data"], err = helpers.JsonStringToMap(dataString); err != nil {
+		return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal data: \n%s\nerror: %s", dataString, err.Error())
+	}
+	// convert metadata from json string to map (if present)
+	if metadata, ok := d.GetOk("metadata"); ok {
+		metadataString := metadata.(string)
+		if input["metadata"], err = helpers.JsonStringToMap(metadataString); err != nil {
+			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal metadata: \n%s\nerror: %s", metadataString, err.Error())
+		}
+	}
+	return input, nil
 }
 
 // the property in the config is an aka - however the state file will have an id.
@@ -185,106 +234,14 @@ func suppressIfAkaMatches(propertyName string) func(k, old, new string, d *schem
 
 }
 
-func suppressIfClientSecret(k, old, new string, d *schema.ResourceData) bool {
-	return old != ""
-}
-
-// body is a json string
-// apply standard formatting to old and new bodys then compare
-func suppressIfBodyMatches(k, old, new string, d *schema.ResourceData) bool {
+// data is a json string
+// apply standard formatting to old and new data then compare
+func suppressIfDataMatches(k, old, new string, d *schema.ResourceData) bool {
 	if old == "" || new == "" {
 		return false
 	}
 
-	oldFormatted := formatBody(old)
-	newFormatted := formatBody(new)
+	oldFormatted := helpers.FormatJson(old)
+	newFormatted := helpers.FormatJson(new)
 	return oldFormatted == newFormatted
-}
-
-// given a json string, unmarshal into a map and return a map of alias ->  propertyName
-func propertiesFromBody(body string) (map[string]string, error) {
-	data := map[string]interface{}{}
-	if err := json.Unmarshal([]byte(body), &data); err != nil {
-		return nil, err
-	}
-	var properties = map[string]string{}
-	for k := range data {
-		properties[k] = k
-	}
-	return properties, nil
-}
-
-// given a map of resource properties, marshal into a json string
-func bodyFromProperties(d map[string]interface{}) (string, error) {
-	body, err := json.MarshalIndent(d, "", " ")
-	if err != nil {
-		return "", err
-	}
-	return string(body), nil
-}
-
-// apply standard formatting to the json body to enable easy diffing
-func formatBody(body string) string {
-	data := map[string]interface{}{}
-	if err := json.Unmarshal([]byte(body), &data); err != nil {
-		// ignore error and just return original body
-		return body
-	}
-	body, err := bodyFromProperties(data)
-	if err != nil {
-		// ignore error and just return original body
-		return body
-	}
-	return body
-
-}
-
-// construct a map of property values to pass to a graphql mutation
-func mapFromResourceData(d *schema.ResourceData, properties []interface{}) map[string]interface{} {
-	// each element in the 'properties' array is either a map defining explicit name mappings, or a string containing the terraform property name.
-	// this is converted to the turbot property name by performing a snake case -> lowerCamelCase conversion
-	// to build the output map:
-	// 1) extract the value from ResourceData using the terraform property name
-	// 2) add the property to a map using the turbot property name
-	var propertyMap = map[string]interface{}{}
-	for _, element := range properties {
-		terraformToTurbotMap, ok := element.(map[string]string)
-		// if terraformProperty is a map, perform explicit mapping and merge result with existing map
-		if ok {
-			helpers.MergeMaps(propertyMap, mapFromResourceDataWithPropertyMap(d, terraformToTurbotMap))
-		} else {
-			// otherwise perform automatic mapping from snake case (Terraform format) to lowerCamelCase (Turbot format).
-			terraformProperty := element.(string)
-			value, propertySet := d.GetOk(terraformProperty)
-			// if property is set, map it
-			if propertySet {
-				var turbotProperty = strcase.ToLowerCamel(terraformProperty)
-				propertyMap[turbotProperty] = value
-			}
-		}
-	}
-	return propertyMap
-}
-
-func mapFromResourceDataWithPropertyMap(d *schema.ResourceData, terraformToTurbotMap map[string]string) map[string]interface{} {
-	var resourcePropertyMap = map[string]interface{}{}
-	for terraform, turbot := range terraformToTurbotMap {
-		// get schema for property
-		value, propertySet := d.GetOk(terraform)
-		if propertySet {
-			resourcePropertyMap[turbot] = value
-		}
-	}
-	return resourcePropertyMap
-}
-
-func storeAkas(aka, propertyName string, d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiClient.Client)
-	akas, err := client.GetResourceAkas(aka)
-	if err != nil {
-		return err
-	}
-	// assign  akas
-	d.Set(propertyName, akas)
-	return nil
 }

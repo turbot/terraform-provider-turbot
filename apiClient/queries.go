@@ -6,6 +6,11 @@ import (
 	"strings"
 )
 
+// NOTE: we do not use a fragment for resource metadata as we just request the full turbot property
+// using turbot: get(path:"turbot")
+// This is because we saw errors returning null for the turbot property for a non existent resource
+// TODO fix this to use a fragment
+
 func turbotPolicyMetadataFragment(prefix string) string {
 	return applyPrefix(prefix, `turbot {
 	id
@@ -284,11 +289,27 @@ func modVersionsQuery(org, mod string) string {
 
 // resource
 func createResourceMutation() string {
-	return fmt.Sprintf(`mutation CreateResource($command: ResourceCommandInput) {
-	resource: resourceCreate(command: $command) {
+	return fmt.Sprintf(`mutation CreateResource($input: CreateResourceInput!) {
+	resource: createResource(input: $input) {
 		turbot: get(path:"turbot")
 	}
 }`)
+}
+
+func updateResourceMutation() string {
+	return `mutation UpdateResource($input: UpdateResourceInput!) {
+ 	resource: updateResource(input: $input) {
+		turbot: get(path:"turbot")
+	}
+}`
+}
+
+func deleteResourceMutation() string {
+	return `mutation DeleteResource($input: DeleteResourceInput!) {
+ 	resource: deleteResource(input: $input) {
+		turbot: get(path:"turbot")
+	}
+}`
 }
 
 func readResourceQuery(aka string, properties map[string]string) string {
@@ -304,46 +325,6 @@ func readResourceQuery(aka string, properties map[string]string) string {
 		turbot: get(path:"turbot")
   	}
 }`, aka, propertiesString.String())
-}
-
-func readGoogleDirectoryQuery(aka string) string {
-	return fmt.Sprintf(`{
-	directory: resource(id:"%s") {
-		title:             	get(path:"title")
-		parent:            	get(path:"turbot.parentId")
-		description:       	get(path:"description")
-		status:            	get(path:"status")
-		directoryType:     	get(path:"directoryType")
-		profileIdTemplate: 	get(path:"profileIdTemplate")
-		clientID:          	get(path:"clientID")
-		clientSecret:      	getSecret(path:"clientSecret")
-		poolId:            	get(path:"poolId")
-		groupIdTemplate:   	get(path:"groupIdTemplate")
-		loginNameTemplate: 	get(path:"loginNameTemplate")
-		hostedName:        	get(path:"hostedName")
-		turbot: 			get(path:"turbot")
-	}
-}`, aka)
-}
-
-func updateResourceMutation() string {
-	return `mutation UpsertResource($command: ResourceCommandInput) {
- 	resource: resourceUpsert(command: $command) {
-		turbot {
-			id
-  			parentId
-     	 	akas
-		}
-	}
-}`
-}
-
-func deleteResourceMutation() string {
-	return `mutation DeleteResource($command: ResourceCommandInput) {
- 	resource: resourceDelete(command: $command) {
-		turbot: get(path:"turbot")
-	}
-}`
 }
 
 func readResourceListQuery(filter string, properties map[string]string) string {
@@ -369,6 +350,27 @@ func readFullResourceQuery(aka string) string {
     object
     turbot: get(path:"turbot")
   }
+}`, aka)
+}
+
+// google directory TODO delete
+func readGoogleDirectoryQuery(aka string) string {
+	return fmt.Sprintf(`{
+	directory: resource(id:"%s") {
+		title:             	get(path:"title")
+		parent:            	get(path:"turbot.parentId")
+		description:       	get(path:"description")
+		status:            	get(path:"status")
+		directoryType:     	get(path:"directoryType")
+		profileIdTemplate: 	get(path:"profileIdTemplate")
+		clientID:          	get(path:"clientID")
+		clientSecret:      	getSecret(path:"clientSecret")
+		poolId:            	get(path:"poolId")
+		groupIdTemplate:   	get(path:"groupIdTemplate")
+		loginNameTemplate: 	get(path:"loginNameTemplate")
+		hostedName:        	get(path:"hostedName")
+		turbot: 			get(path:"turbot")
+	}
 }`, aka)
 }
 

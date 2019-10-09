@@ -3,17 +3,11 @@ package turbot
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
-	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 )
 
 // these are the properties which must be passed to a create/update call
-var samlDirectoryProperties = []interface{}{"description", "directory_type", "status", "entry_point", "issuer", "certificate", "profile_id_template", "group_id_template", "name_id_format", "sign_requests", "signature_private_key", "signature_algorithm", "pool_id"}
-var samlDirectoryMetadataProperties = []interface{}{"tags"}
-
-func getSamlDirectoryUpdateProperties() []interface{} {
-	excludedProperties := []string{"directory_type"}
-	return helpers.RemoveProperties(samlDirectoryProperties, excludedProperties)
-}
+var samlDirectoryDataProperties = []interface{}{"description", "status", "entry_point", "issuer", "certificate", "profile_id_template", "group_id_template", "name_id_format", "sign_requests", "signature_private_key", "signature_algorithm", "pool_id"}
+var samlDirectoryInputProperties = []interface{}{"parent", "tags"}
 
 func resourceTurbotSamlDirectory() *schema.Resource {
 	return &schema.Resource{
@@ -113,49 +107,29 @@ func resourceTurbotSamlDirectoryExists(d *schema.ResourceData, meta interface{})
 
 func resourceTurbotSamlDirectoryCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
-	parentAka := d.Get("parent").(string)
 	// build mutation payload
-	payload := map[string]map[string]interface{}{
-		"data":       helpers.MapFromResourceData(d, samlDirectoryProperties),
-		"turbotData": helpers.MapFromResourceData(d, samlDirectoryMetadataProperties),
-	}
+	input := mapFromResourceData(d, samlDirectoryInputProperties)
+	data := mapFromResourceData(d, samlDirectoryDataProperties)
 	// set computed properties
-	payload["data"]["status"] = "New"
-	payload["data"]["directoryType"] = "saml"
+	data["status"] = "Active"
+	data["directoryType"] = "saml"
+	input["data"] = data
 
-	turbotMetadata, err := client.CreateSamlDirectory(parentAka, payload)
+	turbotMetadata, err := client.CreateSamlDirectory(input)
 	if err != nil {
 		return err
 	}
 
 	// set parent_akas property by loading parent resource and fetching the akas
-	if err := helpers.StoreAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
+	if err := storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
 	// assign the id
 	d.SetId(turbotMetadata.Id)
-	d.Set("status", payload["data"]["status"])
-	d.Set("directoryType", payload["data"]["directoryType"])
+	// assign computed properties
+	d.Set("status", data["status"])
+	d.Set("directoryType", data["directoryType"])
 	return nil
-}
-
-func resourceTurbotSamlDirectoryUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiClient.Client)
-	parentAka := d.Get("parent").(string)
-	id := d.Id()
-
-	payload := map[string]map[string]interface{}{
-		"data":       helpers.MapFromResourceData(d, getSamlDirectoryUpdateProperties()),
-		"turbotData": helpers.MapFromResourceData(d, samlDirectoryMetadataProperties),
-	}
-
-	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.UpdateSamlDirectory(id, parentAka, payload)
-	if err != nil {
-		return err
-	}
-	// set parent_akas property by loading parent resource and fetching the akas
-	return helpers.StoreAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
 }
 
 func resourceTurbotSamlDirectoryRead(d *schema.ResourceData, meta interface{}) error {
@@ -174,12 +148,28 @@ func resourceTurbotSamlDirectoryRead(d *schema.ResourceData, meta interface{}) e
 	// assign results back into ResourceData
 
 	// set parent_akas property by loading parent resource and fetching the akas
-	if err := helpers.StoreAkas(samlDirectory.Turbot.ParentId, "parent_akas", d, meta); err != nil {
+	if err := storeAkas(samlDirectory.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
 	d.Set("parent", samlDirectory.Parent)
 	d.Set("title", samlDirectory.Title)
 	return nil
+}
+
+func resourceTurbotSamlDirectoryUpdate(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*apiClient.Client)
+	// build mutation payload
+	input := mapFromResourceData(d, samlDirectoryInputProperties)
+	input["data"] = mapFromResourceData(d, samlDirectoryDataProperties)
+	input["id"] = d.Id()
+
+	// create folder returns turbot resource metadata containing the id
+	turbotMetadata, err := client.UpdateSamlDirectory(input)
+	if err != nil {
+		return err
+	}
+	// set parent_akas property by loading parent resource and fetching the akas
+	return storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
 }
 
 func resourceTurbotSamlDirectoryDelete(d *schema.ResourceData, meta interface{}) error {

@@ -156,7 +156,7 @@ func modInstall(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// set parent_akas property by loading resource and fetching the akas
-	if err := helpers.StoreAkas(mod.Turbot.ParentId, "parent_akas", d, meta); err != nil {
+	if err := storeAkas(mod.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
 	// assign the id
@@ -205,7 +205,7 @@ func resourceTurbotModRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("uri", mod.Uri)
 
 	// set parent_akas property by loading resource and fetching the akas
-	return helpers.StoreAkas(mod.Parent, "parent_akas", d, meta)
+	return storeAkas(mod.Parent, "parent_akas", d, meta)
 }
 
 func resourceTurbotModUninstall(d *schema.ResourceData, meta interface{}) error {

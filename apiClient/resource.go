@@ -1,39 +1,18 @@
 package apiClient
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/mitchellh/mapstructure"
 	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 	"log"
 )
 
-func (client *Client) CreateResource(typeAka, parentAka, body string, turbotData map[string]interface{}) (*TurbotResourceMetadata, error) {
+func (client *Client) CreateResource(input map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := createResourceMutation()
 	responseData := &CreateResourceResponse{}
-
-	data := map[string]interface{}{}
-	if err := json.Unmarshal([]byte(body), &data); err != nil {
-		return nil, fmt.Errorf("error creating resource: %s", err.Error())
-	}
-
-	// todo extract turbotData
-
-	commandMeta := map[string]string{
-		"typeAka":   typeAka,
-		"parentAka": parentAka,
-	}
-
 	variables := map[string]interface{}{
-		"command": map[string]interface{}{
-			"payload": map[string]interface{}{
-				"data":       data,
-				"turbotData": turbotData,
-			},
-			"meta": commandMeta,
-		},
+		"input": input,
 	}
-
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error creating resource: %s", err.Error())
@@ -84,7 +63,7 @@ func (client *Client) ReadSerializableResource(resourceAka string) (*Serializabl
 	// convert the data to JSON
 	// (NOTE: remove the 'turbot' properties as this has been read separately)
 	data := helpers.RemovePropertiesFromMap(resource.Data, []string{"turbot"})
-	dataJson, err := helpers.ConvertToJsonString(data)
+	dataJson, err := helpers.MapToJsonString(data)
 	if err != nil {
 		return nil, err
 	}
@@ -119,30 +98,12 @@ func (client *Client) ReadResourceList(filter string, properties map[string]stri
 	return responseData.ResourceList.Items, nil
 }
 
-func (client *Client) UpdateResource(id, typeAka, parentAka, body string, turbotData map[string]interface{}) (*TurbotResourceMetadata, error) {
+func (client *Client) UpdateResource(input map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := updateResourceMutation()
 	responseData := &UpdateResourceResponse{}
-	data := map[string]interface{}{}
-	if err := json.Unmarshal([]byte(body), &data); err != nil {
-		return nil, fmt.Errorf("error updating resource: %s", err.Error())
-	}
-
-	commandMeta := map[string]interface{}{
-		"typeAka":   typeAka,
-		"parentAka": parentAka,
-		"akas":      []string{id},
-	}
-
 	variables := map[string]interface{}{
-		"command": map[string]interface{}{
-			"payload": map[string]interface{}{
-				"data":       data,
-				"turbotData": turbotData,
-			},
-			"meta": commandMeta,
-		},
+		"input": input,
 	}
-
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error creating folder: %s", err.Error())
@@ -152,16 +113,12 @@ func (client *Client) UpdateResource(id, typeAka, parentAka, body string, turbot
 
 func (client *Client) DeleteResource(aka string) error {
 	query := deleteResourceMutation()
+	// we do not care about the response
 	var responseData interface{}
 
-	commandPayload := map[string]string{
-		"aka": aka,
-	}
-	commandMeta := map[string]string{}
 	variables := map[string]interface{}{
-		"command": map[string]interface{}{
-			"payload": commandPayload,
-			"meta":    commandMeta,
+		"input": map[string]string{
+			"id": aka,
 		},
 	}
 

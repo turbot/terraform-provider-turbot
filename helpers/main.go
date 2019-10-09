@@ -3,7 +3,6 @@ package helpers
 import (
 	"encoding/json"
 	"github.com/hashicorp/terraform/helper/encryption"
-	"github.com/iancoleman/strcase"
 	"reflect"
 	"sort"
 )
@@ -14,7 +13,7 @@ func MergeMaps(m1, m2 map[string]interface{}) {
 	}
 }
 
-// given a list of properties or property maps, remove the excluded properties
+// given a list of items which may each be either a property or property map, remove the excluded properties
 func RemoveProperties(properties []interface{}, excluded []string) []interface{} {
 	for _, excludedProperty := range excluded {
 		for i, element := range properties {
@@ -35,6 +34,7 @@ func RemoveProperties(properties []interface{}, excluded []string) []interface{}
 	return properties
 }
 
+// TODO update to use delete
 // given a property list, remove the excluded properties
 func RemovePropertiesFromMap(propertyMap map[string]interface{}, excluded []string) map[string]interface{} {
 	var result = map[string]interface{}{}
@@ -74,6 +74,14 @@ func MapToJsonString(data map[string]interface{}) (string, error) {
 	return jsonData, nil
 }
 
+func JsonStringToMap(dataString string) (map[string]interface{}, error) {
+	var data = make(map[string]interface{})
+	if err := json.Unmarshal([]byte(dataString), &data); err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
 // apply standard formatting to a json string by unmarshalling into a map then marshalling back to JSON
 func FormatJson(body string) string {
 	data := map[string]interface{}{}
@@ -103,7 +111,7 @@ func PropertyMapFromJson(body string) (map[string]string, error) {
 	return properties, nil
 }
 
-// convert a map[string]interface{} to a map[string]string byt json encoding any non string fields
+// convert a map[string]interface{} to a map[string]string by json encoding any non string fields
 func ConvertToStringMap(data map[string]interface{}) (map[string]string, error) {
 	var outputMap = map[string]string{}
 
@@ -120,13 +128,4 @@ func ConvertToStringMap(data map[string]interface{}) (map[string]string, error) 
 		}
 	}
 	return outputMap, nil
-}
-
-// convert map keys to snake case
-func ConvertMapKeysToSnakeCase(data map[string]interface{}) map[string]interface{} {
-	var outputMap = map[string]interface{}{}
-	for k, v := range data {
-		outputMap[strcase.ToLowerCamel(k)] = v
-	}
-	return outputMap
 }

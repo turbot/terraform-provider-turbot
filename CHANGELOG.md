@@ -1,5 +1,14 @@
 
 
+## 1.0.0-beta.6 (tbd)
+
+ENHANCEMENTS:
+Update turbot_resource data provider schema. ([#42](https://github.com/turbotio/terraform-provider-turbot/issues/42))  
+Create helpers package. ([#89](https://github.com/turbotio/terraform-provider-turbot/issues/89))
+Add support for credentials profiles. ([#57](https://github.com/turbotio/terraform-provider-turbot/issues/57))
+Update turbot_policy_setting - rename policy_type to type. ([#87](https://github.com/turbotio/terraform-provider-turbot/issues/87)) 
+Update turbot_policy_value - rename policy_type to type. ([#86](https://github.com/turbotio/terraform-provider-turbot/issues/86)) 
+
 ## 1.0.0-beta.5 (October 03, 2019)
 
 BUGFIXES: 
