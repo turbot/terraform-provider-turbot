@@ -124,15 +124,14 @@ func testAccCheckLocalDirectoryUserExists(resource string) resource.TestCheckFun
 func testAccCheckLocalDirectoryUserDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*apiClient.Client)
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "localDirectoryUser" {
-			continue
-		}
-		_, err := client.ReadLocalDirectoryUser(rs.Primary.ID)
-		if err == nil {
-			return fmt.Errorf("Alert still exists")
-		}
-		if !apiClient.NotFoundError(err) {
-			return fmt.Errorf("expected 'not found' error, got %s", err)
+		if rs.Type == "turbot_local_directory_user" {
+			_, err := client.ReadLocalDirectoryUser(rs.Primary.ID)
+			if err == nil {
+				return fmt.Errorf("Alert still exists")
+			}
+			if !apiClient.NotFoundError(err) {
+				return fmt.Errorf("expected 'not found' error, got %s", err)
+			}
 		}
 	}
 	return nil

@@ -74,15 +74,14 @@ func testAccCheckSmartFolderExists(resource string) resource.TestCheckFunc {
 func testAccCheckSmartFolderDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*apiClient.Client)
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "smartFolder" {
-			continue
-		}
-		_, err := client.ReadSmartFolder(rs.Primary.ID)
-		if err == nil {
-			return fmt.Errorf("Alert still exists")
-		}
-		if !apiClient.NotFoundError(err) {
-			return fmt.Errorf("expected 'not found' error, got %s", err)
+		if rs.Type == "turbot_smart_folder" {
+			_, err := client.ReadSmartFolder(rs.Primary.ID)
+			if err == nil {
+				return fmt.Errorf("Alert still exists")
+			}
+			if !apiClient.NotFoundError(err) {
+				return fmt.Errorf("expected 'not found' error, got %s", err)
+			}
 		}
 	}
 

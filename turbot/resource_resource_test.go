@@ -132,15 +132,14 @@ func testAccCheckResourceExists(resource string) resource.TestCheckFunc {
 func testAccCheckResourceDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*apiClient.Client)
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "resource" {
-			continue
-		}
-		_, err := client.ReadResource(rs.Primary.ID, nil)
-		if err == nil {
-			return fmt.Errorf("Alert still exists")
-		}
-		if !apiClient.NotFoundError(err) {
-			return fmt.Errorf("expected 'not found' error, got %s", err)
+		if rs.Type == "turbot_resource" {
+			_, err := client.ReadResource(rs.Primary.ID, nil)
+			if err == nil {
+				return fmt.Errorf("Alert still exists")
+			}
+			if !apiClient.NotFoundError(err) {
+				return fmt.Errorf("expected 'not found' error, got %s", err)
+			}
 		}
 	}
 

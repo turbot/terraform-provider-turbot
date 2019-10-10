@@ -214,15 +214,14 @@ func testAccCheckFolderExists(resource string) resource.TestCheckFunc {
 func testAccCheckFolderDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*apiClient.Client)
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "folder" {
-			continue
-		}
-		_, err := client.ReadFolder(rs.Primary.ID)
-		if err == nil {
-			return fmt.Errorf("alert still exists")
-		}
-		if !apiClient.NotFoundError(err) {
-			return fmt.Errorf("expected 'not found' error, got %s", err)
+		if rs.Type == "turbot_folder" {
+			_, err := client.ReadFolder(rs.Primary.ID)
+			if err == nil {
+				return fmt.Errorf("alert still exists")
+			}
+			if !apiClient.NotFoundError(err) {
+				return fmt.Errorf("expected 'not found' error, got %s", err)
+			}
 		}
 	}
 

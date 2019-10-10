@@ -118,15 +118,14 @@ func testAccCheckProfileExists(resource string) resource.TestCheckFunc {
 func testAccCheckProfileDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*apiClient.Client)
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "profile" {
-			continue
-		}
-		_, err := client.ReadProfile(rs.Primary.ID)
-		if err == nil {
-			return fmt.Errorf("Alert still exists")
-		}
-		if !apiClient.NotFoundError(err) {
-			return fmt.Errorf("expected 'not found' error, got %s", err)
+		if rs.Type == "turbot_profile" {
+			_, err := client.ReadProfile(rs.Primary.ID)
+			if err == nil {
+				return fmt.Errorf("Alert still exists")
+			}
+			if !apiClient.NotFoundError(err) {
+				return fmt.Errorf("expected 'not found' error, got %s", err)
+			}
 		}
 	}
 
