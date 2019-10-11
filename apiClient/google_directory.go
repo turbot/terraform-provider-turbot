@@ -20,6 +20,12 @@ func (client *Client) CreateGoogleDirectory(input map[string]interface{}) (*Turb
 }
 
 func (client *Client) ReadGoogleDirectory(id string) (*GoogleDirectory, error) {
+	/*
+		GoogleDirectory read response has clientSecret attribute,
+		which is fetched from getSecret(path:"clientSecret") and
+		not from get() resolver.
+		That's why we used separate query and not readResourceQuery()
+	*/
 	query := readGoogleDirectoryQuery(id)
 	responseData := &ReadGoogleDirectoryResponse{}
 

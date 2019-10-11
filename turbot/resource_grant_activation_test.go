@@ -23,15 +23,15 @@ func TestAccGrantActivate(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_grant.test_grant", "resource", "tmod:@turbot/turbot#/"),
 					resource.TestCheckResourceAttr(
-						"turbot_grant.test_grant", "permission_type", "tmod:@turbot/aws#/permission/types/aws"),
+						"turbot_grant.test_grant", "type", "tmod:@turbot/aws#/permission/types/aws"),
 					resource.TestCheckResourceAttr(
-						"turbot_grant.test_grant", "permission_level", "tmod:@turbot/turbot-iam#/permission/levels/superuser"),
+						"turbot_grant.test_grant", "level", "tmod:@turbot/turbot-iam#/permission/levels/superuser"),
 					resource.TestCheckResourceAttr(
 						"turbot_grant_activation.test_activation", "resource", "tmod:@turbot/turbot#/"),
 					resource.TestCheckResourceAttr(
-						"turbot_grant.test_grant", "permission_type", "tmod:@turbot/aws#/permission/types/aws"),
+						"turbot_grant.test_grant", "type", "tmod:@turbot/aws#/permission/types/aws"),
 					resource.TestCheckResourceAttr(
-						"turbot_grant.test_grant", "permission_level", "tmod:@turbot/turbot-iam#/permission/levels/superuser"),
+						"turbot_grant.test_grant", "level", "tmod:@turbot/turbot-iam#/permission/levels/superuser"),
 				),
 			},
 		},
@@ -68,8 +68,8 @@ resource "turbot_profile" "test_profile" {
 
 resource "turbot_grant" "test_grant" {
 	resource         = "tmod:@turbot/turbot#/"
-	permission_type  = "tmod:@turbot/aws#/permission/types/aws"
-	permission_level = "tmod:@turbot/turbot-iam#/permission/levels/superuser"
+	type  = "tmod:@turbot/aws#/permission/types/aws"
+	level = "tmod:@turbot/turbot-iam#/permission/levels/superuser"
 	profile          = turbot_profile.test_profile.id
 }
 

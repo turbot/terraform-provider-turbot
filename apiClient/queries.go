@@ -353,7 +353,7 @@ func readFullResourceQuery(aka string) string {
 }`, aka)
 }
 
-// google directory TODO delete
+// google directory read query
 func readGoogleDirectoryQuery(aka string) string {
 	return fmt.Sprintf(`{
 	directory: resource(id:"%s") {

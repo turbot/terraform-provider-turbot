@@ -106,6 +106,19 @@ func TestAccMod(t *testing.T) {
 						"turbot_mod.test", "version_current", latestProviderTestVersion),
 				),
 			},
+			{
+				Config: testAccModNoParentConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccModExists("turbot_mod.test"),
+					testAccModExists("turbot_mod.test"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "org", "turbot"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "mod", "provider-test"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "version_current", "5.0.0"),
+				),
+			},
 		},
 	})
 }
@@ -183,6 +196,16 @@ resource "turbot_mod" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	org = "turbot"
 	mod = "provider-test"
+}
+`
+}
+
+func testAccModNoParentConfig() string {
+	return `
+resource "turbot_mod" "test"{
+	org = "turbot"
+	mod = "provider-test"
+	version = "5.0.0"
 }
 `
 }
