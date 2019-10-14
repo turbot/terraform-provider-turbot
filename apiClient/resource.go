@@ -20,11 +20,7 @@ func (client *Client) CreateResource(input map[string]interface{}) (*TurbotResou
 	return &responseData.Resource.Turbot, nil
 }
 
-// properties is a map of terraform property name to turbot property path
-// it is used to add 'get' resolvers to the query
-// NOTE:
-// - if properties is null, no additional properties are requested
-// - if properties is an empty map, an empty get resolver call ius adde dto the query - this fetches the full
+// properties is a map of terraform property name to turbot property path - it is used to add 'get' resolvers to the query
 func (client *Client) ReadResource(resourceAka string, properties map[string]string) (*Resource, error) {
 	query := readResourceQuery(resourceAka, properties)
 	var responseData = &ReadResourceResponse{}

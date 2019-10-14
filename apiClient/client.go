@@ -114,26 +114,16 @@ func BuildApiUrl(rawWorkspace string) (string, error) {
 		return "", fmt.Errorf("failed to create client - could not parse workspace url '%s'", rawWorkspace)
 	}
 
-	// check for ".turbot.io suffix
-	hostRegex := regexp.MustCompile(`\.turbot\.io`)
-	if !hostRegex.Match([]byte(u.Host)) {
-		u.Host = u.Host + ".turbot.io"
-		if u.Path != "" {
-			// if no host was specified, there should not be a path either
-			return "", fmt.Errorf("invalid workspace %s", workspace)
+	if u.Path != "" {
+		apiVersionRegex := regexp.MustCompile(`\/api\/v[0-9]+$|latest$`)
+		if !apiVersionRegex.Match([]byte(u.Path)) {
+			return "", fmt.Errorf("invalid worksapce %s", workspace)
 		}
-		u.Path = "/api/latest/graphql"
+		u.Path = path.Join(u.Path, "graphql")
 	} else {
-		if u.Path != "" {
-			apiVersionRegex := regexp.MustCompile(`\/api\/v[0-9]+$|latest$`)
-			if !apiVersionRegex.Match([]byte(u.Path)) {
-				return "", fmt.Errorf("invalid worksapce %s", workspace)
-			}
-			u.Path = path.Join(u.Path, "graphql")
-		} else {
-			u.Path = "/api/latest/graphql"
-		}
+		u.Path = "/api/latest/graphql"
 	}
+
 	baseUrl := u.String()
 	return baseUrl, nil
 }
