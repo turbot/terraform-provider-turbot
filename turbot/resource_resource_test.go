@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
+	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 	"testing"
 )
 
@@ -16,34 +17,51 @@ func TestAccResourceFolder(t *testing.T) {
 		CheckDestroy: testAccCheckResourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccResourceConfig(folderType, folderBody),
+				Config: testAccResourceConfig(folderType, folderData, folderMetadata),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists("turbot_resource.test"),
 					resource.TestCheckResourceAttr(
 						"turbot_resource.test", "type", folderType),
 					resource.TestCheckResourceAttr(
-						"turbot_resource.test", "body", folderBody),
-				),
-			},
-			// TODO this fails as when upserting an existing folder a new folder is created
-			{
-				Config: testAccResourceConfig(folderType, folderBodyUpdatedDescription),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckResourceExists("turbot_resource.test"),
+						"turbot_resource.test", "data", helpers.FormatJson(folderData)),
 					resource.TestCheckResourceAttr(
-						"turbot_resource.test", "type", folderType),
-					resource.TestCheckResourceAttr(
-						"turbot_resource.test", "body", folderBodyUpdatedDescription),
+						"turbot_resource.test", "metadata", helpers.FormatJson(folderMetadata)),
 				),
 			},
 			{
-				Config: testAccResourceConfig(folderType, folderBodyUpdatedTitle),
+				Config: testAccResourceConfig(folderType, folderDataUpdatedDescription, folderMetadata),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists("turbot_resource.test"),
 					resource.TestCheckResourceAttr(
 						"turbot_resource.test", "type", folderType),
 					resource.TestCheckResourceAttr(
-						"turbot_resource.test", "body", folderBodyUpdatedTitle),
+						"turbot_resource.test", "data", helpers.FormatJson(folderDataUpdatedDescription)),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.test", "metadata", helpers.FormatJson(folderMetadata)),
+				),
+			},
+			{
+				Config: testAccResourceConfig(folderType, folderDataUpdatedTitle, folderMetadata),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("turbot_resource.test"),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.test", "type", folderType),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.test", "data", helpers.FormatJson(folderDataUpdatedTitle)),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.test", "metadata", helpers.FormatJson(folderMetadata)),
+				),
+			},
+			{
+				Config: testAccResourceConfig(folderType, folderDataUpdatedTitle, folderMetadataUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("turbot_resource.test"),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.test", "type", folderType),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.test", "data", helpers.FormatJson(folderDataUpdatedTitle)),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.test", "metadata", helpers.FormatJson(folderMetadataUpdated)),
 				),
 			},
 		},
@@ -52,31 +70,43 @@ func TestAccResourceFolder(t *testing.T) {
 
 // configs
 var folderType = `tmod:@turbot/turbot#/resource/types/folder`
-var folderBody = `{
+var folderData = `{
  "title": "provider_test",
  "description": "test resource"
 }
 `
-var folderBodyUpdatedTitle = `{
- "title": "provider_test_",
+var folderMetadata = `{
+ "c1": "custom1",
+ "c2": "custom2"
+}
+`
+var folderMetadataUpdated = `{
+ "c1": "custom1",
+ "c2": "custom3"
+}
+`
+var folderDataUpdatedTitle = `{
+ "title": "provider_test_updated",
  "description": "test resource"
 }
 `
-var folderBodyUpdatedDescription = `{
- "title": "provider_test_",
- "description": "test resource"
+var folderDataUpdatedDescription = `{
+ "title": "provider_test",
+ "description": "test resource_updated"
 }
 `
 
-func testAccResourceConfig(resourceType, body string) string {
+func testAccResourceConfig(resourceType, data, metadata string) string {
 	config := fmt.Sprintf(`
 resource "turbot_resource" "test" {
  parent = "tmod:@turbot/turbot#/"
  type = "%s"
- body =  <<EOF
+ data =  <<EOF
+%sEOF
+ metadata =  <<EOF
 %sEOF
 }
-`, resourceType, body)
+`, resourceType, data, metadata)
 	return config
 }
 
@@ -90,7 +120,7 @@ func testAccCheckResourceExists(resource string) resource.TestCheckFunc {
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No Record ID is set")
 		}
-		client := testAccProvider.Meta().(*apiclient.Client)
+		client := testAccProvider.Meta().(*apiClient.Client)
 		_, err := client.ReadResource(rs.Primary.ID, nil)
 		if err != nil {
 			return fmt.Errorf("error fetching item with resource %s. %s", resource, err)
@@ -100,17 +130,16 @@ func testAccCheckResourceExists(resource string) resource.TestCheckFunc {
 }
 
 func testAccCheckResourceDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*apiclient.Client)
+	client := testAccProvider.Meta().(*apiClient.Client)
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "resource" {
-			continue
-		}
-		_, err := client.ReadResource(rs.Primary.ID, nil)
-		if err == nil {
-			return fmt.Errorf("Alert still exists")
-		}
-		if !apiclient.NotFoundError(err) {
-			return fmt.Errorf("expected 'not found' error, got %s", err)
+		if rs.Type == "turbot_resource" {
+			_, err := client.ReadResource(rs.Primary.ID, nil)
+			if err == nil {
+				return fmt.Errorf("Alert still exists")
+			}
+			if !apiClient.NotFoundError(err) {
+				return fmt.Errorf("expected 'not found' error, got %s", err)
+			}
 		}
 	}
 

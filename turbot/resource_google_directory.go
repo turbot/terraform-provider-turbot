@@ -2,19 +2,20 @@ package turbot
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
+	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 )
 
 // these are the properties which must be passed to a create/update call
 // each element in the array is either a map, defining an explicit mapping, or a string, which is the terraform property name
 // this is automatically mapped to the turbot property name by converting snake -> camel case
-var googleDirectoryProperties = []interface{}{
+var googleDirectoryDataProperties = []interface{}{
 	// explicit mapping
 	map[string]string{"client_id": "clientID"},
 	// implicit mappings
 	"title", "pool_id", "profile_id_template", "group_id_template", "login_name_template", "client_secret", "hosted_name", "description"}
 
-var googleDirectoryMetadataProperties = []interface{}{"tags"}
+var googleDirectoryInputProperties = []interface{}{"parent", "tags"}
 
 func resourceGoogleDirectory() *schema.Resource {
 	return &schema.Resource{
@@ -109,24 +110,22 @@ func resourceGoogleDirectory() *schema.Resource {
 }
 
 func resourceTurbotGoogleDirectoryExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	return client.ResourceExists(id)
 }
 
 func resourceTurbotGoogleDirectoryCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
-	parentAka := d.Get("parent").(string)
-	// build map of local directory properties
-	payload := map[string]map[string]interface{}{
-		"data":       mapFromResourceData(d, googleDirectoryProperties),
-		"turbotData": mapFromResourceData(d, googleDirectoryMetadataProperties),
-	}
-	// add computed properties to map
-	payload["data"]["status"] = "New"
-	payload["data"]["directoryType"] = "google"
+	client := meta.(*apiClient.Client)
+	// build mutation payload
+	input := mapFromResourceData(d, googleDirectoryInputProperties)
+	data := mapFromResourceData(d, googleDirectoryDataProperties)
+	// set computed properties
+	data["status"] = "Active"
+	data["directoryType"] = "google"
+	input["data"] = data
 
-	turbotMetadata, err := client.CreateGoogleDirectory(parentAka, payload)
+	turbotMetadata, err := client.CreateGoogleDirectory(input)
 	if err != nil {
 		return err
 	}
@@ -135,25 +134,25 @@ func resourceTurbotGoogleDirectoryCreate(d *schema.ResourceData, meta interface{
 		return err
 	}
 	// store client secret, encrypting if a pgp key was provided
-	err = storeClientSecret(d, payload["data"]["clientSecret"].(string))
+	err = storeClientSecret(d, data["clientSecret"].(string))
 	if err != nil {
 		return err
 	}
 	// assign the id
 	d.SetId(turbotMetadata.Id)
 	// assign computed properties
-	d.Set("status", payload["data"]["status"])
-	d.Set("directory_type", payload["data"]["directoryType"])
+	d.Set("status", data["status"])
+	d.Set("directory_type", data["directoryType"])
 	return nil
 }
 
 func resourceTurbotGoogleDirectoryRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 
 	googleDirectory, err := client.ReadGoogleDirectory(id)
 	if err != nil {
-		if apiclient.NotFoundError(err) {
+		if apiClient.NotFoundError(err) {
 			// directory was not found - clear id
 			d.SetId("")
 		}
@@ -175,18 +174,15 @@ func resourceTurbotGoogleDirectoryRead(d *schema.ResourceData, meta interface{})
 }
 
 func resourceTurbotGoogleDirectoryUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
-	parentAka := d.Get("parent").(string)
-	id := d.Id()
-
-	// build map of local directory properties
-	payload := map[string]map[string]interface{}{
-		"data":       mapFromResourceData(d, googleDirectoryProperties),
-		"turbotData": mapFromResourceData(d, googleDirectoryMetadataProperties),
-	}
+	client := meta.(*apiClient.Client)
+	// build mutation payload
+	input := mapFromResourceData(d, googleDirectoryInputProperties)
+	data := mapFromResourceData(d, googleDirectoryDataProperties)
+	input["data"] = data
+	input["id"] = d.Id()
 
 	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.UpdateGoogleDirectory(id, parentAka, payload)
+	turbotMetadata, err := client.UpdateGoogleDirectory(input)
 	if err != nil {
 		return err
 	}
@@ -195,11 +191,11 @@ func resourceTurbotGoogleDirectoryUpdate(d *schema.ResourceData, meta interface{
 		return err
 	}
 	// store client secret, encrypting if a pgp key was provided
-	return storeClientSecret(d, payload["data"]["clientSecret"].(string))
+	return storeClientSecret(d, data["clientSecret"].(string))
 }
 
 func resourceTurbotGoogleDirectoryDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	err := client.DeleteResource(id)
 	if err != nil {
@@ -221,7 +217,7 @@ func resourceTurbotGoogleDirectoryImport(d *schema.ResourceData, meta interface{
 // write client secret to ResourceData, encrypting if a pgp key was provided
 func storeClientSecret(d *schema.ResourceData, clientSecret string) error {
 	if pgpKey, ok := d.GetOk("pgp_key"); ok {
-		fingerprint, encrypted, err := encryptValue(pgpKey.(string), clientSecret)
+		fingerprint, encrypted, err := helpers.EncryptValue(pgpKey.(string), clientSecret)
 		if err != nil {
 			return err
 		}

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 	"testing"
 )
 
@@ -106,6 +106,19 @@ func TestAccMod(t *testing.T) {
 						"turbot_mod.test", "version_current", latestProviderTestVersion),
 				),
 			},
+			{
+				Config: testAccModNoParentConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccModExists("turbot_mod.test"),
+					testAccModExists("turbot_mod.test"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "org", "turbot"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "mod", "provider-test"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "version_current", "5.0.0"),
+				),
+			},
 		},
 	})
 }
@@ -187,6 +200,16 @@ resource "turbot_mod" "test" {
 `
 }
 
+func testAccModNoParentConfig() string {
+	return `
+resource "turbot_mod" "test"{
+	org = "turbot"
+	mod = "provider-test"
+	version = "5.0.0"
+}
+`
+}
+
 // helper functions
 func testAccModExists(resource string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
@@ -197,7 +220,7 @@ func testAccModExists(resource string) resource.TestCheckFunc {
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No Record ID is set")
 		}
-		client := testAccProvider.Meta().(*apiclient.Client)
+		client := testAccProvider.Meta().(*apiClient.Client)
 		_, err := client.ReadMod(rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("error fetching item with resource %s. %s", resource, err)
@@ -207,17 +230,16 @@ func testAccModExists(resource string) resource.TestCheckFunc {
 }
 
 func testAccModDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*apiclient.Client)
+	client := testAccProvider.Meta().(*apiClient.Client)
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "mod" {
-			continue
-		}
-		_, err := client.ReadMod(rs.Primary.ID)
-		if err == nil {
-			return fmt.Errorf("Alert still exists")
-		}
-		if !apiclient.NotFoundError(err) {
-			return fmt.Errorf("expected 'not found' error, got %s", err)
+		if rs.Type == "turbot_mod" {
+			_, err := client.ReadMod(rs.Primary.ID)
+			if err == nil {
+				return fmt.Errorf("Alert still exists")
+			}
+			if !apiClient.NotFoundError(err) {
+				return fmt.Errorf("expected 'not found' error, got %s", err)
+			}
 		}
 	}
 

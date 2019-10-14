@@ -2,12 +2,12 @@ package turbot
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 )
 
 // properties which must be passed to a create/update call
-var localDirectoryUserProperties = []interface{}{"title", "email", "status", "display_name", "given_name", "middle_name", "family_name", "picture"}
-var localDirectoryUserMetadataProperties = []interface{}{"tags"}
+var localDirectoryUserInputProperties = []interface{}{"parent", "tags"}
+var localDirectoryUserDataProperties = []interface{}{"title", "email", "status", "display_name", "given_name", "middle_name", "family_name", "picture"}
 
 func resourceTurbotLocalDirectoryUser() *schema.Resource {
 	return &schema.Resource{
@@ -84,24 +84,23 @@ func resourceTurbotLocalDirectoryUser() *schema.Resource {
 }
 
 func resourceTurbotLocalDirectoryUserExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	return client.ResourceExists(id)
 }
 
 func resourceTurbotLocalDirectoryUserCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
-	parentAka := d.Get("parent").(string)
-	// build mutation payload
-	payload := map[string]map[string]interface{}{
-		"data":       mapFromResourceData(d, localDirectoryUserProperties),
-		"turbotData": mapFromResourceData(d, localDirectoryUserMetadataProperties),
-	}
-	// set computed properties
-	payload["data"]["status"] = "Active"
+	client := meta.(*apiClient.Client)
 
-	// CreateLocalDirectoryUser returns turbot resource metadata containing the id
-	turbotMetadata, err := client.CreateLocalDirectoryUser(parentAka, payload)
+	// build mutation input
+	input := mapFromResourceData(d, localDirectoryUserInputProperties)
+	data := mapFromResourceData(d, localDirectoryUserDataProperties)
+	// set computed properties
+	data["status"] = "Active"
+	input["data"] = data
+
+	// do create
+	turbotMetadata, err := client.CreateLocalDirectoryUser(input)
 	if err != nil {
 		return err
 	}
@@ -111,20 +110,21 @@ func resourceTurbotLocalDirectoryUserCreate(d *schema.ResourceData, meta interfa
 	}
 	// assign the id
 	d.SetId(turbotMetadata.Id)
+	// TODO NEEDED?
+	// set the calculated properties
+	d.Set("status", data["status"])
 	return nil
 }
 
 func resourceTurbotLocalDirectoryUserUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
-	parentAka := d.Get("parent").(string)
+	client := meta.(*apiClient.Client)
 	// build mutation payload
-	payload := map[string]map[string]interface{}{
-		"data":       mapFromResourceData(d, localDirectoryUserProperties),
-		"turbotData": mapFromResourceData(d, localDirectoryUserMetadataProperties),
-	}
-	id := d.Id()
-	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.UpdateLocalDirectoryUserResource(id, parentAka, payload)
+	input := mapFromResourceData(d, localDirectoryUserInputProperties)
+	input["data"] = mapFromResourceData(d, localDirectoryUserDataProperties)
+	input["id"] = d.Id()
+
+	// do update
+	turbotMetadata, err := client.UpdateLocalDirectoryUserResource(input)
 	if err != nil {
 		return err
 	}
@@ -133,11 +133,11 @@ func resourceTurbotLocalDirectoryUserUpdate(d *schema.ResourceData, meta interfa
 }
 
 func resourceTurbotLocalDirectoryUserRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	localDirectoryUser, err := client.ReadLocalDirectoryUser(id)
 	if err != nil {
-		if apiclient.NotFoundError(err) {
+		if apiClient.NotFoundError(err) {
 			// folder was not found - clear id
 			d.SetId("")
 		}
@@ -161,7 +161,7 @@ func resourceTurbotLocalDirectoryUserRead(d *schema.ResourceData, meta interface
 }
 
 func resourceTurbotLocalDirectoryUserDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	err := client.DeleteResource(id)
 	if err != nil {

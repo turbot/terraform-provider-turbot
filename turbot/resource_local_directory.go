@@ -2,12 +2,12 @@ package turbot
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 )
 
 // these are the properties which must be passed to a create/update call
-var localDirectoryProperties = []interface{}{"title", "profile_id_template", "description"}
-var localDirectoryMetadataProperties = []interface{}{"tags"}
+var localDirectoryDataProperties = []interface{}{"title", "profile_id_template", "description"}
+var localDirectoryInputProperties = []interface{}{"parent", "tags"}
 
 func resourceTurbotLocalDirectory() *schema.Resource {
 	return &schema.Resource{
@@ -68,23 +68,23 @@ func resourceTurbotLocalDirectory() *schema.Resource {
 }
 
 func resourceTurbotLocalDirectoryExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	return client.ResourceExists(id)
 }
 
 func resourceTurbotLocalDirectoryCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
-	parentAka := d.Get("parent").(string)
-	// build mutation payload
-	payload := map[string]map[string]interface{}{
-		"data":       mapFromResourceData(d, localDirectoryProperties),
-		"turbotData": mapFromResourceData(d, localDirectoryMetadataProperties),
-	}
+	client := meta.(*apiClient.Client)
+	// build mutation input
+	input := mapFromResourceData(d, localDirectoryInputProperties)
+	data := mapFromResourceData(d, localDirectoryDataProperties)
 	// set computed properties
-	payload["data"]["status"] = "Active"
-	payload["data"]["directoryType"] = "local"
-	turbotMetadata, err := client.CreateLocalDirectory(parentAka, payload)
+	data["status"] = "Active"
+	data["directoryType"] = "local"
+	input["data"] = data
+
+	// do create
+	turbotMetadata, err := client.CreateLocalDirectory(input)
 	if err != nil {
 		return err
 	}
@@ -95,37 +95,19 @@ func resourceTurbotLocalDirectoryCreate(d *schema.ResourceData, meta interface{}
 	}
 	// assign the id
 	d.SetId(turbotMetadata.Id)
-	d.Set("status", payload["data"]["status"])
-	d.Set("directory_type", payload["data"]["directoryType"])
+	// TODO NEEDED??
+	d.Set("status", data["status"])
+	d.Set("directory_type", data["directoryType"])
 	return nil
 }
 
-func resourceTurbotLocalDirectoryUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
-	parentAka := d.Get("parent").(string)
-	id := d.Id()
-
-	// build mutation payload
-	payload := map[string]map[string]interface{}{
-		"data":       mapFromResourceData(d, localDirectoryProperties),
-		"turbotData": mapFromResourceData(d, localDirectoryMetadataProperties),
-	}
-	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.UpdateLocalDirectory(id, parentAka, payload)
-	if err != nil {
-		return err
-	}
-	// set parent_akas property by loading resource and fetching the akas
-	return storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
-}
-
 func resourceTurbotLocalDirectoryRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 
 	localDirectory, err := client.ReadLocalDirectory(id)
 	if err != nil {
-		if apiclient.NotFoundError(err) {
+		if apiClient.NotFoundError(err) {
 			// local directoery was not found - clear id
 			d.SetId("")
 		}
@@ -141,8 +123,24 @@ func resourceTurbotLocalDirectoryRead(d *schema.ResourceData, meta interface{}) 
 	return storeAkas(localDirectory.Turbot.ParentId, "parent_akas", d, meta)
 }
 
+func resourceTurbotLocalDirectoryUpdate(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*apiClient.Client)
+	// build mutation payload
+	input := mapFromResourceData(d, localDirectoryInputProperties)
+	input["data"] = mapFromResourceData(d, localDirectoryDataProperties)
+	input["id"] = d.Id()
+
+	// do update
+	turbotMetadata, err := client.UpdateLocalDirectory(input)
+	if err != nil {
+		return err
+	}
+	// set parent_akas property by loading resource and fetching the akas
+	return storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
+}
+
 func resourceTurbotLocalDirectoryDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	err := client.DeleteResource(id)
 	if err != nil {

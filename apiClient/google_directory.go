@@ -1,21 +1,16 @@
-package apiclient
+package apiClient
 
 import (
 	"fmt"
 )
 
-func (client *Client) CreateGoogleDirectory(parent string, commandPayload map[string]map[string]interface{}) (*TurbotResourceMetadata, error) {
+func (client *Client) CreateGoogleDirectory(input map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := createResourceMutation()
 	responseData := &CreateResourceResponse{}
-	commandMeta := map[string]string{
-		"typeAka":   "tmod:@turbot/turbot-iam#/resource/types/googleDirectory",
-		"parentAka": parent,
-	}
+	// set type in input data
+	input["type"] = "tmod:@turbot/turbot-iam#/resource/types/googleDirectory"
 	variables := map[string]interface{}{
-		"command": map[string]interface{}{
-			"payload": commandPayload,
-			"meta":    commandMeta,
-		},
+		"input": input,
 	}
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
@@ -25,6 +20,12 @@ func (client *Client) CreateGoogleDirectory(parent string, commandPayload map[st
 }
 
 func (client *Client) ReadGoogleDirectory(id string) (*GoogleDirectory, error) {
+	/*
+		GoogleDirectory read response has clientSecret attribute,
+		which is fetched from getSecret(path:"clientSecret") and
+		not from get() resolver.
+		That's why we used separate query and not readResourceQuery()
+	*/
 	query := readGoogleDirectoryQuery(id)
 	responseData := &ReadGoogleDirectoryResponse{}
 
@@ -35,20 +36,11 @@ func (client *Client) ReadGoogleDirectory(id string) (*GoogleDirectory, error) {
 	return &responseData.Directory, nil
 }
 
-func (client *Client) UpdateGoogleDirectory(id, parent string, commandPayload map[string]map[string]interface{}) (*TurbotResourceMetadata, error) {
+func (client *Client) UpdateGoogleDirectory(input map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := updateResourceMutation()
 	responseData := &UpdateResourceResponse{}
-	// add akas to turbotData
-	commandPayload["turbotData"]["akas"] = []string{id}
-	commandMeta := map[string]interface{}{
-		"typeAka":   "tmod:@turbot/turbot-iam#/resource/types/localDirectory",
-		"parentAka": parent,
-	}
 	variables := map[string]interface{}{
-		"command": map[string]interface{}{
-			"payload": commandPayload,
-			"meta":    commandMeta,
-		},
+		"input": input,
 	}
 
 	// execute api call

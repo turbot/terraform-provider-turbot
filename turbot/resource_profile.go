@@ -2,11 +2,12 @@ package turbot
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 )
 
 // properties which must be passed to a create/update call
-var profileProperties = []interface{}{"title", "status", "display_name", "given_name", "family_name", "email", "directory_pool_id", "profile_id"}
+var profileInputProperties = []interface{}{"parent"}
+var profileDataProperties = []interface{}{"title", "status", "display_name", "given_name", "family_name", "email", "directory_pool_id", "profile_id"}
 
 func resourceTurbotProfile() *schema.Resource {
 	return &schema.Resource{
@@ -89,19 +90,19 @@ func resourceTurbotProfile() *schema.Resource {
 }
 
 func resourceTurbotProfileExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	return client.ResourceExists(id)
 }
 
 func resourceTurbotProfileCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
-	parentAka := d.Get("parent").(string)
+	client := meta.(*apiClient.Client)
+	// build mutation data
+	input := mapFromResourceData(d, profileInputProperties)
+	input["data"] = mapFromResourceData(d, profileDataProperties)
 
-	// build map of profile properties
-	data := mapFromResourceData(d, profileProperties)
-	// create profile returns turbot resource metadata containing the id
-	turbotMetadata, err := client.CreateProfile(parentAka, data)
+	// do create
+	turbotMetadata, err := client.CreateProfile(input)
 	if err != nil {
 		return err
 	}
@@ -116,30 +117,13 @@ func resourceTurbotProfileCreate(d *schema.ResourceData, meta interface{}) error
 	return nil
 }
 
-func resourceTurbotProfileUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
-	parentAka := d.Get("parent").(string)
-	id := d.Id()
-
-	// build map of profile properties
-	data := mapFromResourceData(d, folderDataProperties)
-
-	// create profile returns turbot resource metadata containing the id
-	turbotMetadata, err := client.UpdateProfile(id, parentAka, data)
-	if err != nil {
-		return err
-	}
-	// set parent_akas property by loading resource and fetching the akas
-	return storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
-}
-
 func resourceTurbotProfileRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 
 	profile, err := client.ReadProfile(id)
 	if err != nil {
-		if apiclient.NotFoundError(err) {
+		if apiClient.NotFoundError(err) {
 			// profile was not found - clear id
 			d.SetId("")
 		}
@@ -158,8 +142,24 @@ func resourceTurbotProfileRead(d *schema.ResourceData, meta interface{}) error {
 	return storeAkas(profile.Turbot.ParentId, "parent_akas", d, meta)
 }
 
+func resourceTurbotProfileUpdate(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*apiClient.Client)
+	// build mutation data
+	input := mapFromResourceData(d, profileInputProperties)
+	input["data"] = mapFromResourceData(d, profileDataProperties)
+	input["id"] = d.Id()
+
+	// do create
+	turbotMetadata, err := client.UpdateProfile(input)
+	if err != nil {
+		return err
+	}
+	// set parent_akas property by loading resource and fetching the akas
+	return storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
+}
+
 func resourceTurbotProfileDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	err := client.DeleteResource(id)
 	if err != nil {
@@ -168,7 +168,6 @@ func resourceTurbotProfileDelete(d *schema.ResourceData, meta interface{}) error
 
 	// clear the id to show we have deleted
 	d.SetId("")
-
 	return nil
 }
 

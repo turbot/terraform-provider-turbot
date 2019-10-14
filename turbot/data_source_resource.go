@@ -1,21 +1,28 @@
 package turbot
 
 import (
-	"encoding/json"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 )
 
 func dataSourceTurbotResource() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceTurbotResourceRead,
 		Schema: map[string]*schema.Schema{
-			"aka": {
+			"id": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"id": {
+			"data": {
 				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"metadata": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"tags": {
+				Type:     schema.TypeMap,
 				Computed: true,
 			},
 			"akas": {
@@ -25,41 +32,30 @@ func dataSourceTurbotResource() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"parent_id": {
-				Type:     schema.TypeString,
+			"turbot": {
+				Type:     schema.TypeMap,
 				Computed: true,
-			},
-			"json_data": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 		},
 	}
 }
 
 func dataSourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
-	aka := d.Get("aka").(string)
-
-	resource, err := client.ReadFullResource(aka)
-	if err != nil && !apiclient.NotFoundError(err) {
+	client := meta.(*apiClient.Client)
+	resourceAka := d.Get("id").(string)
+	resource, err := client.ReadSerializableResource(resourceAka)
+	if err != nil && !apiClient.NotFoundError(err) {
 		return err
 	}
 
-	// assign results back into ResourceData
-	if err != nil {
-		return err
-	}
-
-	dataBytes, err := json.MarshalIndent(resource.Object, "", " ")
-	if err != nil {
-		return err
-	}
-	data := string(dataBytes)
-	d.SetId(resource.Turbot.Id)
-	d.Set("id", resource.Turbot.Id)
-	d.Set("akas", resource.Turbot.Akas)
-	d.Set("parent_id", resource.Turbot.ParentId)
-	d.Set("json_data", data)
+	d.SetId(resource.Turbot["id"])
+	d.Set("data", resource.Data)
+	d.Set("metadata", resource.Metadata)
+	d.Set("tags", resource.Tags)
+	d.Set("akas", resource.Akas)
+	d.Set("turbot", resource.Turbot)
 	return nil
 }

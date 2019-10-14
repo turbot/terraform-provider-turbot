@@ -1,22 +1,18 @@
-package apiclient
+package apiClient
 
 import (
 	"fmt"
 )
 
-func (client *Client) CreateLocalDirectoryUser(parent string, commandPayload map[string]map[string]interface{}) (*TurbotResourceMetadata, error) {
+func (client *Client) CreateLocalDirectoryUser(input map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := createResourceMutation()
 	responseData := &CreateResourceResponse{}
-	commandMeta := map[string]string{
-		"typeAka":  "tmod:@turbot/turbot-iam#/resource/types/localDirectoryUser",
-		"parentId": parent,
-	}
+	// set type in input data
+	input["type"] = "tmod:@turbot/turbot-iam#/resource/types/localDirectoryUser"
 	variables := map[string]interface{}{
-		"command": map[string]interface{}{
-			"payload": commandPayload,
-			"meta":    commandMeta,
-		},
+		"input": input,
 	}
+
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error creating folder: %s", err.Error())
@@ -46,20 +42,11 @@ func (client *Client) ReadLocalDirectoryUser(id string) (*LocalDirectoryUser, er
 	return &responseData.Resource, nil
 }
 
-func (client *Client) UpdateLocalDirectoryUserResource(id, parent string, commandPayload map[string]map[string]interface{}) (*TurbotResourceMetadata, error) {
+func (client *Client) UpdateLocalDirectoryUserResource(input map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := updateResourceMutation()
 	responseData := &UpdateResourceResponse{}
-	// add akas to turbotData
-	commandPayload["turbotData"]["akas"] = []string{id}
-	commandMeta := map[string]interface{}{
-		"typeAka":  "tmod:@turbot/turbot-iam#/resource/types/localDirectoryUser",
-		"parentId": parent,
-	}
 	variables := map[string]interface{}{
-		"command": map[string]interface{}{
-			"payload": commandPayload,
-			"meta":    commandMeta,
-		},
+		"input": input,
 	}
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {

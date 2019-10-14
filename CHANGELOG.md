@@ -1,6 +1,29 @@
 
 
+## 1.0.0-beta.6 (October 14, 2019)
+
+ENHANCEMENTS:
+* Add support for credentials profiles. ([#57](https://github.com/turbotio/terraform-provider-turbot/issues/57))
+* Update `turbot_grant`: change arguments `permission_type` and `permission_level` to `type` and `level`. ([#92](https://github.com/turbotio/terraform-provider-turbot/issues/92))
+* Update `turbot_policy_setting` - rename `policy_type` to `type`. ([#87](https://github.com/turbotio/terraform-provider-turbot/issues/87)) 
+* Update `turbot_policy_value` - rename `policy_type` to `type`. ([#86](https://github.com/turbotio/terraform-provider-turbot/issues/86)) 
+* Update `turbot_resource` data provider schema. ([#42](https://github.com/turbotio/terraform-provider-turbot/issues/42))  
+* Update `turbot_mod` - default `parent` property to the turbot resource. ([#93](https://github.com/turbotio/terraform-provider-turbot/issues/93)) 
+* Update client to support renamed credentials environment variables `TURBOT_ACCESS_KEY` and `TURBOT_SECRET_KEY` ([#90](https://github.com/turbotio/terraform-provider-turbot/issues/90))
+
+TECHNICAL
+* Move MapFromResourceData and StoreAkas to helpers. ([#89](https://github.com/turbotio/terraform-provider-turbot/issues/89)) 
+* Update all resources to support new resource mutation schema.  ([#94](https://github.com/turbotio/terraform-provider-turbot/issues/94))
+* Create helpers package. ([#89](https://github.com/turbotio/terraform-provider-turbot/issues/89))
+  
+
+BUGFIXES
+* Update client.BuildApiUrl to require both workspace and installation domain to be provided (e.g. `bananaman-turbot.putney.turbot.io`, rather than just `bananaman-turbot.putney`) ([#98](https://github.com/turbotio/terraform-provider-turbot/issues/98))
+
 ## 1.0.0-beta.5 (October 03, 2019)
+
+BUGFIXES: 
+* turbot_mod failing to install mods. Add error handling to the code to check for existing mod. ([#82](https://github.com/turbotio/terraform-provider-turbot/issues/82))
 
 FEATURES:
 * **New Resource:** `turbot_grant_activation` ([#79](https://github.com/turbotio/terraform-provider-turbot/issues/79))

@@ -16,7 +16,7 @@ func TestAccResourceDataSource_Basic(t *testing.T) {
 				Config: testAccResourceDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.turbot_resource.test_resource", "parent_id", ""),
+						"data.turbot_resource.test_resource", "turbot.title", "provider_test"),
 				),
 			},
 		},
@@ -25,8 +25,14 @@ func TestAccResourceDataSource_Basic(t *testing.T) {
 }
 func testAccResourceDataSourceConfig() string {
 	return `
+resource "turbot_folder" "test" {
+	parent = "tmod:@turbot/turbot#/"
+	title = "provider_test"
+	description = "test folder for turbot terraform provider"
+}
+
 data "turbot_resource" "test_resource" {
-  aka = "tmod:@turbot/turbot#/"
+  id = turbot_folder.test.id
 }
 `
 }

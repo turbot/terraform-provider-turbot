@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/Masterminds/semver"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 	"log"
 	"time"
 )
@@ -24,11 +24,12 @@ func resourceTurbotMod() *schema.Resource {
 			// aka of the parent resource
 			"parent": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 				// when doing a diff, the state file will contain the id of the parent but the config contains the aka,
 				// so we need custom diff code
 				DiffSuppressFunc: suppressIfAkaMatches("parent_akas"),
 				ForceNew:         true,
+				Default:          "tmod:@turbot/turbot#/",
 			},
 			// when doing a read, fetch the parent akas to use in suppressIfAkaMatches
 			"parent_akas": {
@@ -102,13 +103,13 @@ func resourceTurbotModCustomizeDiff(d *schema.ResourceDiff, meta interface{}) er
 }
 
 func resourceTurbotModExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	return client.ResourceExists(id)
 }
 
 func resourceTurbotModInstall(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	org := d.Get("org").(string)
 	modName := d.Get("mod").(string)
 	modAka := buildModAka(org, modName)
@@ -120,7 +121,7 @@ func resourceTurbotModInstall(d *schema.ResourceData, meta interface{}) error {
 		id := mod.Turbot.Id
 		return fmt.Errorf("mod %s is already installed ( id: %s ). To manage this mod using Terraform, import the mod using command 'terraform import <resource_address> <id>'", modAka, id)
 	}
-	if !apiclient.NotFoundError(err) {
+	if !apiClient.NotFoundError(err) {
 		// if the error is not a 'not found' error, the mod is already installed
 		return err
 	}
@@ -134,7 +135,7 @@ func resourceTurbotModUpdate(d *schema.ResourceData, meta interface{}) error {
 
 // do the actual mode installation
 func modInstall(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	parentAka := d.Get("parent").(string)
 	org := d.Get("org").(string)
 	modName := d.Get("mod").(string)
@@ -168,11 +169,11 @@ func modInstall(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceTurbotModRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	mod, err := client.ReadMod(id)
 	if err != nil {
-		if apiclient.NotFoundError(err) {
+		if apiClient.NotFoundError(err) {
 			// mod was not found - clear id
 			d.SetId("")
 		}
@@ -209,7 +210,7 @@ func resourceTurbotModRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceTurbotModUninstall(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	err := client.UninstallMod(id)
 	if err != nil {
@@ -233,7 +234,7 @@ func buildModAka(org, mod string) string {
 	return fmt.Sprintf("tmod:@%s/%s", org, mod)
 }
 
-func waitForInstallation(modId, targetBuild string, client *apiclient.Client) (string, error) {
+func waitForInstallation(modId, targetBuild string, client *apiClient.Client) (string, error) {
 	retryCount := 0
 	// retry for 15 minutes
 	maxRetries := 40
@@ -257,7 +258,7 @@ func waitForInstallation(modId, targetBuild string, client *apiclient.Client) (s
 	return "", errors.New("Turbot mod installation timed out")
 }
 
-func getInstalledModVersion(modId string, client *apiclient.Client) (version, build string, err error) {
+func getInstalledModVersion(modId string, client *apiClient.Client) (version, build string, err error) {
 	properties := map[string]string{
 		"version": "version",
 		"build":   "build",
@@ -278,7 +279,7 @@ func getInstalledModVersion(modId string, client *apiclient.Client) (version, bu
 }
 
 func getLatestCompatibleVersion(org, modName, version string, meta interface{}) (string, error) {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	modVersions, err := client.GetModVersions(org, modName)
 	if err != nil {
 		return "", err

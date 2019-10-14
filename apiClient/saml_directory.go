@@ -1,21 +1,16 @@
-package apiclient
+package apiClient
 
 import (
 	"fmt"
 )
 
-func (client *Client) CreateFolder(parent string, commandPayload map[string]map[string]interface{}) (*TurbotResourceMetadata, error) {
+func (client *Client) CreateSamlDirectory(input map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := createResourceMutation()
 	responseData := &CreateResourceResponse{}
-	commandMeta := map[string]string{
-		"typeAka":   "tmod:@turbot/turbot#/resource/types/folder",
-		"parentAka": parent,
-	}
+	// set type in input data
+	input["type"] = "tmod:@turbot/turbot-iam#/resource/types/samlDirectory"
 	variables := map[string]interface{}{
-		"command": map[string]interface{}{
-			"payload": commandPayload,
-			"meta":    commandMeta,
-		},
+		"input": input,
 	}
 
 	// execute api call
@@ -25,15 +20,18 @@ func (client *Client) CreateFolder(parent string, commandPayload map[string]map[
 	return &responseData.Resource.Turbot, nil
 }
 
-func (client *Client) ReadFolder(id string) (*Folder, error) {
+func (client *Client) ReadSamlDirectory(id string) (*SamlDirectory, error) {
 	// create a map of the properties we want the graphql query to return
 	properties := map[string]string{
-		"title":       "title",
-		"parent":      "turbot.parentId",
-		"description": "description",
+		"title":             "title",
+		"parent":            "turbot.parentId",
+		"description":       "description",
+		"status":            "status",
+		"directoryType":     "directoryType",
+		"profileIdTemplate": "profileIdTemplate",
 	}
 	query := readResourceQuery(id, properties)
-	responseData := &ReadFolderResponse{}
+	responseData := &ReadSamlDirectoryResponse{}
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
@@ -42,20 +40,11 @@ func (client *Client) ReadFolder(id string) (*Folder, error) {
 	return &responseData.Resource, nil
 }
 
-func (client *Client) UpdateFolder(id, parent string, commandPayload map[string]map[string]interface{}) (*TurbotResourceMetadata, error) {
+func (client *Client) UpdateSamlDirectory(input map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := updateResourceMutation()
 	responseData := &UpdateResourceResponse{}
-	// add akas to turbotData
-	commandPayload["turbotData"]["akas"] = []string{id}
-	commandMeta := map[string]interface{}{
-		"typeAka":   "tmod:@turbot/turbot#/resource/types/folder",
-		"parentAka": parent,
-	}
 	variables := map[string]interface{}{
-		"command": map[string]interface{}{
-			"payload": commandPayload,
-			"meta":    commandMeta,
-		},
+		"input": input,
 	}
 
 	// execute api call

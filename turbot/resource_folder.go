@@ -2,12 +2,12 @@ package turbot
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 )
 
 // properties which must be passed to a create/update call
 var folderDataProperties = []interface{}{"title", "description"}
-var folderMetadataProperties = []interface{}{"tags"}
+var folderInputProperties = []interface{}{"parent", "tags"}
 
 func resourceTurbotFolder() *schema.Resource {
 	return &schema.Resource{
@@ -56,22 +56,20 @@ func resourceTurbotFolder() *schema.Resource {
 }
 
 func resourceTurbotFolderExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	return client.ResourceExists(id)
 }
 
 func resourceTurbotFolderCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
-	parentAka := d.Get("parent").(string)
-	// build mutation payload
-	payload := map[string]map[string]interface{}{
-		"data":       mapFromResourceData(d, folderDataProperties),
-		"turbotData": mapFromResourceData(d, folderMetadataProperties),
-	}
+	client := meta.(*apiClient.Client)
+
+	// build mutation input
+	input := mapFromResourceData(d, folderInputProperties)
+	input["data"] = mapFromResourceData(d, folderDataProperties)
 
 	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.CreateFolder(parentAka, payload)
+	turbotMetadata, err := client.CreateFolder(input)
 	if err != nil {
 		return err
 	}
@@ -87,17 +85,15 @@ func resourceTurbotFolderCreate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceTurbotFolderUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
-	parentAka := d.Get("parent").(string)
-	id := d.Id()
+	client := meta.(*apiClient.Client)
 
 	// build mutation payload
-	payload := map[string]map[string]interface{}{
-		"data":       mapFromResourceData(d, folderDataProperties),
-		"turbotData": mapFromResourceData(d, folderMetadataProperties),
-	}
+	input := mapFromResourceData(d, folderInputProperties)
+	input["data"] = mapFromResourceData(d, folderDataProperties)
+	input["id"] = d.Id()
+
 	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.UpdateFolder(id, parentAka, payload)
+	turbotMetadata, err := client.UpdateFolder(input)
 	if err != nil {
 		return err
 	}
@@ -106,12 +102,12 @@ func resourceTurbotFolderUpdate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceTurbotFolderRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 
 	folder, err := client.ReadFolder(id)
 	if err != nil {
-		if apiclient.NotFoundError(err) {
+		if apiClient.NotFoundError(err) {
 			// folder was not found - clear id
 			d.SetId("")
 		}
@@ -127,7 +123,7 @@ func resourceTurbotFolderRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceTurbotFolderDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	id := d.Id()
 	err := client.DeleteResource(id)
 	if err != nil {

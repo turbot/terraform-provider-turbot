@@ -3,7 +3,7 @@ package turbot
 import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-turbot/apiclient"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 	"log"
 	"strings"
 )
@@ -33,7 +33,7 @@ func resourceTurbotSmartFolderAttachemnt() *schema.Resource {
 }
 
 func resourceTurbotSmartFolderAttachmentExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	smartFolderId, resource := parseId(d.Id())
 	// execute api call
 	smartFolder, err := client.ReadSmartFolder(smartFolderId)
@@ -60,7 +60,7 @@ func resourceTurbotSmartFolderAttachmentExists(d *schema.ResourceData, meta inte
 }
 
 func resourceTurbotSmartFolderAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	resource := d.Get("resource").(string)
 	smartFolder := d.Get("smart_folder").(string)
 	// create folder returns turbot resource metadata containing the id
@@ -86,7 +86,7 @@ func resourceTurbotSmartFolderAttachmentRead(d *schema.ResourceData, meta interf
 }
 
 func resourceTurbotSmartFolderAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*apiclient.Client)
+	client := meta.(*apiClient.Client)
 	resource := d.Get("resource").(string)
 	smartFolder := d.Get("smart_folder").(string)
 	err := client.DeleteSmartFolderAttachment(resource, smartFolder)
