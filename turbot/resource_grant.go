@@ -7,12 +7,7 @@ import (
 
 // map of Terraform properties to Turbot properties that we pass to create and update mutations
 // NOTE: use a map instead of an array like other resources as we cannot automatically map the names
-var grantDataMap = map[string]string{
-	"profile":  "identity",
-	"type":     "type",
-	"level":    "level",
-	"resource": "resource",
-}
+var grantInputProperties = []interface{}{"identity", "type", "level", "resource"}
 
 func resourceTurbotGrant() *schema.Resource {
 	return &schema.Resource{
@@ -49,13 +44,13 @@ func resourceTurbotGrant() *schema.Resource {
 				DiffSuppressFunc: suppressIfAkaMatches("permission_level_akas"),
 				ForceNew:         true,
 			},
-			"profile": {
+			"identity": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
-				// when doing a diff, the state file will contain the id of the profile but the config contains the aka,
+				// when doing a diff, the state file will contain the id of the identity but the config contains the aka,
 				// so we need custom diff code
-				DiffSuppressFunc: suppressIfAkaMatches("profile_akas"),
+				DiffSuppressFunc: suppressIfAkaMatches("identity_akas"),
 			},
 			"resource_akas": {
 				Type:     schema.TypeList,
@@ -78,8 +73,7 @@ func resourceTurbotGrant() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			// we need to store resource, profile, permisisonTyp and permissionLevel akas to use in suppressIfAkaMatches
-			"profile_akas": {
+			"identity_akas": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Schema{
@@ -99,11 +93,11 @@ func resourceTurbotGrantExists(d *schema.ResourceData, meta interface{}) (b bool
 func resourceTurbotGrantCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
 	resourceAka := d.Get("resource").(string)
-	profileAka := d.Get("profile").(string)
+	identityAka := d.Get("identity").(string)
 	permissionTypeAka := d.Get("type").(string)
 	permissionLevelAka := d.Get("level").(string)
 	// build map of Grant properties
-	input := mapFromResourceDataWithPropertyMap(d, grantDataMap)
+	input := mapFromResourceData(d, grantInputProperties)
 	// create Grant returns turbot resource metadata containing the id
 	TurbotGrantMetadata, err := client.CreateGrant(input)
 	if err != nil {
@@ -114,7 +108,7 @@ func resourceTurbotGrantCreate(d *schema.ResourceData, meta interface{}) error {
 	if err := storeAkas(resourceAka, "resource_akas", d, meta); err != nil {
 		return err
 	}
-	if err := storeAkas(profileAka, "profile_akas", d, meta); err != nil {
+	if err := storeAkas(identityAka, "identity_akas", d, meta); err != nil {
 		return err
 	}
 	if err := storeAkas(permissionTypeAka, "permission_type_akas", d, meta); err != nil {
@@ -145,14 +139,14 @@ func resourceTurbotGrantRead(d *schema.ResourceData, meta interface{}) error {
 	// assign results back into ResourceData
 	d.Set("level", Grant.PermissionLevelId)
 	d.Set("type", Grant.PermissionTypeId)
-	d.Set("profile", Grant.Turbot.ProfileId)
+	d.Set("identity", Grant.Turbot.ProfileId)
 	d.Set("resource", Grant.Turbot.ResourceId)
 
 	// set akas properties by loading resource and fetching the akas
 	if err := storeAkas(Grant.Turbot.ResourceId, "resource_akas", d, meta); err != nil {
 		return err
 	}
-	if err := storeAkas(Grant.Turbot.ProfileId, "profile_akas", d, meta); err != nil {
+	if err := storeAkas(Grant.Turbot.ProfileId, "identity_akas", d, meta); err != nil {
 		return err
 	}
 	if err := storeAkas(Grant.PermissionTypeId, "permission_type_akas", d, meta); err != nil {

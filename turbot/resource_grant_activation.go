@@ -5,10 +5,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 )
 
-var grantActivationDataMap = map[string]string{
-	"grant":    "grant",
-	"resource": "resource",
-}
+var grantActivationInputProperties = []interface{}{"grant", "resource"}
 
 func resourceTurbotGrantActivation() *schema.Resource {
 	return &schema.Resource{
@@ -57,7 +54,7 @@ func resourceTurbotGrantActivateExists(d *schema.ResourceData, meta interface{})
 func resourceTurbotGrantActivateCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
 	resourceAka := d.Get("resource").(string)
-	input := mapFromResourceDataWithPropertyMap(d, grantActivationDataMap)
+	input := mapFromResourceData(d, grantActivationInputProperties)
 	TurbotGrantMetadata, err := client.CreateGrantActivation(input)
 	if err != nil {
 		return err
@@ -102,7 +99,6 @@ func resourceTurbotGrantActivateDelete(d *schema.ResourceData, meta interface{})
 
 	// clear the id to show we have deleted
 	d.SetId("")
-
 	return nil
 }
 
