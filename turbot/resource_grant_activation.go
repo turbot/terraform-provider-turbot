@@ -5,6 +5,11 @@ import (
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 )
 
+var grantActivationDataMap = map[string]string{
+	"grant":    "grant",
+	"resource": "resource",
+}
+
 func resourceTurbotGrantActivation() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceTurbotGrantActivateCreate,
@@ -52,8 +57,8 @@ func resourceTurbotGrantActivateExists(d *schema.ResourceData, meta interface{})
 func resourceTurbotGrantActivateCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
 	resourceAka := d.Get("resource").(string)
-	grant := d.Get("grant").(string)
-	TurbotGrantMetadata, err := client.CreateGrantActivation(grant, resourceAka)
+	input := mapFromResourceDataWithPropertyMap(d, grantActivationDataMap)
+	TurbotGrantMetadata, err := client.CreateGrantActivation(input)
 	if err != nil {
 		return err
 	}

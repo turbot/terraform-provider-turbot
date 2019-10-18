@@ -8,6 +8,12 @@ import (
 	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 )
 
+var policySettingInputProperties = []interface{}{"value", "precedence", "template", "template_input", "note", "valid_from_timestamp", "valid_to_timestamp", "type", "resource"}
+
+func getPolicySettingUpdateProperties() []interface{} {
+	excludedProperties := []string{"type", "resource"}
+	return helpers.RemoveProperties(policySettingInputProperties, excludedProperties)
+}
 func resourceTurbotPolicySetting() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceTurbotPolicySettingCreate,
@@ -122,24 +128,24 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 	//	reject invalid values
 	// 1) pass value as 'value'
 	// 2) pass value as 'valueSource'. update d.value to be the yaml parsed version of 'value'
-	commandPayload := buildPayload(d)
-	setting, err := client.CreatePolicySetting(policyTypeUri, resourceAka, commandPayload)
+	input := mapFromResourceData(d, policySettingInputProperties)
+	setting, err := client.CreatePolicySetting(input)
 	if err != nil {
 		if !apiClient.FailedValidationError(err) {
 			d.SetId("")
 			return err
 		}
 		// so we have a data validation error, try the value source
-		commandPayload["valueSource"] = commandPayload["value"]
-		delete(commandPayload, "value")
+		input["valueSource"] = input["value"]
+		delete(input, "value")
 		// try again
-		setting, err = client.CreatePolicySetting(policyTypeUri, resourceAka, commandPayload)
+		setting, err = client.CreatePolicySetting(input)
 		if err != nil {
 			d.SetId("")
 			return err
 		}
 		// update state value setting with yaml parsed valueSource
-		setValueFromValueSource(commandPayload["valueSource"], d)
+		setValueFromValueSource(input["valueSource"].(string), d)
 	}
 	// if pgp_key has been supplied, encrypt value and value_source
 	storeValue(d, setting)
@@ -188,25 +194,25 @@ func resourceTurbotPolicySettingUpdate(d *schema.ResourceData, meta interface{})
 	//	reject invalid values
 	// 1) pass value as 'value'
 	// 2) pass value as 'valueSource'. update d.value to be the yaml parsed version of 'value'
-	commandPayload := buildPayload(d)
-
-	err := client.UpdatePolicySetting(id, commandPayload)
+	input := mapFromResourceData(d, getPolicySettingUpdateProperties())
+	input["id"] = id
+	err := client.UpdatePolicySetting(input)
 	if err != nil {
 		if !apiClient.FailedValidationError(err) {
 			d.SetId("")
 			return err
 		}
 		// so we have a data validation error - try using value as valueSource
-		commandPayload["valueSource"] = commandPayload["value"]
-		delete(commandPayload, "value")
+		input["valueSource"] = input["value"]
+		delete(input, "value")
 		// try again
-		err := client.UpdatePolicySetting(id, commandPayload)
+		err := client.UpdatePolicySetting(input)
 		if err != nil {
 			d.SetId("")
 			return err
 		}
 		// update state value setting with yaml parsed valueSource
-		setValueFromValueSource(commandPayload["valueSource"], d)
+		setValueFromValueSource(input["valueSource"].(string), d)
 	}
 
 	return nil

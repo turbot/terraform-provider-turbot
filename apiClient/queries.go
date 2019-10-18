@@ -57,8 +57,8 @@ func validationQuery() (string, ValidationResponse) {
 
 // policySetting
 func createPolicySettingMutation() string {
-	return `mutation Create($command: PolicyCommandInput) {
-	policySetting: policyCreate(command: $command ) {
+	return `mutation CreatePolicySetting($input: CreatePolicySettingInput!) {
+	policySetting: createPolicySetting(input: $input ) {
 		value: secretValue
 		valueSource: secretValueSource
 		template
@@ -97,8 +97,8 @@ policySetting(id:"%s") {
 }
 
 func updatePolicySettingMutation() string {
-	return `mutation Update($command: PolicyCommandInput) {
-	policySetting: policyUpdate(command: $command ) {
+	return `mutation UpdatePolicySetting($input: UpdatePolicySettingInput!) {
+	policySetting: updatePolicySetting(input: $input ) {
 		value: secretValue
 		valueSource: secretValueSource
 		template
@@ -117,8 +117,8 @@ func updatePolicySettingMutation() string {
 }
 
 func deletePolicySettingMutation() string {
-	return `mutation Delete($command: PolicyCommandInput) {
-	policySetting: policyDelete(command: $command ) {
+	return `mutation DeletePolicySetting($input: DeletePolicySettingInput!) {
+	policySetting: deletePolicySetting(input: $input ) {
 		value: secretValue
 		valueSource: secretValueSource
 		template
@@ -183,8 +183,8 @@ func readPolicyValueQuery(policyTypeUri string, resourceId string) string {
 
 // smart folder
 func createSmartFolderMutation() string {
-	return fmt.Sprintf(`mutation CreateSmartFolder($command: SmartFolderCommandInput) {
-		smartFolder: smartFolderCreate(command: $command) {
+	return fmt.Sprintf(`mutation CreateSmartFolder($input: CreateSmartFolderInput!) {
+		smartFolder: createSmartFolder(input: $input) {
 			turbot {
 				id
 				parentId
@@ -213,8 +213,8 @@ func readSmartFolderQuery(id string) string {
 }
 
 func updateSmartFolderMutation() string {
-	return fmt.Sprintf(`mutation UpdateSmartFolder($command: SmartFolderCommandInput) {
-		smartFolder: smartFolderUpdate(command: $command) {
+	return fmt.Sprintf(`mutation UpdateSmartFolder($input: UpdateSmartFolderInput!) {
+		smartFolder: updateSmartFolder(input: $input) {
 			turbot {
 				id
 				parentId
@@ -225,8 +225,8 @@ func updateSmartFolderMutation() string {
 }
 
 func createSmartFolderAttachmentMutation() string {
-	return fmt.Sprintf(`mutation AttachSmartFolder($command: SmartFolderCommandInput) {
-		smartFolderAttach(command: $command) {
+	return fmt.Sprintf(`mutation AttachSmartFolder($input: AttachSmartFolderInput!) {
+		attachSmartFolders(input: $input) {
 			turbot {
 				id
 			}
@@ -235,8 +235,8 @@ func createSmartFolderAttachmentMutation() string {
 }
 
 func detachSmartFolderAttachment() string {
-	return fmt.Sprintf(`mutation DetachSmartFolder($command: SmartFolderCommandInput) {
-		detachSmartFolder: smartFolderDetach(command: $command) {
+	return fmt.Sprintf(`mutation DetachSmartFolder($input: DetachSmartFolderInput!) {
+		detachSmartFolder: detachSmartFolders(input: $input) {
     		turbot {
 				id
 			}
@@ -246,8 +246,8 @@ func detachSmartFolderAttachment() string {
 
 // mod
 func installModMutation() string {
-	return `mutation InstallMod($command: ModCommandInput) {
-	mod: modInstall(command: $command) {
+	return `mutation InstallMod($input: InstallModInput!) {
+	mod: installMod(input: $input) {
 		turbot {
 			id
 			parentId
@@ -269,8 +269,8 @@ func readModQuery(modId string) string {
 }
 
 func uninstallModMutation() string {
-	return `mutation UninstallMod($command: ModCommandInput) {
-	modUninstall(command: $command) {
+	return `mutation UninstallMod($input: UninstallModInput!) {
+	uninstallMod(input: $input) {
 		success
 	}
 }`
@@ -386,21 +386,17 @@ func readGrantQuery(aka string) string {
 }
 
 func createGrantMutation() string {
-	return fmt.Sprintf(`mutation CreateGrant($command: GrantCommandInput) {
-	grants: grantCreate(command: $command) {
-		items{
+	return fmt.Sprintf(`mutation CreateGrant($input: CreateGrantInput!) {
+	grants: createGrant(input: $input) {
 %s
-		}
 	}
 }`, turbotGrantMetadataFragment("\t\t\t"))
 }
 
 func deleteGrantMutation() string {
-	return fmt.Sprintf(`mutation DeleteGrant($command: GrantCommandInput) {
- 	grant: grantDelete(command: $command) {
-		items {
+	return fmt.Sprintf(`mutation DeleteGrant($input: DeleteGrantInput!) {
+ 	grant: deleteGrant(input: $input) {
 %s
-		}
 	}
 }`, turbotGrantMetadataFragment("\t\t\t"))
 }
@@ -415,21 +411,17 @@ func readActiveGrantQuery(aka string) string {
 }
 
 func activateGrantMutation() string {
-	return fmt.Sprintf(`mutation ActivateGrant($command: GrantCommandInput) {
-	grantActivate: grantActivate(command: $command) {
-		items {
+	return fmt.Sprintf(`mutation ActivateGrant($input: ActivateGrantInput!) {
+	grantActivate: activateGrant(input: $input) {
 %s
-		}
 	}
 }`, turbotActiveGrantMetadataFragment("\t\t\t"))
 }
 
 func deactivateGrantMutation() string {
-	return fmt.Sprintf(`mutation DeactivateGrant($command: GrantCommandInput) {
-	grantDeactivate(command: $command) {
-		items {
+	return fmt.Sprintf(`mutation DeactivateGrant($input: DeactivateGrantInput!) {
+	deactivateGrant(input: $input) {
 %s
-		}
 	}
 }`, turbotActiveGrantMetadataFragment("\t\t\t"))
 }

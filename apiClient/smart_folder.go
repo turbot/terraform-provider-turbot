@@ -2,26 +2,14 @@ package apiClient
 
 import (
 	"fmt"
-	"log"
 )
 
-func (client *Client) CreateSmartFolder(parent string, data map[string]interface{}) (*TurbotResourceMetadata, error) {
+func (client *Client) CreateSmartFolder(input map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := createSmartFolderMutation()
 	responseData := &CreateSmartFolderResponse{}
-	var commandPayload = map[string]interface{}{
-		"data": data,
-	}
-	commandMeta := map[string]string{
-		"parentAka": parent,
-	}
 	variables := map[string]interface{}{
-		"command": map[string]interface{}{
-			"payload": commandPayload,
-			"meta":    commandMeta,
-		},
+		"input": input,
 	}
-
-	log.Println("resource", variables)
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
@@ -42,26 +30,12 @@ func (client *Client) ReadSmartFolder(id string) (*SmartFolder, error) {
 	return &responseData.SmartFolder, nil
 }
 
-func (client *Client) UpdateSmartFolder(id, parent string, data map[string]interface{}) (*TurbotResourceMetadata, error) {
+func (client *Client) UpdateSmartFolder(input map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := updateSmartFolderMutation()
 	responseData := &UpdateSmartFolderResponse{}
-	//var responseData interface{}
-	var commandPayload = map[string]map[string]interface{}{
-		"data": data,
-		"turbotData": {
-			"akas": []string{id},
-		},
-	}
-	commandMeta := map[string]interface{}{
-		"smartFolderId": id,
-	}
 	variables := map[string]interface{}{
-		"command": map[string]interface{}{
-			"payload": commandPayload,
-			"meta":    commandMeta,
-		},
+		"input": input,
 	}
-
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error updating smart folder: %s", err.Error())

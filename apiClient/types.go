@@ -137,7 +137,7 @@ type ModVersionResponse struct {
 }
 
 type UninstallModResponse struct {
-	ModUninstall struct {
+	UninstallMod struct {
 		Success bool
 	}
 }
@@ -153,9 +153,7 @@ type Mod struct {
 // Grant
 type CreateGrantResponse struct {
 	Grants struct {
-		Items []struct {
-			Turbot TurbotGrantMetadata
-		}
+		Turbot TurbotGrantMetadata
 	}
 }
 
@@ -172,9 +170,7 @@ type Grant struct {
 // Active Grant
 type ActivateGrantResponse struct {
 	GrantActivate struct {
-		Items []struct {
-			Turbot TurbotActiveGrantMetadata
-		}
+		Turbot TurbotActiveGrantMetadata
 	}
 }
 

@@ -8,6 +8,11 @@ import (
 	"strings"
 )
 
+var smartFolderAttachProperties = map[string]string{
+	"resource":     "resource",
+	"smart_folder": "smartFolders",
+}
+
 func resourceTurbotSmartFolderAttachemnt() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceTurbotSmartFolderAttachmentCreate,
@@ -63,8 +68,9 @@ func resourceTurbotSmartFolderAttachmentCreate(d *schema.ResourceData, meta inte
 	client := meta.(*apiClient.Client)
 	resource := d.Get("resource").(string)
 	smartFolder := d.Get("smart_folder").(string)
+	input := mapFromResourceDataWithPropertyMap(d, smartFolderAttachProperties)
 	// create folder returns turbot resource metadata containing the id
-	_, err := client.CreateSmartFolderAttachment(resource, smartFolder)
+	_, err := client.CreateSmartFolderAttachment(input)
 	if err != nil {
 		return err
 	}
@@ -87,9 +93,8 @@ func resourceTurbotSmartFolderAttachmentRead(d *schema.ResourceData, meta interf
 
 func resourceTurbotSmartFolderAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
-	resource := d.Get("resource").(string)
-	smartFolder := d.Get("smart_folder").(string)
-	err := client.DeleteSmartFolderAttachment(resource, smartFolder)
+	input := mapFromResourceDataWithPropertyMap(d, smartFolderAttachProperties)
+	err := client.DeleteSmartFolderAttachment(input)
 	if err != nil {
 		return err
 	}

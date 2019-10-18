@@ -4,18 +4,11 @@ import (
 	"fmt"
 )
 
-func (client *Client) CreatePolicySetting(policyTypeUri, resourceAka string, commandPayload interface{}) (*PolicySetting, error) {
+func (client *Client) CreatePolicySetting(input map[string]interface{}) (*PolicySetting, error) {
 	query := createPolicySettingMutation()
 	responseData := &PolicySettingResponse{}
-	commandMeta := map[string]string{
-		"policyTypeUri": policyTypeUri,
-		"resourceAka":   resourceAka,
-	}
 	variables := map[string]interface{}{
-		"command": map[string]interface{}{
-			"payload": commandPayload,
-			"meta":    commandMeta,
-		},
+		"input": input,
 	}
 
 	// execute api call
@@ -36,18 +29,12 @@ func (client *Client) ReadPolicySetting(id string) (*PolicySetting, error) {
 	return &responseData.PolicySetting, nil
 }
 
-func (client *Client) UpdatePolicySetting(id string, commandPayload interface{}) error {
+func (client *Client) UpdatePolicySetting(input map[string]interface{}) error {
 	query := updatePolicySettingMutation()
 	responseData := &PolicySettingResponse{}
 
-	commandMeta := map[string]string{
-		"policySettingId": id,
-	}
 	variables := map[string]interface{}{
-		"command": map[string]interface{}{
-			"payload": commandPayload,
-			"meta":    commandMeta,
-		},
+		"input": input,
 	}
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
@@ -59,13 +46,9 @@ func (client *Client) UpdatePolicySetting(id string, commandPayload interface{})
 func (client *Client) DeletePolicySetting(id string) error {
 	query := deletePolicySettingMutation()
 	responseData := &PolicySettingResponse{}
-
-	commandMeta := map[string]string{
-		"policySettingId": id,
-	}
 	variables := map[string]interface{}{
-		"command": map[string]interface{}{
-			"meta": commandMeta,
+		"input": map[string]string{
+			"id": id,
 		},
 	}
 	// execute api call

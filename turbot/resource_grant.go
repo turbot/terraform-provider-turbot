@@ -8,8 +8,10 @@ import (
 // map of Terraform properties to Turbot properties that we pass to create and update mutations
 // NOTE: use a map instead of an array like other resources as we cannot automatically map the names
 var grantDataMap = map[string]string{
-	"type":  "permissionTypeAka",
-	"level": "permissionLevelAka",
+	"profile":  "identity",
+	"type":     "type",
+	"level":    "level",
+	"resource": "resource",
 }
 
 func resourceTurbotGrant() *schema.Resource {
@@ -101,9 +103,9 @@ func resourceTurbotGrantCreate(d *schema.ResourceData, meta interface{}) error {
 	permissionTypeAka := d.Get("type").(string)
 	permissionLevelAka := d.Get("level").(string)
 	// build map of Grant properties
-	data := mapFromResourceDataWithPropertyMap(d, grantDataMap)
+	input := mapFromResourceDataWithPropertyMap(d, grantDataMap)
 	// create Grant returns turbot resource metadata containing the id
-	TurbotGrantMetadata, err := client.CreateGrant(profileAka, resourceAka, data)
+	TurbotGrantMetadata, err := client.CreateGrant(input)
 	if err != nil {
 		return err
 	}

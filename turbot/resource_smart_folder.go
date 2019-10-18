@@ -7,7 +7,7 @@ import (
 
 // properties which must be passed to a create/update call
 // TODO add filters here once we are consistent with the db
-var smartFolderProperties = []interface{}{"title", "description"}
+var smartFolderProperties = []interface{}{"title", "description", "parent"}
 
 func resourceTurbotSmartFolder() *schema.Resource {
 	return &schema.Resource{
@@ -60,16 +60,15 @@ func resourceTurbotSmartFolderExists(d *schema.ResourceData, meta interface{}) (
 
 func resourceTurbotSmartFolderCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
-	parentAka := d.Get("parent").(string)
 	// build map of folder properties
-	data := mapFromResourceData(d, smartFolderProperties)
+	input := mapFromResourceData(d, smartFolderProperties)
 	// TODO currently turbot accepts array of filters but only uses the first
 	if filter := d.Get("filter").(string); filter != "" {
-		data["filters"] = []string{filter}
+		input["filter"] = filter
 	}
 
 	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.CreateSmartFolder(parentAka, data)
+	turbotMetadata, err := client.CreateSmartFolder(input)
 	if err != nil {
 		return err
 	}
@@ -85,19 +84,17 @@ func resourceTurbotSmartFolderCreate(d *schema.ResourceData, meta interface{}) e
 
 func resourceTurbotSmartFolderUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
-	parentAka := d.Get("parent").(string)
 	id := d.Id()
 
 	// build map of folder properties
-	data := mapFromResourceData(d, smartFolderProperties)
+	input := mapFromResourceData(d, smartFolderProperties)
 	// TODO currently turbot accepts array of filters but only uses the first
 	if filter := d.Get("filter").(string); filter != "" {
-		data["filters"] = []string{filter}
+		input["filter"] = filter
 	}
-	//data["filters"] = []string{d.Get("filter").(string)}
-
+	input["id"] = id
 	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.UpdateSmartFolder(id, parentAka, data)
+	turbotMetadata, err := client.UpdateSmartFolder(input)
 	if err != nil {
 		return err
 	}

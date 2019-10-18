@@ -15,6 +15,7 @@ func MergeMaps(m1, m2 map[string]interface{}) {
 
 // given a list of items which may each be either a property or property map, remove the excluded properties
 func RemoveProperties(properties []interface{}, excluded []string) []interface{} {
+	var propertiesLen = len(properties)
 	for _, excludedProperty := range excluded {
 		for i, element := range properties {
 			// each element may be either a map, or a single property name
@@ -25,8 +26,12 @@ func RemoveProperties(properties []interface{}, excluded []string) []interface{}
 			} else {
 				// otherwise check if this property is excluded and remove if so
 				if element.(string) == excludedProperty {
-					properties = append(properties[:i], properties[i+1:]...)
-					break
+					if i+1 < propertiesLen {
+						properties = append(properties[:i-1], properties[i+1:]...)
+					} else {
+						properties = properties[:propertiesLen-1]
+						break
+					}
 				}
 			}
 		}

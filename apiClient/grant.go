@@ -4,27 +4,19 @@ import (
 	"fmt"
 )
 
-func (client *Client) CreateGrant(profileAka, resource string, data map[string]interface{}) (*TurbotGrantMetadata, error) {
+func (client *Client) CreateGrant(input map[string]interface{}) (*TurbotGrantMetadata, error) {
 	query := createGrantMutation()
 	responseData := &CreateGrantResponse{}
-	commandMeta := map[string]interface{}{
-		"resourceAka": resource,
-		"profileAka":  profileAka,
-	}
+
 	variables := map[string]interface{}{
-		"command": map[string]interface{}{
-			"commands": []map[string]interface{}{{
-				"payload": data,
-				"meta":    commandMeta,
-			}},
-		},
+		"input": input,
 	}
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error creating grant: %s", err.Error())
 	}
-	return &responseData.Grants.Items[0].Turbot, nil
+	return &responseData.Grants.Turbot, nil
 }
 
 func (client *Client) ReadGrant(id string) (*Grant, error) {
@@ -41,15 +33,9 @@ func (client *Client) ReadGrant(id string) (*Grant, error) {
 func (client *Client) DeleteGrant(id string) error {
 	query := deleteGrantMutation()
 	var responseData interface{}
-
-	commandMeta := map[string]interface{}{
-		"grantId": id,
-	}
 	variables := map[string]interface{}{
-		"command": map[string]interface{}{
-			"commands": []map[string]interface{}{{
-				"meta": commandMeta,
-			}},
+		"input": map[string]string{
+			"id": id,
 		},
 	}
 
