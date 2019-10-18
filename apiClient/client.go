@@ -170,7 +170,7 @@ func loadProfile(credentialsPath, profile string) (ClientCredentials, error) {
 	}
 	credentials := credentialsMap[profile]
 	if !CredentialsSet(credentials) {
-		return ClientCredentials{}, fmt.Errorf("failed to load all credentials for profile %s from credentials file %s", credentialsPath, profile)
+		return ClientCredentials{}, fmt.Errorf("failed to load all credentials for profile %s from credentials file %s", profile, credentialsPath)
 	}
 
 	return credentials, nil

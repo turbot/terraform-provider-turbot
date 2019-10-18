@@ -4,7 +4,7 @@
 
 ENHANCEMENTS:
 * Add support for credentials profiles. ([#57](https://github.com/turbotio/terraform-provider-turbot/issues/57))
-* Update `turbot_grant`: change arguments `permission_type` and `permission_level` to `type` and `level`. ([#92](https://github.com/turbotio/terraform-provider-turbot/issues/92))
+* Update `turbot_grant` - change arguments `permission_type` and `permission_level` to `type` and `level`. ([#92](https://github.com/turbotio/terraform-provider-turbot/issues/92))
 * Update `turbot_policy_setting` - rename `policy_type` to `type`. ([#87](https://github.com/turbotio/terraform-provider-turbot/issues/87)) 
 * Update `turbot_policy_value` - rename `policy_type` to `type`. ([#86](https://github.com/turbotio/terraform-provider-turbot/issues/86)) 
 * Update `turbot_resource` data provider schema. ([#42](https://github.com/turbotio/terraform-provider-turbot/issues/42))  
