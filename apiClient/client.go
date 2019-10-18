@@ -70,7 +70,10 @@ func GetCredentials(config ClientConfig) (ClientCredentials, error) {
 				return ClientCredentials{}, err
 			}
 		}
-
+		// if no profile was provided in config, use TURBOT_PROFILE env var
+		if len(config.Profile) == 0 {
+			config.Profile = os.Getenv("TURBOT_PROFILE")
+		}
 		credentials, err = loadProfile(config.CredentialsPath, config.Profile)
 		if err != nil {
 			return ClientCredentials{}, err
