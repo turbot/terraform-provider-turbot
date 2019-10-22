@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+var modInputProperties = []interface{}{"parent", "org", "mod", "version"}
+
 func resourceTurbotMod() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceTurbotModInstall,
@@ -136,13 +138,10 @@ func resourceTurbotModUpdate(d *schema.ResourceData, meta interface{}) error {
 // do the actual mode installation
 func modInstall(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
-	parentAka := d.Get("parent").(string)
-	org := d.Get("org").(string)
-	modName := d.Get("mod").(string)
-	versionRange := d.Get("version").(string)
 
 	// install mod returns turbot resource metadata containing the id
-	mod, err := client.InstallMod(parentAka, org, modName, versionRange)
+	input := mapFromResourceData(d, modInputProperties)
+	mod, err := client.InstallMod(input)
 	if err != nil {
 		log.Println("[ERROR] Turbot mod installation failed...", err)
 		return err

@@ -5,19 +5,12 @@ import (
 	"strings"
 )
 
-func (client *Client) InstallMod(parent, org, mod, version string) (*InstallModData, error) {
+func (client *Client) InstallMod(input map[string]interface{}) (*InstallModData, error) {
 	query := installModMutation()
 	responseData := &InstallModResponse{}
-	commandPayload := map[string]string{
-		"parentAka": parent,
-		"org":       org,
-		"mod":       mod,
-		"version":   version,
-	}
+
 	variables := map[string]interface{}{
-		"command": map[string]interface{}{
-			"payload": commandPayload,
-		},
+		"input": input,
 	}
 
 	// execute api call
@@ -60,12 +53,9 @@ func (client *Client) UninstallMod(modId string) error {
 	query := uninstallModMutation()
 	responseData := &UninstallModResponse{}
 
-	commandPayload := map[string]string{
-		"modResourceId": modId,
-	}
 	variables := map[string]interface{}{
-		"command": map[string]interface{}{
-			"payload": commandPayload,
+		"input": map[string]string{
+			"id": modId,
 		},
 	}
 
@@ -73,8 +63,8 @@ func (client *Client) UninstallMod(modId string) error {
 	if err := client.doRequest(query, variables, responseData); err != nil {
 		return fmt.Errorf("error uninstalling mod: %s", err.Error())
 	}
-	if !responseData.ModUninstall.Success {
-		return fmt.Errorf("modUninstall mutation ran with no errors but failed to uninstall the mod")
+	if !responseData.UninstallMod.Success {
+		return fmt.Errorf(" uninstallMod mutation ran with no errors but failed to uninstall the mod")
 	}
 
 	return nil

@@ -1,10 +1,23 @@
 
 
+## 1.0.0-beta.7 (October 22, 2019)
+
+BREAKING CHANGES
+* Update `turbot_grant` - change `profile` property to `identity` ([#106](https://github.com/turbotio/terraform-provider-turbot/issues/106)) 
+
+ENHANCEMENTS:
+* Update `turbot_grant` to use new mutations ([#109](https://github.com/turbotio/terraform-provider-turbot/issues/109))
+* Update `turbot_grant_activation` to use new mutations ([#110](https://github.com/turbotio/terraform-provider-turbot/issues/110))
+* Update `turbot_mod` to use new mutations ([#111](https://github.com/turbotio/terraform-provider-turbot/issues/111))
+* Update `turbot_policy_setting` to use new mutations ([#112](https://github.com/turbotio/terraform-provider-turbot/issues/112))
+* Update `turbot_smart_folder` to use new mutations ([#104](https://github.com/turbotio/terraform-provider-turbot/issues/104))
+* Update `turbot_smart_folder_attachment` to use new mutations ([#104](https://github.com/turbotio/terraform-provider-turbot/issues/104))
+
 ## 1.0.0-beta.6 (October 14, 2019)
 
 ENHANCEMENTS:
 * Add support for credentials profiles. ([#57](https://github.com/turbotio/terraform-provider-turbot/issues/57))
-* Update `turbot_grant`: change arguments `permission_type` and `permission_level` to `type` and `level`. ([#92](https://github.com/turbotio/terraform-provider-turbot/issues/92))
+* Update `turbot_grant` - change arguments `permission_type` and `permission_level` to `type` and `level`. ([#92](https://github.com/turbotio/terraform-provider-turbot/issues/92))
 * Update `turbot_policy_setting` - rename `policy_type` to `type`. ([#87](https://github.com/turbotio/terraform-provider-turbot/issues/87)) 
 * Update `turbot_policy_value` - rename `policy_type` to `type`. ([#86](https://github.com/turbotio/terraform-provider-turbot/issues/86)) 
 * Update `turbot_resource` data provider schema. ([#42](https://github.com/turbotio/terraform-provider-turbot/issues/42))  

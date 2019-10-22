@@ -4,27 +4,19 @@ import (
 	"fmt"
 )
 
-func (client *Client) CreateGrantActivation(grant, resourceAka string) (*TurbotActiveGrantMetadata, error) {
+func (client *Client) CreateGrantActivation(input map[string]interface{}) (*TurbotActiveGrantMetadata, error) {
 	query := activateGrantMutation()
 	responseData := &ActivateGrantResponse{}
-	//var responseData interface{}
-	commandMeta := map[string]interface{}{
-		"resourceAka": resourceAka,
-		"grantId":     grant,
-	}
+
 	variables := map[string]interface{}{
-		"command": map[string]interface{}{
-			"commands": []map[string]interface{}{{
-				"meta": commandMeta,
-			}},
-		},
+		"input": input,
 	}
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error creating grant: %s", err.Error())
 	}
-	return &responseData.GrantActivate.Items[0].Turbot, nil
+	return &responseData.GrantActivate.Turbot, nil
 }
 
 func (client *Client) ReadGrantActivation(id string) (*ActiveGrant, error) {
@@ -41,14 +33,9 @@ func (client *Client) DeleteGrantActivation(id string) error {
 	query := deactivateGrantMutation()
 	var responseData interface{}
 
-	commandMeta := map[string]interface{}{
-		"activationId": id,
-	}
 	variables := map[string]interface{}{
-		"command": map[string]interface{}{
-			"commands": []map[string]interface{}{{
-				"meta": commandMeta,
-			}},
+		"input": map[string]string{
+			"activation": id,
 		},
 	}
 

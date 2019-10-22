@@ -70,7 +70,7 @@ resource "turbot_grant" "test_grant" {
 	resource         = "tmod:@turbot/turbot#/"
 	type  = "tmod:@turbot/aws#/permission/types/aws"
 	level = "tmod:@turbot/turbot-iam#/permission/levels/superuser"
-	profile          = turbot_profile.test_profile.id
+	identity          = turbot_profile.test_profile.id
 }
 
 resource "turbot_grant_activation" "test_activation" {

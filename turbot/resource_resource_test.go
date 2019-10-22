@@ -99,11 +99,11 @@ var folderDataUpdatedDescription = `{
 func testAccResourceConfig(resourceType, data, metadata string) string {
 	config := fmt.Sprintf(`
 resource "turbot_resource" "test" {
- parent = "tmod:@turbot/turbot#/"
- type = "%s"
- data =  <<EOF
+	parent = "tmod:@turbot/turbot#/"
+	type = "%s"
+	data =  <<EOF
 %sEOF
- metadata =  <<EOF
+	metadata =  <<EOF
 %sEOF
 }
 `, resourceType, data, metadata)
