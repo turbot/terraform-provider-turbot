@@ -29,18 +29,18 @@ func TestAccShadowResource(t *testing.T) {
 // configs
 func testAccShadowResourceConfig() string {
 	return `
-    resource "aws_s3_bucket" "my_bucket" {
-  		bucket = "shadow-resource-test"
-	}
-	resource "turbot_shadow_resource" "shadow_resource1" {
-  		filter    = "resource:${aws_s3_bucket.my_bucket.arn}"
-	}
-	resource "turbot_policy_setting" "s3_bucket_versioning1" {
-  		resource = "${turbot_shadow_resource.shadow_resource1.id}"
-  		policy_type = "tmod:@turbot/aws-s3#/policy/types/bucketVersioning"
-  		value = "Enforce: Disabled"
-  		precedence = "must"
-	}
+resource "aws_s3_bucket" "my_bucket" {
+	bucket = "shadow-resource-test"
+}
+resource "turbot_shadow_resource" "shadow_resource1" {
+	filter    = "resource:${aws_s3_bucket.my_bucket.arn}"
+}
+resource "turbot_policy_setting" "s3_bucket_versioning1" {
+	resource = "${turbot_shadow_resource.shadow_resource1.id}"
+	policy_type = "tmod:@turbot/aws-s3#/policy/types/bucketVersioning"
+	value = "Enforce: Disabled"
+	precedence = "must"
+}
 `
 }
 

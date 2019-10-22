@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/hashicorp/terraform/helper/encryption"
 	"reflect"
-	"sort"
 )
 
 func MergeMaps(m1, m2 map[string]interface{}) {
@@ -15,46 +14,39 @@ func MergeMaps(m1, m2 map[string]interface{}) {
 
 // given a list of items which may each be either a property or property map, remove the excluded properties
 func RemoveProperties(properties []interface{}, excluded []string) []interface{} {
-	var propertiesLen = len(properties)
-	for _, excludedProperty := range excluded {
-		for i, element := range properties {
-			// each element may be either a map, or a single property name
-			terraformToTurbotMap, ok := element.(map[string]interface{})
-			if ok {
-				// if the element is a map, remove excluded items from map
-				properties[i] = RemovePropertiesFromMap(terraformToTurbotMap, excluded)
-			} else {
-				// otherwise check if this property is excluded and remove if so
-				if element.(string) == excludedProperty {
-					if i+1 < propertiesLen {
-						properties = append(properties[:i-1], properties[i+1:]...)
-					} else {
-						properties = properties[:propertiesLen-1]
-						break
-					}
-				}
+	var result []interface{}
+	for _, element := range properties {
+		// each element may be either a map, or a single property name
+		terraformToTurbotMap, ok := element.(map[string]string)
+		if ok {
+			// if the element is a map, remove excluded items from map
+			result = append(result, RemovePropertiesFromMap(terraformToTurbotMap, excluded))
+		} else {
+			// otherwise check if this property is excluded and remove if so
+			if !SliceContains(excluded, element.(string)) {
+				result = append(result, element)
 			}
-		}
-	}
-	return properties
-}
-
-// TODO update to use delete
-// given a property list, remove the excluded properties
-func RemovePropertiesFromMap(propertyMap map[string]interface{}, excluded []string) map[string]interface{} {
-	var result = map[string]interface{}{}
-	for k, v := range propertyMap {
-		if !SliceContains(excluded, k) {
-			result[k] = v
 		}
 	}
 	return result
 }
 
+// given a property list, remove the excluded properties
+func RemovePropertiesFromMap(propertyMap map[string]string, excluded []string) map[string]string {
+	for _, v := range excluded {
+		delete(propertyMap, v)
+	}
+	return propertyMap
+}
+
 // no native contains in golang :/
 func SliceContains(s []string, searchTerm string) bool {
-	i := sort.SearchStrings(s, searchTerm)
-	return i < len(s) && s[i] == searchTerm
+	for _, v := range s {
+		if v == searchTerm {
+			return true
+		}
+	}
+	return false
 
 }
 

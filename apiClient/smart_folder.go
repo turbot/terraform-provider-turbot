@@ -20,7 +20,6 @@ func (client *Client) CreateSmartFolder(input map[string]interface{}) (*TurbotRe
 
 func (client *Client) ReadSmartFolder(id string) (*SmartFolder, error) {
 	query := readSmartFolderQuery(id)
-	//var responseData interface{}
 	responseData := &ReadSmartFolderResponse{}
 
 	// execute api call

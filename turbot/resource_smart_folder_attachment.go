@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
-	"log"
 	"strings"
 )
 
@@ -39,7 +38,7 @@ func resourceTurbotSmartFolderAttachemnt() *schema.Resource {
 
 func resourceTurbotSmartFolderAttachmentExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
 	client := meta.(*apiClient.Client)
-	smartFolderId, resource := parseId(d.Id())
+	smartFolderId, resource := parseSmartFolderId(d.Id())
 	// execute api call
 	smartFolder, err := client.ReadSmartFolder(smartFolderId)
 	if err != nil {
@@ -48,15 +47,11 @@ func resourceTurbotSmartFolderAttachmentExists(d *schema.ResourceData, meta inte
 
 	//find resource aka in list of attached resources
 	for _, attachedResource := range smartFolder.AttachedResources.Items {
-		log.Println("attachedResource", attachedResource)
 		if resource == attachedResource.Turbot.Id {
 			return true, nil
 		}
-		log.Println("Target resource", resource)
-		log.Println("Resource id", attachedResource.Turbot.Id)
 		for _, aka := range attachedResource.Turbot.Akas {
 			if aka == resource {
-				log.Println("Exists", aka)
 				return true, nil
 			}
 		}
@@ -82,12 +77,11 @@ func resourceTurbotSmartFolderAttachmentCreate(d *schema.ResourceData, meta inte
 }
 
 func resourceTurbotSmartFolderAttachmentRead(d *schema.ResourceData, meta interface{}) error {
-	smartFolder, resource := parseId(d.Id())
-	// assign results back into ResourceData
-
+	// NOTE: This will not be called if the attachment does not exist
+	smartFolder, resource := parseSmartFolderId(d.Id())
+	// assign results directly back into ResourceData
 	d.Set("resource", resource)
 	d.Set("smart_folder", smartFolder)
-
 	return nil
 }
 
@@ -101,7 +95,6 @@ func resourceTurbotSmartFolderAttachmentDelete(d *schema.ResourceData, meta inte
 
 	// clear the id to show we have deleted
 	d.SetId("")
-
 	return nil
 }
 
@@ -116,7 +109,7 @@ func buildId(smartFolder, resource string) string {
 	return smartFolder + "_" + resource
 }
 
-func parseId(id string) (smartFolder, resource string) {
+func parseSmartFolderId(id string) (smartFolder, resource string) {
 	segments := strings.Split(id, "_")
 	smartFolder = segments[0]
 	resource = segments[1]

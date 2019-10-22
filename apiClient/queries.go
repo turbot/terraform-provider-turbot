@@ -189,6 +189,7 @@ func createSmartFolderMutation() string {
 				id
 				parentId
 				akas
+				title
 			}
 		}
 	}`)
@@ -197,9 +198,9 @@ func createSmartFolderMutation() string {
 func readSmartFolderQuery(id string) string {
 	return fmt.Sprintf(`{
 	smartFolder: resource(id:"%s") {
-		title: get(path:"title")
+		title: get(path:"turbot.title")
 		description: get(path:"description")
-		filter: get(path:"filters")
+		filters: get(path:"filters")
 		parent:	get(path:"turbot.id")
 		turbot: get(path:"turbot")
    		attachedResources{
@@ -208,7 +209,6 @@ func readSmartFolderQuery(id string) string {
 			}
 		}
 	}
- }
 }`, id)
 }
 

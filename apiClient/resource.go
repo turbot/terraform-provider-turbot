@@ -58,8 +58,8 @@ func (client *Client) ReadSerializableResource(resourceAka string) (*Serializabl
 
 	// convert the data to JSON
 	// (NOTE: remove the 'turbot' properties as this has been read separately)
-	data := helpers.RemovePropertiesFromMap(resource.Data, []string{"turbot"})
-	dataJson, err := helpers.MapToJsonString(data)
+	delete(resource.Data, "turbot")
+	dataJson, err := helpers.MapToJsonString(resource.Data)
 	if err != nil {
 		return nil, err
 	}

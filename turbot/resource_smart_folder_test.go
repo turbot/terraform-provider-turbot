@@ -24,6 +24,15 @@ func TestAccSmartFolder(t *testing.T) {
 					resource.TestCheckResourceAttr("turbot_smart_folder.test", "parent", "tmod:@turbot/turbot#/"),
 					resource.TestCheckResourceAttr("turbot_smart_folder.test", "filter", "resourceType:166872393063899 $.turbot.tags.a:b"),
 				),
+			}, {
+				Config: testAccSmartFolderUpdateDescConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSmartFolderExists("turbot_smart_folder.test"),
+					resource.TestCheckResourceAttr("turbot_smart_folder.test", "title", "smart_folder"),
+					resource.TestCheckResourceAttr("turbot_smart_folder.test", "description", "Smart Folder updated"),
+					resource.TestCheckResourceAttr("turbot_smart_folder.test", "parent", "tmod:@turbot/turbot#/"),
+					resource.TestCheckResourceAttr("turbot_smart_folder.test", "filter", "resourceType:166872393063899 $.turbot.tags.a:b"),
+				),
 			},
 		},
 	})
@@ -32,23 +41,23 @@ func TestAccSmartFolder(t *testing.T) {
 // configs
 func testAccSmartFolderConfig() string {
 	return `
-	resource "turbot_smart_folder" "test" {
-		parent  = "tmod:@turbot/turbot#/"
-		filter = "resourceType:166872393063899 $.turbot.tags.a:b"
-		description = "Smart Folder Testing"
-		title = "smart_folder"
-	}
+resource "turbot_smart_folder" "test" {
+	parent  = "tmod:@turbot/turbot#/"
+	filter = "resourceType:166872393063899 $.turbot.tags.a:b"
+	description = "Smart Folder Testing"
+	title = "smart_folder"
+}
 `
 }
 
 func testAccSmartFolderUpdateDescConfig() string {
 	return `
-	resource "turbot_smart_folder" "test" {
-		parent  = "tmod:@turbot/turbot#/"
-		filter = "arn:aws:iam::013122550996:user/pratik/accesskey/AKIAQGDRKHTKBON32K3J"
-		description = "Smart Folder updated"
-		title ="smart_folder"
-	}
+resource "turbot_smart_folder" "test" {
+	parent  = "tmod:@turbot/turbot#/"
+	filter = "resourceType:166872393063899 $.turbot.tags.a:b"
+	description = "Smart Folder updated"
+	title ="smart_folder"
+}
 `
 }
 
@@ -57,10 +66,10 @@ func testAccCheckSmartFolderExists(resource string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[resource]
 		if !ok {
-			return fmt.Errorf("Not found: %s", resource)
+			return fmt.Errorf("not found: %s", resource)
 		}
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No Record ID is set")
+			return fmt.Errorf("no Record ID is set")
 		}
 		client := testAccProvider.Meta().(*apiClient.Client)
 		_, err := client.ReadSmartFolder(rs.Primary.ID)
@@ -77,7 +86,7 @@ func testAccCheckSmartFolderDestroy(s *terraform.State) error {
 		if rs.Type == "turbot_smart_folder" {
 			_, err := client.ReadSmartFolder(rs.Primary.ID)
 			if err == nil {
-				return fmt.Errorf("Alert still exists")
+				return fmt.Errorf("alert still exists")
 			}
 			if !apiClient.NotFoundError(err) {
 				return fmt.Errorf("expected 'not found' error, got %s", err)

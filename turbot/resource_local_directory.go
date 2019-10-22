@@ -95,7 +95,6 @@ func resourceTurbotLocalDirectoryCreate(d *schema.ResourceData, meta interface{}
 	}
 	// assign the id
 	d.SetId(turbotMetadata.Id)
-	// TODO NEEDED??
 	d.Set("status", data["status"])
 	d.Set("directory_type", data["directoryType"])
 	return nil
