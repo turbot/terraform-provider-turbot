@@ -91,6 +91,7 @@ policySetting(id:"%s") {
 	validToTimestamp
 	turbot {
 		id
+		resourceId
 	}
 }
 }`, policySettingId)

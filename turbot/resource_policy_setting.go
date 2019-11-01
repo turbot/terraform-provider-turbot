@@ -31,9 +31,17 @@ func resourceTurbotPolicySetting() *schema.Resource {
 				ForceNew: true,
 			},
 			"resource": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:             schema.TypeString,
+				Required:         true,
+				DiffSuppressFunc: suppressIfAkaMatches("resource_akas"),
+				ForceNew:         true,
+			},
+			"resource_akas": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 			"value": {
 				Type:             schema.TypeString,
@@ -55,7 +63,7 @@ func resourceTurbotPolicySetting() *schema.Resource {
 			"precedence": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Default:  "required",
+				Default:  "REQUIRED",
 			},
 			"template": {
 				Type:     schema.TypeString,
@@ -150,6 +158,10 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 	// if pgp_key has been supplied, encrypt value and value_source
 	storeValue(d, setting)
 
+	// set akas properties by loading resource and fetching the akas
+	if err := storeAkas(resourceAka, "resource_akas", d, meta); err != nil {
+		return err
+	}
 	// assign the id
 	d.SetId(setting.Turbot.Id)
 
@@ -169,8 +181,12 @@ func resourceTurbotPolicySettingRead(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 
-	// assign results back into ResourceData
+	// set akas properties by loading resource and fetching the akas
+	if err := storeAkas(setting.Turbot.ResourceId, "resource_akas", d, meta); err != nil {
+		return err
+	}
 
+	// assign results back into ResourceData
 	// if pgp_key has been supplied, encrypt value and value_source
 	storeValue(d, setting)
 	d.Set("precedence", setting.Precedence)
