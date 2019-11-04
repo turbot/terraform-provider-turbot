@@ -353,9 +353,10 @@ type TurbotResourceMetadata struct {
 }
 
 type TurbotPolicyMetadata struct {
-	Id       string
-	ParentId string
-	Akas     []string
+	Id         string
+	ParentId   string
+	ResourceId string
+	Akas       []string
 }
 
 type TurbotGrantMetadata struct {

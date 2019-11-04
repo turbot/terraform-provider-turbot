@@ -17,37 +17,37 @@ func TestAccPolicySetting_String(t *testing.T) {
 		CheckDestroy: testAccCheckPolicySettingDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPolicySettingStringConfig(stringPolicyType, "testValue", "must"),
+				Config: testAccPolicySettingStringConfig(stringPolicyType, "testValue", "REQUIRED"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPolicySettingExists("turbot_policy_setting.test_policy"),
 					resource.TestCheckResourceAttr(
 						"turbot_policy_setting.test_policy", "value", "testValue"),
 					resource.TestCheckResourceAttr(
-						"turbot_policy_setting.test_policy", "precedence", "must"),
+						"turbot_policy_setting.test_policy", "precedence", "REQUIRED"),
 				),
 			},
 			{
-				Config: testAccPolicySettingStringConfig(stringPolicyType, "testValue-updated", "must"),
+				Config: testAccPolicySettingStringConfig(stringPolicyType, "testValue-updated", "REQUIRED"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPolicySettingExists("turbot_policy_setting.test_policy"),
 					resource.TestCheckResourceAttr(
 						"turbot_policy_setting.test_policy", "value", "testValue-updated"),
 					resource.TestCheckResourceAttr(
-						"turbot_policy_setting.test_policy", "precedence", "must"),
+						"turbot_policy_setting.test_policy", "precedence", "REQUIRED"),
 				),
 			}, {
-				Config: testAccPolicySettingStringConfig(stringPolicyType, "testValue-updated", "should"),
+				Config: testAccPolicySettingStringConfig(stringPolicyType, "testValue-updated", "RECOMMENDED"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPolicySettingExists("turbot_policy_setting.test_policy"),
 					resource.TestCheckResourceAttr(
 						"turbot_policy_setting.test_policy", "value", "testValue-updated"),
 					resource.TestCheckResourceAttr(
-						"turbot_policy_setting.test_policy", "precedence", "should"),
+						"turbot_policy_setting.test_policy", "precedence", "RECOMMENDED"),
 				),
 			},
 
 			{
-				Config: testAccPolicySettingTemplateConfig(stringPolicyType, stringPolicyTemplate, stringPolicyTemplateInput, "should"),
+				Config: testAccPolicySettingTemplateConfig(stringPolicyType, stringPolicyTemplate, stringPolicyTemplateInput, "RECOMMENDED"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPolicySettingExists("turbot_policy_setting.test_policy"),
 					resource.TestCheckResourceAttr(
@@ -55,7 +55,7 @@ func TestAccPolicySetting_String(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_policy_setting.test_policy", "template_input", stringPolicyTemplateInput),
 					resource.TestCheckResourceAttr(
-						"turbot_policy_setting.test_policy", "precedence", "should"),
+						"turbot_policy_setting.test_policy", "precedence", "RECOMMENDED"),
 				),
 			},
 		},
@@ -69,34 +69,34 @@ func TestAccPolicySetting_Int(t *testing.T) {
 		CheckDestroy: testAccCheckPolicySettingDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPolicySettingIntConfig(intPolicyType, 1, "must"),
+				Config: testAccPolicySettingIntConfig(intPolicyType, 1, "REQUIRED"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPolicySettingExists("turbot_policy_setting.test_policy"),
 					resource.TestCheckResourceAttr(
 						"turbot_policy_setting.test_policy", "value", "1"),
 					resource.TestCheckResourceAttr(
-						"turbot_policy_setting.test_policy", "precedence", "must"),
+						"turbot_policy_setting.test_policy", "precedence", "REQUIRED"),
 				),
 			},
 			{
-				Config: testAccPolicySettingIntConfig(intPolicyType, 2, "must"),
+				Config: testAccPolicySettingIntConfig(intPolicyType, 2, "REQUIRED"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPolicySettingExists("turbot_policy_setting.test_policy"),
 					resource.TestCheckResourceAttr(
 						"turbot_policy_setting.test_policy", "value", "2"),
 					resource.TestCheckResourceAttr(
-						"turbot_policy_setting.test_policy", "precedence", "must"),
+						"turbot_policy_setting.test_policy", "precedence", "REQUIRED"),
 				),
 			},
 			// value as string
 			{
-				Config: testAccPolicySettingStringConfig(intPolicyType, "3", "must"),
+				Config: testAccPolicySettingStringConfig(intPolicyType, "3", "REQUIRED"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPolicySettingExists("turbot_policy_setting.test_policy"),
 					resource.TestCheckResourceAttr(
 						"turbot_policy_setting.test_policy", "value", "3"),
 					resource.TestCheckResourceAttr(
-						"turbot_policy_setting.test_policy", "precedence", "must"),
+						"turbot_policy_setting.test_policy", "precedence", "REQUIRED"),
 				),
 			},
 		},
@@ -110,7 +110,7 @@ func TestAccPolicySetting_Array(t *testing.T) {
 		CheckDestroy: testAccCheckPolicySettingDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPolicySettingStringConfig(stringArrayPolicyType, "<<EOF\n- a\n- b\n- c\nEOF", "must"),
+				Config: testAccPolicySettingStringConfig(stringArrayPolicyType, "<<EOF\n- a\n- b\n- c\nEOF", "REQUIRED"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPolicySettingExists("turbot_policy_setting.test_policy"),
 					resource.TestCheckResourceAttr(
@@ -118,10 +118,10 @@ func TestAccPolicySetting_Array(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_policy_setting.test_policy", "value_source", "- a\n- b\n- c\n"),
 					resource.TestCheckResourceAttr(
-						"turbot_policy_setting.test_policy", "precedence", "must"),
+						"turbot_policy_setting.test_policy", "precedence", "REQUIRED"),
 				),
 			}, {
-				Config: testAccPolicySettingStringConfig(stringArrayPolicyType, "<<EOF\n- b\n- a\n- d\nEOF", "must"),
+				Config: testAccPolicySettingStringConfig(stringArrayPolicyType, "<<EOF\n- b\n- a\n- d\nEOF", "REQUIRED"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPolicySettingExists("turbot_policy_setting.test_policy"),
 					resource.TestCheckResourceAttr(
@@ -129,7 +129,7 @@ func TestAccPolicySetting_Array(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_policy_setting.test_policy", "value_source", "- b\n- a\n- d\n"),
 					resource.TestCheckResourceAttr(
-						"turbot_policy_setting.test_policy", "precedence", "must"),
+						"turbot_policy_setting.test_policy", "precedence", "REQUIRED"),
 				),
 			},
 		},
@@ -143,18 +143,18 @@ func TestAccPolicySetting_ArrayEncrypted(t *testing.T) {
 		CheckDestroy: testAccCheckPolicySettingDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPolicySettingStringConfigWithPgp(stringArrayPolicyType, "<<EOF\n- a\n- b\n- c\nEOF", "must"),
+				Config: testAccPolicySettingStringConfigWithPgp(stringArrayPolicyType, "<<EOF\n- a\n- b\n- c\nEOF", "REQUIRED"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPolicySettingExists("turbot_policy_setting.test_policy"),
 					resource.TestCheckResourceAttr(
-						"turbot_policy_setting.test_policy", "precedence", "must"),
+						"turbot_policy_setting.test_policy", "precedence", "REQUIRED"),
 				),
 			}, {
-				Config: testAccPolicySettingStringConfigWithPgp(stringArrayPolicyType, "<<EOF\n- b\n- a\n- d\nEOF", "must"),
+				Config: testAccPolicySettingStringConfigWithPgp(stringArrayPolicyType, "<<EOF\n- b\n- a\n- d\nEOF", "REQUIRED"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPolicySettingExists("turbot_policy_setting.test_policy"),
 					resource.TestCheckResourceAttr(
-						"turbot_policy_setting.test_policy", "precedence", "must"),
+						"turbot_policy_setting.test_policy", "precedence", "REQUIRED"),
 				),
 			},
 		},
@@ -168,13 +168,13 @@ func TestAccPolicySetting_SecretUnencrypted(t *testing.T) {
 		CheckDestroy: testAccCheckPolicySettingDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPolicySettingStringConfig(secretPolicyType, "test1", "must"),
+				Config: testAccPolicySettingStringConfig(secretPolicyType, "test1", "REQUIRED"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPolicySettingExists("turbot_policy_setting.test_policy"),
 					resource.TestCheckResourceAttr(
 						"turbot_policy_setting.test_policy", "value", "test1"),
 					resource.TestCheckResourceAttr(
-						"turbot_policy_setting.test_policy", "precedence", "must"),
+						"turbot_policy_setting.test_policy", "precedence", "REQUIRED"),
 				),
 			},
 		},
@@ -188,15 +188,71 @@ func TestAccPolicySetting_SecretEncrypted(t *testing.T) {
 		CheckDestroy: testAccCheckPolicySettingDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPolicySettingStringConfigWithPgp(secretPolicyType, "test1", "must"),
+				Config: testAccPolicySettingStringConfigWithPgp(secretPolicyType, "test1", "REQUIRED"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPolicySettingExists("turbot_policy_setting.test_policy"),
 					resource.TestCheckResourceAttr(
-						"turbot_policy_setting.test_policy", "precedence", "must"),
+						"turbot_policy_setting.test_policy", "precedence", "REQUIRED"),
 				),
 			},
 		},
 	})
+}
+
+func TestAccPolicySettingPrecedenceValueCheck(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPolicySettingDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccPolicySettingPrecedenceAttr("REQUIRED"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPolicySettingExists("turbot_policy_setting.test_policy"),
+					resource.TestCheckResourceAttr(
+						"turbot_policy_setting.test_policy", "precedence", "REQUIRED"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccPolicySettingNullValueCheck(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPolicySettingDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccPolicySettingStringConfig(stringPolicyType, " ", "REQUIRED"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPolicySettingExists("turbot_policy_setting.test_policy"),
+					resource.TestCheckResourceAttr(
+						"turbot_policy_setting.test_policy", "precedence", "REQUIRED"),
+				),
+			},
+		},
+	})
+}
+
+func testAccPolicySettingPrecedenceAttr(value string) string {
+	return fmt.Sprintf(`
+resource "turbot_folder" "test" {
+  parent = "tmod:@turbot/turbot#/"
+  title = "provider_test"
+  description = "test folder"
+}
+resource "turbot_policy_setting" "test_policy" {
+  resource    = "${turbot_folder.test.id}"
+  type = "tmod:@turbot/aws-s3#/policy/types/bucketTagsTemplate"
+   value = <<EOF
+  {
+    "test2": %s,
+    "automation2": "no"
+  }
+  EOF
+}
+`, value)
 }
 
 // configs
