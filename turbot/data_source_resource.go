@@ -47,7 +47,11 @@ func dataSourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) erro
 	client := meta.(*apiClient.Client)
 	resourceAka := d.Get("id").(string)
 	resource, err := client.ReadSerializableResource(resourceAka)
-	if err != nil && !apiClient.NotFoundError(err) {
+	if err != nil {
+		if apiClient.NotFoundError(err) {
+			// setting was not found - clear id
+			d.SetId("")
+		}
 		return err
 	}
 
