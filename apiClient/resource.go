@@ -127,7 +127,11 @@ func (client *Client) DeleteResource(aka string) error {
 
 func (client *Client) ResourceExists(id string) (bool, error) {
 	resource, err := client.ReadResource(id, nil)
+
 	if err != nil {
+		if NotFoundError(err) {
+			return false, nil
+		}
 		return false, err
 	}
 	exists := resource.Turbot.Id != ""

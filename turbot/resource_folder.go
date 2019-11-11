@@ -42,7 +42,7 @@ func resourceTurbotFolder() *schema.Resource {
 			},
 			"description": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 			"tags": {
 				Type:     schema.TypeMap,
