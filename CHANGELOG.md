@@ -1,6 +1,18 @@
 
 
+## 1.0.0-beta.9 (November 11, 2019)
+
+BUG FIXES
+* resource/turbot_shadow_resource deletion error. When the tracked resource is deleted, the shadow resource would display an error. Fix this to delete the shadow resource when the tracked resource is deleted.  
+
+ENHANCEMENTS:
+* resource/turbot_resource - make `directory_pool_id` optional
+* resource/turbot_folder - make `description` optional
+
 ## 1.0.0-beta.8 (November 4, 2019)
+NOTES: 
+This requires core version >=5.0.0-beta.96  
+
 ENHANCEMENTS:
 * resource/turbot_policy_setting - change default precedence to `REQUIRED`. ([#125](https://github.com/turbotio/terraform-provider-turbot/issues/125))
 * resource/turbot_policy_setting resource - add `resource_akas` property and diff suppression. ([#116](https://github.com/turbotio/terraform-provider-turbot/issues/116))
