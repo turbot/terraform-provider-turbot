@@ -58,7 +58,7 @@ func resourceTurbotProfile() *schema.Resource {
 			},
 			"directory_pool_id": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 			"email": {
 				Type:     schema.TypeString,
