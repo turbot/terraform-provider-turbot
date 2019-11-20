@@ -9,7 +9,7 @@ func NotFoundError(err error) bool {
 }
 
 func FailedValidationError(err error) bool {
-	notFoundErr := "Data validation failed"
-	expectedErr := regexp.MustCompile(notFoundErr)
+	dataValidationError := "data validation failed"
+	expectedErr := regexp.MustCompile(dataValidationError)
 	return expectedErr.Match([]byte(err.Error()))
 }
