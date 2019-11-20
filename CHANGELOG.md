@@ -1,12 +1,18 @@
 
 
+## 1.0.0-beta.10 (November 20, 2019)
+
+BUG FIXES
+* Update Error handling for `not found` and `data validation` errors to correctly match error strings   
+
 ## 1.0.0-beta.9 (November 11, 2019)
+
 
 BUG FIXES
 * resource/turbot_shadow_resource deletion error. When the tracked resource is deleted, the shadow resource would display an error. Fix this to delete the shadow resource when the tracked resource is deleted.  
 
 ENHANCEMENTS:
-* resource/turbot_resource - make `directory_pool_id` optional
+* resource/turbot_profile - make `directory_pool_id` optional
 * resource/turbot_folder - make `description` optional
 
 ## 1.0.0-beta.8 (November 4, 2019)
