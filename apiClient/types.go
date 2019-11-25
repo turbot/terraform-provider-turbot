@@ -183,7 +183,7 @@ type ActiveGrant struct {
 }
 
 // Folder
-type ReadFolderResponse struct {
+type FolderResponse struct {
 	Resource Folder
 }
 
