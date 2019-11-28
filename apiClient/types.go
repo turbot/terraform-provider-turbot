@@ -195,7 +195,7 @@ type Folder struct {
 }
 
 // Profile
-type ReadProfileResponse struct {
+type ProfileResponse struct {
 	Resource Profile
 }
 
