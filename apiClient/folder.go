@@ -4,10 +4,14 @@ import (
 	"fmt"
 )
 
-var folderProperties = map[string]string{
-	"title":       "title",
-	"parent":      "turbot.parentId",
-	"description": "description",
+var folderProperties = []interface{}{
+	//explicit mapping
+	map[string]string{
+		"parent": "turbot.parentId",
+	},
+	// implicit mapping
+	"title",
+	"description",
 }
 
 func (client *Client) CreateFolder(input map[string]interface{}) (*Folder, error) {

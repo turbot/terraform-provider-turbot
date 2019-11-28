@@ -289,7 +289,7 @@ func modVersionsQuery(org, mod string) string {
 }
 
 // resource
-func createResourceMutation(properties map[string]string) string {
+func createResourceMutation(properties []interface{}) string {
 	return fmt.Sprintf(`mutation CreateResource($input: CreateResourceInput!) {
 	resource: createResource(input: $input) {
 %s
@@ -298,7 +298,7 @@ func createResourceMutation(properties map[string]string) string {
 }`, buildResourceProperties(properties))
 }
 
-func updateResourceMutation(properties map[string]string) string {
+func updateResourceMutation(properties []interface{}) string {
 	return fmt.Sprintf(`mutation UpdateResource($input: UpdateResourceInput!) {
  	resource: updateResource(input: $input) {
 %s
@@ -315,7 +315,7 @@ func deleteResourceMutation() string {
 }`
 }
 
-func readResourceQuery(aka string, properties map[string]string) string {
+func readResourceQuery(aka string, properties []interface{}) string {
 	return fmt.Sprintf(`{
 	resource(id:"%s") {
 %s
@@ -423,11 +423,19 @@ func deactivateGrantMutation() string {
 }`, turbotActiveGrantMetadataFragment("\t\t\t"))
 }
 
-func buildResourceProperties(resourceProperties map[string]string) string {
+func buildResourceProperties(resourceProperties []interface{}) string {
 	var propertiesString bytes.Buffer
 	if resourceProperties != nil {
-		for alias, propertyPath := range resourceProperties {
-			propertiesString.WriteString(fmt.Sprintf("\t\t\t%s: get(path: \"%s\")\n", alias, propertyPath))
+		for _, propertyPath := range resourceProperties {
+			property, ok := propertyPath.(map[string]string)
+			if ok {
+				for k, v := range property {
+					propertiesString.WriteString(fmt.Sprintf("\t\t\t%s: get(path: \"%s\")\n", k, v))
+				}
+			} else {
+				propertiesString.WriteString(fmt.Sprintf("\t\t\t%s: get(path: \"%s\")\n", propertyPath, propertyPath))
+			}
+
 		}
 	}
 	return propertiesString.String()
