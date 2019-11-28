@@ -258,7 +258,7 @@ type CreateSmartFolderAttachResponse struct {
 }
 
 // Local directory
-type ReadLocalDirectoryResponse struct {
+type LocalDirectoryResponse struct {
 	Resource LocalDirectory
 }
 
