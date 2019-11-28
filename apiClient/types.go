@@ -291,7 +291,7 @@ type LocalDirectoryUser struct {
 }
 
 // Saml directory
-type ReadSamlDirectoryResponse struct {
+type SamlDirectoryResponse struct {
 	Resource SamlDirectory
 }
 
