@@ -273,7 +273,7 @@ type LocalDirectory struct {
 }
 
 // Local directory user
-type ReadLocalDirectoryUserResponse struct {
+type LocalDirectoryUserResponse struct {
 	Resource LocalDirectoryUser
 }
 
