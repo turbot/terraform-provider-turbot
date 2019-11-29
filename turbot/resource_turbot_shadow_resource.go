@@ -48,7 +48,7 @@ func resourceTurbotShadowResourceCreate(d *schema.ResourceData, meta interface{}
 	}
 
 	if resourceAka != "" {
-		filter = fmt.Sprintf("resource:%s", resourceAka)
+		filter = fmt.Sprintf("resource:%s level: self", resourceAka)
 	}
 	// create folder returns turbot resource metadata containing the id
 	resource, err := waitForResource(filter, client)
