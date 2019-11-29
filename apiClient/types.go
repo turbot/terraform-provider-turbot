@@ -213,20 +213,8 @@ type Profile struct {
 }
 
 // Smart folder
-type ReadSmartFolderResponse struct {
+type SmartFolderResponse struct {
 	SmartFolder SmartFolder
-}
-
-type CreateSmartFolderResponse struct {
-	SmartFolder struct {
-		Turbot TurbotResourceMetadata
-	}
-}
-
-type UpdateSmartFolderResponse struct {
-	SmartFolder struct {
-		Turbot TurbotResourceMetadata
-	}
 }
 
 type SmartFolder struct {

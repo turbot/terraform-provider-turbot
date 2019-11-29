@@ -68,23 +68,22 @@ func resourceTurbotFolderCreate(d *schema.ResourceData, meta interface{}) error 
 	input := mapFromResourceData(d, folderInputProperties)
 	input["data"] = mapFromResourceData(d, folderDataProperties)
 
-	// create folder returns turbot resource metadata containing the id
-	folderMetadata, err := client.CreateFolder(input)
+	folder, err := client.CreateFolder(input)
 	if err != nil {
 		return err
 	}
 
 	// set parent_akas property by loading resource and fetching the akas
-	if err := storeAkas(folderMetadata.Turbot.ParentId, "parent_akas", d, meta); err != nil {
+	if err := storeAkas(folder.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
 
 	// assign the id
-	d.SetId(folderMetadata.Turbot.Id)
+	d.SetId(folder.Turbot.Id)
 	// set FolderProperties the way we get in Read query
-	d.Set("parent", folderMetadata.Parent)
-	d.Set("title", folderMetadata.Title)
-	d.Set("description", folderMetadata.Description)
+	d.Set("parent", folder.Parent)
+	d.Set("title", folder.Title)
+	d.Set("description", folder.Description)
 	return nil
 }
 
@@ -96,17 +95,16 @@ func resourceTurbotFolderUpdate(d *schema.ResourceData, meta interface{}) error 
 	input["data"] = mapFromResourceData(d, folderDataProperties)
 	input["id"] = d.Id()
 
-	// create folder returns turbot resource metadata containing the id
-	folderMetadata, err := client.UpdateFolder(input)
+	folder, err := client.UpdateFolder(input)
 	if err != nil {
 		return err
 	}
 	// set FolderProperties the way we get in Read query
-	d.Set("parent", folderMetadata.Parent)
-	d.Set("title", folderMetadata.Title)
-	d.Set("description", folderMetadata.Description)
+	d.Set("parent", folder.Parent)
+	d.Set("title", folder.Title)
+	d.Set("description", folder.Description)
 	// set parent_akas property by loading resource and fetching the akas
-	return storeAkas(folderMetadata.Turbot.ParentId, "parent_akas", d, meta)
+	return storeAkas(folder.Turbot.ParentId, "parent_akas", d, meta)
 }
 
 func resourceTurbotFolderRead(d *schema.ResourceData, meta interface{}) error {

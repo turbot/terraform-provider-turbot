@@ -29,7 +29,7 @@ func (client *Client) ReadPolicySetting(id string) (*PolicySetting, error) {
 	return &responseData.PolicySetting, nil
 }
 
-func (client *Client) UpdatePolicySetting(input map[string]interface{}) error {
+func (client *Client) UpdatePolicySetting(input map[string]interface{}) (*PolicySetting, error) {
 	query := updatePolicySettingMutation()
 	responseData := &PolicySettingResponse{}
 
@@ -38,9 +38,9 @@ func (client *Client) UpdatePolicySetting(input map[string]interface{}) error {
 	}
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return fmt.Errorf("error updating policy: %s", err.Error())
+		return nil, fmt.Errorf("error updating policy: %s", err.Error())
 	}
-	return nil
+	return &responseData.PolicySetting, nil
 }
 
 func (client *Client) DeletePolicySetting(id string) error {

@@ -64,7 +64,7 @@ func resourceTurbotSmartFolderAttachmentCreate(d *schema.ResourceData, meta inte
 	resource := d.Get("resource").(string)
 	smartFolder := d.Get("smart_folder").(string)
 	input := mapFromResourceDataWithPropertyMap(d, smartFolderAttachProperties)
-	// create folder returns turbot resource metadata containing the id
+
 	_, err := client.CreateSmartFolderAttachment(input)
 	if err != nil {
 		return err

@@ -186,6 +186,8 @@ func readPolicyValueQuery(policyTypeUri string, resourceId string) string {
 func createSmartFolderMutation() string {
 	return fmt.Sprintf(`mutation CreateSmartFolder($input: CreateSmartFolderInput!) {
 		smartFolder: createSmartFolder(input: $input) {
+			description: get(path:"description")
+			filters: get(path:"filters")
 			turbot {
 				id
 				parentId
@@ -216,6 +218,8 @@ func readSmartFolderQuery(id string) string {
 func updateSmartFolderMutation() string {
 	return fmt.Sprintf(`mutation UpdateSmartFolder($input: UpdateSmartFolderInput!) {
 		smartFolder: updateSmartFolder(input: $input) {
+			description: get(path:"description")
+			filters: get(path:"filters")
 			turbot {
 				id
 				parentId
@@ -315,6 +319,7 @@ func deleteResourceMutation() string {
 }`
 }
 
+// support properties array of Interface
 func readResourceQuery(aka string, properties []interface{}) string {
 	return fmt.Sprintf(`{
 	resource(id:"%s") {
@@ -429,8 +434,8 @@ func buildResourceProperties(resourceProperties []interface{}) string {
 		for _, propertyPath := range resourceProperties {
 			property, ok := propertyPath.(map[string]string)
 			if ok {
-				for k, v := range property {
-					propertiesString.WriteString(fmt.Sprintf("\t\t\t%s: get(path: \"%s\")\n", k, v))
+				for alias, property := range property {
+					propertiesString.WriteString(fmt.Sprintf("\t\t\t%s: get(path: \"%s\")\n", alias, property))
 				}
 			} else {
 				propertiesString.WriteString(fmt.Sprintf("\t\t\t%s: get(path: \"%s\")\n", propertyPath, propertyPath))

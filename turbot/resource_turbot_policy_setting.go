@@ -137,7 +137,7 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 	// 1) pass value as 'value'
 	// 2) pass value as 'valueSource'. update d.value to be the yaml parsed version of 'value'
 	input := mapFromResourceData(d, policySettingInputProperties)
-	setting, err := client.CreatePolicySetting(input)
+	policySetting, err := client.CreatePolicySetting(input)
 	if err != nil {
 		if !apiClient.FailedValidationError(err) {
 			d.SetId("")
@@ -147,7 +147,7 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 		input["valueSource"] = input["value"]
 		delete(input, "value")
 		// try again
-		setting, err = client.CreatePolicySetting(input)
+		policySetting, err = client.CreatePolicySetting(input)
 		if err != nil {
 			d.SetId("")
 			return err
@@ -156,14 +156,21 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 		setValueFromValueSource(input["valueSource"].(string), d)
 	}
 	// if pgp_key has been supplied, encrypt value and value_source
-	storeValue(d, setting)
+	storeValue(d, policySetting)
 
 	// set akas properties by loading resource and fetching the akas
 	if err := storeAkas(resourceAka, "resource_akas", d, meta); err != nil {
 		return err
 	}
+	// assign read properties
+	d.Set("precedence", policySetting.Precedence)
+	d.Set("template", policySetting.Template)
+	d.Set("template_input", policySetting.TemplateInput)
+	d.Set("note", policySetting.Note)
+	d.Set("valid_from_timestamp", policySetting.ValidFromTimestamp)
+	d.Set("valid_to_timestamp", policySetting.ValidToTimestamp)
 	// assign the id
-	d.SetId(setting.Turbot.Id)
+	d.SetId(policySetting.Turbot.Id)
 
 	return nil
 }
@@ -212,7 +219,8 @@ func resourceTurbotPolicySettingUpdate(d *schema.ResourceData, meta interface{})
 	// 2) pass value as 'valueSource'. update d.value to be the yaml parsed version of 'value'
 	input := mapFromResourceData(d, getPolicySettingUpdateProperties())
 	input["id"] = id
-	err := client.UpdatePolicySetting(input)
+
+	policySetting, err := client.UpdatePolicySetting(input)
 	if err != nil {
 		if !apiClient.FailedValidationError(err) {
 			d.SetId("")
@@ -222,7 +230,7 @@ func resourceTurbotPolicySettingUpdate(d *schema.ResourceData, meta interface{})
 		input["valueSource"] = input["value"]
 		delete(input, "value")
 		// try again
-		err := client.UpdatePolicySetting(input)
+		policySetting, err = client.UpdatePolicySetting(input)
 		if err != nil {
 			d.SetId("")
 			return err
@@ -230,7 +238,13 @@ func resourceTurbotPolicySettingUpdate(d *schema.ResourceData, meta interface{})
 		// update state value setting with yaml parsed valueSource
 		setValueFromValueSource(input["valueSource"].(string), d)
 	}
-
+	//assign read properties
+	d.Set("precedence", policySetting.Precedence)
+	d.Set("template", policySetting.Template)
+	d.Set("template_input", policySetting.TemplateInput)
+	d.Set("note", policySetting.Note)
+	d.Set("valid_from_timestamp", policySetting.ValidFromTimestamp)
+	d.Set("valid_to_timestamp", policySetting.ValidToTimestamp)
 	return nil
 }
 
