@@ -73,6 +73,8 @@ func resourceTurbotSmartFolderAttachmentCreate(d *schema.ResourceData, meta inte
 	// assign the id
 	var stateId = buildId(smartFolder, resource)
 	d.SetId(stateId)
+	d.Set("resource", resource)
+	d.Set("smart_folder", smartFolder)
 	return nil
 }
 
