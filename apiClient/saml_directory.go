@@ -4,9 +4,19 @@ import (
 	"fmt"
 )
 
-func (client *Client) CreateSamlDirectory(input map[string]interface{}) (*TurbotResourceMetadata, error) {
-	query := createResourceMutation()
-	responseData := &CreateResourceResponse{}
+// create a map of the properties we want the graphql query to return
+var samlDirectoryProperties = []interface{}{
+	map[string]string{"parent": "turbot.parentId"},
+	"title",
+	"description",
+	"status",
+	"directoryType",
+	"profileIdTemplate",
+}
+
+func (client *Client) CreateSamlDirectory(input map[string]interface{}) (*SamlDirectory, error) {
+	query := createResourceMutation(samlDirectoryProperties)
+	responseData := &SamlDirectoryResponse{}
 	// set type in input data
 	input["type"] = "tmod:@turbot/turbot-iam#/resource/types/samlDirectory"
 	variables := map[string]interface{}{
@@ -17,21 +27,13 @@ func (client *Client) CreateSamlDirectory(input map[string]interface{}) (*Turbot
 	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error creating folder: %s", err.Error())
 	}
-	return &responseData.Resource.Turbot, nil
+	return &responseData.Resource, nil
 }
 
 func (client *Client) ReadSamlDirectory(id string) (*SamlDirectory, error) {
-	// create a map of the properties we want the graphql query to return
-	properties := map[string]string{
-		"title":             "title",
-		"parent":            "turbot.parentId",
-		"description":       "description",
-		"status":            "status",
-		"directoryType":     "directoryType",
-		"profileIdTemplate": "profileIdTemplate",
-	}
-	query := readResourceQuery(id, properties)
-	responseData := &ReadSamlDirectoryResponse{}
+
+	query := readResourceQuery(id, samlDirectoryProperties)
+	responseData := &SamlDirectoryResponse{}
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
@@ -40,9 +42,9 @@ func (client *Client) ReadSamlDirectory(id string) (*SamlDirectory, error) {
 	return &responseData.Resource, nil
 }
 
-func (client *Client) UpdateSamlDirectory(input map[string]interface{}) (*TurbotResourceMetadata, error) {
-	query := updateResourceMutation()
-	responseData := &UpdateResourceResponse{}
+func (client *Client) UpdateSamlDirectory(input map[string]interface{}) (*SamlDirectory, error) {
+	query := updateResourceMutation(samlDirectoryProperties)
+	responseData := &SamlDirectoryResponse{}
 	variables := map[string]interface{}{
 		"input": input,
 	}
@@ -51,5 +53,5 @@ func (client *Client) UpdateSamlDirectory(input map[string]interface{}) (*Turbot
 	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error creating folder: %s", err.Error())
 	}
-	return &responseData.Resource.Turbot, nil
+	return &responseData.Resource, nil
 }

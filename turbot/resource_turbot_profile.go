@@ -102,18 +102,25 @@ func resourceTurbotProfileCreate(d *schema.ResourceData, meta interface{}) error
 	input["data"] = mapFromResourceData(d, profileDataProperties)
 
 	// do create
-	turbotMetadata, err := client.CreateProfile(input)
+	profile, err := client.CreateProfile(input)
 	if err != nil {
 		return err
 	}
 
 	// set parent_akas property by loading resource and fetching the akas
-	if err := storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
+	if err := storeAkas(profile.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
 	// assign the id
-	d.SetId(turbotMetadata.Id)
-
+	d.SetId(profile.Turbot.Id)
+	// assign results back into ResourceData
+	d.Set("parent", profile.Parent)
+	d.Set("title", profile.Title)
+	d.Set("status", profile.Status)
+	d.Set("email", profile.Email)
+	d.Set("given_name", profile.GivenName)
+	d.Set("family_name", profile.FamilyName)
+	d.Set("directory_pool_id", profile.DirectoryPoolId)
 	return nil
 }
 
@@ -150,12 +157,21 @@ func resourceTurbotProfileUpdate(d *schema.ResourceData, meta interface{}) error
 	input["id"] = d.Id()
 
 	// do create
-	turbotMetadata, err := client.UpdateProfile(input)
+	profile, err := client.UpdateProfile(input)
 	if err != nil {
 		return err
 	}
+
+	// assign results back into ResourceData
+	d.Set("parent", profile.Parent)
+	d.Set("title", profile.Title)
+	d.Set("status", profile.Status)
+	d.Set("email", profile.Email)
+	d.Set("given_name", profile.GivenName)
+	d.Set("family_name", profile.FamilyName)
+	d.Set("directory_pool_id", profile.DirectoryPoolId)
 	// set parent_akas property by loading resource and fetching the akas
-	return storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
+	return storeAkas(profile.Turbot.ParentId, "parent_akas", d, meta)
 }
 
 func resourceTurbotProfileDelete(d *schema.ResourceData, meta interface{}) error {

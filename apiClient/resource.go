@@ -8,7 +8,7 @@ import (
 )
 
 func (client *Client) CreateResource(input map[string]interface{}) (*TurbotResourceMetadata, error) {
-	query := createResourceMutation()
+	query := createResourceMutation(nil)
 	responseData := &CreateResourceResponse{}
 	variables := map[string]interface{}{
 		"input": input,
@@ -22,7 +22,8 @@ func (client *Client) CreateResource(input map[string]interface{}) (*TurbotResou
 
 // properties is a map of terraform property name to turbot property path - it is used to add 'get' resolvers to the query
 func (client *Client) ReadResource(resourceAka string, properties map[string]string) (*Resource, error) {
-	query := readResourceQuery(resourceAka, properties)
+	var propertiesArray = []interface{}{properties}
+	query := readResourceQuery(resourceAka, propertiesArray)
 	var responseData = &ReadResourceResponse{}
 
 	// execute api call
@@ -41,11 +42,14 @@ func (client *Client) ReadResource(resourceAka string, properties map[string]str
 // read a resource including all properties, then convert into a 'serializable' resource, consisting of simple types and string maps
 func (client *Client) ReadSerializableResource(resourceAka string) (*SerializableResource, error) {
 	// read the resource, passing an empty string as the property path in the properties map to force a full read
-	properties := map[string]string{
-		"data": "",
-		"akas": "turbot.akas",
-		"tags": "turbot.tags",
+	properties := []interface{}{
+		map[string]string{
+			"data": "",
+			"akas": "turbot.akas",
+			"tags": "turbot.tags",
+		},
 	}
+
 	query := readResourceQuery(resourceAka, properties)
 	var responseData = &ReadSerializableResourceResponse{}
 
@@ -95,7 +99,7 @@ func (client *Client) ReadResourceList(filter string, properties map[string]stri
 }
 
 func (client *Client) UpdateResource(input map[string]interface{}) (*TurbotResourceMetadata, error) {
-	query := updateResourceMutation()
+	query := updateResourceMutation(nil)
 	responseData := &UpdateResourceResponse{}
 	variables := map[string]interface{}{
 		"input": input,

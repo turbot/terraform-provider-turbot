@@ -181,7 +181,6 @@ func resourceTurbotGoogleDirectoryUpdate(d *schema.ResourceData, meta interface{
 	input["data"] = data
 	input["id"] = d.Id()
 
-	// create folder returns turbot resource metadata containing the id
 	turbotMetadata, err := client.UpdateGoogleDirectory(input)
 	if err != nil {
 		return err

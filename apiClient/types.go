@@ -183,7 +183,7 @@ type ActiveGrant struct {
 }
 
 // Folder
-type ReadFolderResponse struct {
+type FolderResponse struct {
 	Resource Folder
 }
 
@@ -195,7 +195,7 @@ type Folder struct {
 }
 
 // Profile
-type ReadProfileResponse struct {
+type ProfileResponse struct {
 	Resource Profile
 }
 
@@ -213,20 +213,8 @@ type Profile struct {
 }
 
 // Smart folder
-type ReadSmartFolderResponse struct {
+type SmartFolderResponse struct {
 	SmartFolder SmartFolder
-}
-
-type CreateSmartFolderResponse struct {
-	SmartFolder struct {
-		Turbot TurbotResourceMetadata
-	}
-}
-
-type UpdateSmartFolderResponse struct {
-	SmartFolder struct {
-		Turbot TurbotResourceMetadata
-	}
 }
 
 type SmartFolder struct {
@@ -258,7 +246,7 @@ type CreateSmartFolderAttachResponse struct {
 }
 
 // Local directory
-type ReadLocalDirectoryResponse struct {
+type LocalDirectoryResponse struct {
 	Resource LocalDirectory
 }
 
@@ -273,7 +261,7 @@ type LocalDirectory struct {
 }
 
 // Local directory user
-type ReadLocalDirectoryUserResponse struct {
+type LocalDirectoryUserResponse struct {
 	Resource LocalDirectoryUser
 }
 
@@ -291,7 +279,7 @@ type LocalDirectoryUser struct {
 }
 
 // Saml directory
-type ReadSamlDirectoryResponse struct {
+type SamlDirectoryResponse struct {
 	Resource SamlDirectory
 }
 

@@ -4,9 +4,9 @@ import (
 	"fmt"
 )
 
-func (client *Client) CreateSmartFolder(input map[string]interface{}) (*TurbotResourceMetadata, error) {
+func (client *Client) CreateSmartFolder(input map[string]interface{}) (*SmartFolder, error) {
 	query := createSmartFolderMutation()
-	responseData := &CreateSmartFolderResponse{}
+	responseData := &SmartFolderResponse{}
 	variables := map[string]interface{}{
 		"input": input,
 	}
@@ -15,12 +15,12 @@ func (client *Client) CreateSmartFolder(input map[string]interface{}) (*TurbotRe
 	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error creating folder: %s", err.Error())
 	}
-	return &responseData.SmartFolder.Turbot, nil
+	return &responseData.SmartFolder, nil
 }
 
 func (client *Client) ReadSmartFolder(id string) (*SmartFolder, error) {
 	query := readSmartFolderQuery(id)
-	responseData := &ReadSmartFolderResponse{}
+	responseData := &SmartFolderResponse{}
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
@@ -29,9 +29,9 @@ func (client *Client) ReadSmartFolder(id string) (*SmartFolder, error) {
 	return &responseData.SmartFolder, nil
 }
 
-func (client *Client) UpdateSmartFolder(input map[string]interface{}) (*TurbotResourceMetadata, error) {
+func (client *Client) UpdateSmartFolder(input map[string]interface{}) (*SmartFolder, error) {
 	query := updateSmartFolderMutation()
-	responseData := &UpdateSmartFolderResponse{}
+	responseData := &SmartFolderResponse{}
 	variables := map[string]interface{}{
 		"input": input,
 	}
@@ -39,5 +39,5 @@ func (client *Client) UpdateSmartFolder(input map[string]interface{}) (*TurbotRe
 	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error updating smart folder: %s", err.Error())
 	}
-	return &responseData.SmartFolder.Turbot, nil
+	return &responseData.SmartFolder, nil
 }

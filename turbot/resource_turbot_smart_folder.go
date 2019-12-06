@@ -68,19 +68,14 @@ func resourceTurbotSmartFolderCreate(d *schema.ResourceData, meta interface{}) e
 	// build map of folder properties
 	input := mapFromResourceData(d, smartFolderProperties)
 
-	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.CreateSmartFolder(input)
+	smartFolder, err := client.CreateSmartFolder(input)
 	if err != nil {
 		return err
 	}
 
-	// set parent_akas property by loading resource and fetching the akas
-	if err := storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
-		return err
-	}
 	// assign the id
-	d.SetId(turbotMetadata.Id)
-	return nil
+	d.SetId(smartFolder.Turbot.Id)
+	return resourceTurbotSmartFolderRead(d, meta)
 }
 
 func resourceTurbotSmartFolderUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -90,13 +85,13 @@ func resourceTurbotSmartFolderUpdate(d *schema.ResourceData, meta interface{}) e
 	// build map of folder properties
 	input := mapFromResourceData(d, getSmartFolderUpdateProperties())
 	input["id"] = id
-	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.UpdateSmartFolder(input)
+
+	_, err := client.UpdateSmartFolder(input)
 	if err != nil {
 		return err
 	}
-	// set parent_akas property by loading resource and fetching the akas
-	return storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
+	// set 'Read' Properties
+	return resourceTurbotSmartFolderRead(d, meta)
 }
 
 func resourceTurbotSmartFolderRead(d *schema.ResourceData, meta interface{}) error {

@@ -1,20 +1,35 @@
+## 1.0.0-beta.11 (December 6, 2019)
+BUG FIXES
+* resource/turbot_shadow_resource `read error`. When doing the read of tracked resource, the shadow resource read query returns `child elements` as well. Fix this return tracked resource.([#162](https://github.com/turbotio/terraform-provider-turbot/issues/162))  
 
+TECHNICAL:
+* Fix `buildProperties` function to support `implicit & explicit` mapping ([#164](https://github.com/turbotio/terraform-provider-turbot/issues/164))
+* resource/turbot_folder - update `create/update` mutations to accomodate `read` operation attribute changes([#154](https://github.com/turbotio/terraform-provider-turbot/issues/154))
+* resource/turbot_local_directory - update `create/update` mutations to accomodate `read` operation attribute changes([#156](https://github.com/turbotio/terraform-provider-turbot/issues/156))
+* resource/turbot_local_directory_user - update `create/update` mutations to accomodate `read` operation attribute changes([#160](https://github.com/turbotio/terraform-provider-turbot/issues/160))
+* resource/turbot_saml_directory - update `create/update` mutations to accomodate `read` operation attribute changes([#166](https://github.com/turbotio/terraform-provider-turbot/issues/166))
+* resource/turbot_mod - update `create/update` mutations to accomodate `read` operation attribute changes([#170](https://github.com/turbotio/terraform-provider-turbot/issues/170))
+* resource/turbot_grant_activation - update `create/update` mutations to accomodate `read` operation attribute changes([#168](https://github.com/turbotio/terraform-provider-turbot/issues/168))
+* resource/turbot_policy_setting - update `create/update` mutations to accomodate `read` operation attribute changes([#168](https://github.com/turbotio/terraform-provider-turbot/issues/168))
+* resource/turbot_google_directory - update `create/update` mutations to accomodate `read` operation attribute changes([#168](https://github.com/turbotio/terraform-provider-turbot/issues/168))
+* resource/turbot_smart_folder- update `create/update` mutations to accomodate `read` operation attribute changes([#168](https://github.com/turbotio/terraform-provider-turbot/issues/168))
+* resource/turbot_profile - update `create/update` mutations to accomodate `read` operation attribute changes([#158](https://github.com/turbotio/terraform-provider-turbot/issues/154))
 
+Ω
 ## 1.0.0-beta.10 (November 20, 2019)
 
 BUG FIXES
-* Update Error handling for `not found` and `data validation` errors to correctly match error strings   
+* Update Error handling for `not found` and `data validation` errors to correctly match error strings([#143](https://github.com/turbotio/terraform-provider-turbot/issues/143))  
 
 ## 1.0.0-beta.9 (November 11, 2019)
 
-
 BUG FIXES
-* resource/turbot_shadow_resource deletion error. When the tracked resource is deleted, the shadow resource would display an error. Fix this to delete the shadow resource when the tracked resource is deleted.  
+* resource/turbot_shadow_resource deletion error. When the tracked resource is deleted, the shadow resource would display an error. Fix this to delete the shadow resource when the tracked resource is deleted.([#127](https://github.com/turbotio/terraform-provider-turbot/issues/127)) 
 
 ENHANCEMENTS:
 * resource/turbot_profile - make `directory_pool_id` optional
 * resource/turbot_folder - make `description` optional
-
+Ω
 ## 1.0.0-beta.8 (November 4, 2019)
 NOTES: 
 This requires core version >=5.0.0-beta.96  

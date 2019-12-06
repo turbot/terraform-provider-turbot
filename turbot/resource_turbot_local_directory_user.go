@@ -100,17 +100,25 @@ func resourceTurbotLocalDirectoryUserCreate(d *schema.ResourceData, meta interfa
 	input["data"] = data
 
 	// do create
-	turbotMetadata, err := client.CreateLocalDirectoryUser(input)
+	localDirectoryUser, err := client.CreateLocalDirectoryUser(input)
 	if err != nil {
 		return err
 	}
 	// set parent_akas property by loading parent resource and fetching the akas
-	if err := storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
+	if err := storeAkas(localDirectoryUser.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
 	// assign the id
-	d.SetId(turbotMetadata.Id)
-	// TODO NEEDED?
+	d.SetId(localDirectoryUser.Turbot.Id)
+
+	d.Set("parent", localDirectoryUser.Parent)
+	d.Set("title", localDirectoryUser.Title)
+	d.Set("email", localDirectoryUser.Email)
+	d.Set("display_name", localDirectoryUser.DisplayName)
+	d.Set("given_name", localDirectoryUser.GivenName)
+	d.Set("middle_name", localDirectoryUser.MiddleName)
+	d.Set("family_name", localDirectoryUser.FamilyName)
+	d.Set("picture", localDirectoryUser.Picture)
 	// set the calculated properties
 	d.Set("status", data["status"])
 	return nil
@@ -124,12 +132,21 @@ func resourceTurbotLocalDirectoryUserUpdate(d *schema.ResourceData, meta interfa
 	input["id"] = d.Id()
 
 	// do update
-	turbotMetadata, err := client.UpdateLocalDirectoryUserResource(input)
+	localDirectoryUser, err := client.UpdateLocalDirectoryUserResource(input)
 	if err != nil {
 		return err
 	}
+	d.Set("parent", localDirectoryUser.Parent)
+	d.Set("title", localDirectoryUser.Title)
+	d.Set("email", localDirectoryUser.Email)
+	d.Set("status", localDirectoryUser.Status)
+	d.Set("display_name", localDirectoryUser.DisplayName)
+	d.Set("given_name", localDirectoryUser.GivenName)
+	d.Set("middle_name", localDirectoryUser.MiddleName)
+	d.Set("family_name", localDirectoryUser.FamilyName)
+	d.Set("picture", localDirectoryUser.Picture)
 	// set parent_akas property by loading parent resource and fetching the akas
-	return storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
+	return storeAkas(localDirectoryUser.Turbot.ParentId, "parent_akas", d, meta)
 }
 
 func resourceTurbotLocalDirectoryUserRead(d *schema.ResourceData, meta interface{}) error {
@@ -148,10 +165,11 @@ func resourceTurbotLocalDirectoryUserRead(d *schema.ResourceData, meta interface
 	if err := storeAkas(localDirectoryUser.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
+
 	d.Set("parent", localDirectoryUser.Parent)
 	d.Set("title", localDirectoryUser.Title)
 	d.Set("email", localDirectoryUser.Email)
-	d.Set("status", localDirectoryUser.Status)
+	d.Set("stat	1us", localDirectoryUser.Status)
 	d.Set("display_name", localDirectoryUser.DisplayName)
 	d.Set("given_name", localDirectoryUser.GivenName)
 	d.Set("middle_name", localDirectoryUser.MiddleName)

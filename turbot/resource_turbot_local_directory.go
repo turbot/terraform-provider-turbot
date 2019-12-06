@@ -84,17 +84,21 @@ func resourceTurbotLocalDirectoryCreate(d *schema.ResourceData, meta interface{}
 	input["data"] = data
 
 	// do create
-	turbotMetadata, err := client.CreateLocalDirectory(input)
+	localDirectory, err := client.CreateLocalDirectory(input)
 	if err != nil {
 		return err
 	}
 
 	// set parent_akas property by loading resource and fetching the akas
-	if err := storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
+	if err := storeAkas(localDirectory.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
 	// assign the id
-	d.SetId(turbotMetadata.Id)
+	d.SetId(localDirectory.Turbot.Id)
+	// assign properties coming back from create graphQl API
+	d.Set("parent", localDirectory.Parent)
+	d.Set("title", localDirectory.Title)
+	// Set the values from Resource Data
 	d.Set("status", data["status"])
 	d.Set("directory_type", data["directoryType"])
 	return nil
@@ -130,12 +134,18 @@ func resourceTurbotLocalDirectoryUpdate(d *schema.ResourceData, meta interface{}
 	input["id"] = d.Id()
 
 	// do update
-	turbotMetadata, err := client.UpdateLocalDirectory(input)
+	localDirectory, err := client.UpdateLocalDirectory(input)
 	if err != nil {
 		return err
 	}
+
+	// assign properties coming back from update graphQl API
+	d.Set("parent", localDirectory.Parent)
+	d.Set("title", localDirectory.Title)
+	d.Set("status", localDirectory.Status)
+	d.Set("directory_type", localDirectory.DirectoryType)
 	// set parent_akas property by loading resource and fetching the akas
-	return storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
+	return storeAkas(localDirectory.Turbot.ParentId, "parent_akas", d, meta)
 }
 
 func resourceTurbotLocalDirectoryDelete(d *schema.ResourceData, meta interface{}) error {

@@ -186,6 +186,8 @@ func readPolicyValueQuery(policyTypeUri string, resourceId string) string {
 func createSmartFolderMutation() string {
 	return fmt.Sprintf(`mutation CreateSmartFolder($input: CreateSmartFolderInput!) {
 		smartFolder: createSmartFolder(input: $input) {
+			description: get(path:"description")
+			filters: get(path:"filters")
 			turbot {
 				id
 				parentId
@@ -216,6 +218,8 @@ func readSmartFolderQuery(id string) string {
 func updateSmartFolderMutation() string {
 	return fmt.Sprintf(`mutation UpdateSmartFolder($input: UpdateSmartFolderInput!) {
 		smartFolder: updateSmartFolder(input: $input) {
+			description: get(path:"description")
+			filters: get(path:"filters")
 			turbot {
 				id
 				parentId
@@ -289,20 +293,22 @@ func modVersionsQuery(org, mod string) string {
 }
 
 // resource
-func createResourceMutation() string {
+func createResourceMutation(properties []interface{}) string {
 	return fmt.Sprintf(`mutation CreateResource($input: CreateResourceInput!) {
 	resource: createResource(input: $input) {
+%s
 		turbot: get(path:"turbot")
 	}
-}`)
+}`, buildResourceProperties(properties))
 }
 
-func updateResourceMutation() string {
-	return `mutation UpdateResource($input: UpdateResourceInput!) {
+func updateResourceMutation(properties []interface{}) string {
+	return fmt.Sprintf(`mutation UpdateResource($input: UpdateResourceInput!) {
  	resource: updateResource(input: $input) {
+%s
 		turbot: get(path:"turbot")
 	}
-}`
+}`, buildResourceProperties(properties))
 }
 
 func deleteResourceMutation() string {
@@ -313,19 +319,14 @@ func deleteResourceMutation() string {
 }`
 }
 
-func readResourceQuery(aka string, properties map[string]string) string {
-	var propertiesString bytes.Buffer
-	if properties != nil {
-		for alias, propertyPath := range properties {
-			propertiesString.WriteString(fmt.Sprintf("\t\t\t%s: get(path: \"%s\")\n", alias, propertyPath))
-		}
-	}
+// support properties array of Interface
+func readResourceQuery(aka string, properties []interface{}) string {
 	return fmt.Sprintf(`{
 	resource(id:"%s") {
 %s
 		turbot: get(path:"turbot")
   	}
-}`, aka, propertiesString.String())
+}`, aka, buildResourceProperties(properties))
 }
 
 func readResourceListQuery(filter string, properties map[string]string) string {
@@ -425,4 +426,22 @@ func deactivateGrantMutation() string {
 %s
 	}
 }`, turbotActiveGrantMetadataFragment("\t\t\t"))
+}
+
+func buildResourceProperties(resourceProperties []interface{}) string {
+	var propertiesString bytes.Buffer
+	if resourceProperties != nil {
+		for _, propertyPath := range resourceProperties {
+			property, ok := propertyPath.(map[string]string)
+			if ok {
+				for alias, property := range property {
+					propertiesString.WriteString(fmt.Sprintf("\t\t\t%s: get(path: \"%s\")\n", alias, property))
+				}
+			} else {
+				propertiesString.WriteString(fmt.Sprintf("\t\t\t%s: get(path: \"%s\")\n", propertyPath, propertyPath))
+			}
+
+		}
+	}
+	return propertiesString.String()
 }

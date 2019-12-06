@@ -115,17 +115,20 @@ func resourceTurbotSamlDirectoryCreate(d *schema.ResourceData, meta interface{})
 	data["directoryType"] = "saml"
 	input["data"] = data
 
-	turbotMetadata, err := client.CreateSamlDirectory(input)
+	samlDirectory, err := client.CreateSamlDirectory(input)
 	if err != nil {
 		return err
 	}
 
 	// set parent_akas property by loading parent resource and fetching the akas
-	if err := storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
+	if err := storeAkas(samlDirectory.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
 	// assign the id
-	d.SetId(turbotMetadata.Id)
+	d.SetId(samlDirectory.Turbot.Id)
+	// assign Read query properties
+	d.Set("parent", samlDirectory.Parent)
+	d.Set("title", samlDirectory.Title)
 	// assign computed properties
 	d.Set("status", data["status"])
 	d.Set("directoryType", data["directoryType"])
@@ -164,12 +167,15 @@ func resourceTurbotSamlDirectoryUpdate(d *schema.ResourceData, meta interface{})
 	input["id"] = d.Id()
 
 	// create folder returns turbot resource metadata containing the id
-	turbotMetadata, err := client.UpdateSamlDirectory(input)
+	samlDirectory, err := client.UpdateSamlDirectory(input)
 	if err != nil {
 		return err
 	}
+	// assign Read query properties
+	d.Set("parent", samlDirectory.Parent)
+	d.Set("title", samlDirectory.Title)
 	// set parent_akas property by loading parent resource and fetching the akas
-	return storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
+	return storeAkas(samlDirectory.Turbot.ParentId, "parent_akas", d, meta)
 }
 
 func resourceTurbotSamlDirectoryDelete(d *schema.ResourceData, meta interface{}) error {

@@ -64,6 +64,9 @@ func resourceTurbotGrantActivateCreate(d *schema.ResourceData, meta interface{})
 	if err := storeAkas(resourceAka, "resource_akas", d, meta); err != nil {
 		return err
 	}
+	// assign results back into ResourceData
+	d.Set("grant", TurbotGrantMetadata.GrantId)
+	d.Set("resource", TurbotGrantMetadata.ResourceId)
 	// assign the id
 	d.SetId(TurbotGrantMetadata.Id)
 	return nil

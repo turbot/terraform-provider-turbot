@@ -4,8 +4,14 @@ import (
 	"fmt"
 )
 
+var googleDirectoryProperties = []interface{}{
+	// explicit mapping
+	map[string]string{"client_id": "clientID"},
+	// implicit mappings
+	"title", "pool_id", "profile_id_template", "group_id_template", "login_name_template", "client_secret", "hosted_name", "description"}
+
 func (client *Client) CreateGoogleDirectory(input map[string]interface{}) (*TurbotResourceMetadata, error) {
-	query := createResourceMutation()
+	query := createResourceMutation(googleDirectoryProperties)
 	responseData := &CreateResourceResponse{}
 	// set type in input data
 	input["type"] = "tmod:@turbot/turbot-iam#/resource/types/googleDirectory"
@@ -37,7 +43,7 @@ func (client *Client) ReadGoogleDirectory(id string) (*GoogleDirectory, error) {
 }
 
 func (client *Client) UpdateGoogleDirectory(input map[string]interface{}) (*TurbotResourceMetadata, error) {
-	query := updateResourceMutation()
+	query := updateResourceMutation(googleDirectoryProperties)
 	responseData := &UpdateResourceResponse{}
 	variables := map[string]interface{}{
 		"input": input,

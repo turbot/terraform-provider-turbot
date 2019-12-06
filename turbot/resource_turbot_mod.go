@@ -150,21 +150,14 @@ func modInstall(d *schema.ResourceData, meta interface{}) error {
 	modId := mod.Turbot.Id
 
 	// now poll the mod resource to wait for the correct version
-	installedVersion, err := waitForInstallation(modId, mod.Build, client)
+	_, err = waitForInstallation(modId, mod.Build, client)
 	if err != nil {
 		return err
 	}
 
-	// set parent_akas property by loading resource and fetching the akas
-	if err := storeAkas(mod.Turbot.ParentId, "parent_akas", d, meta); err != nil {
-		return err
-	}
 	// assign the id
 	d.SetId(modId)
-	d.Set("version_latest", installedVersion)
-	d.Set("version_current", installedVersion)
-	d.Set("uri", mod.Turbot.Akas[0])
-	return nil
+	return resourceTurbotModRead(d, meta)
 }
 
 func resourceTurbotModRead(d *schema.ResourceData, meta interface{}) error {
