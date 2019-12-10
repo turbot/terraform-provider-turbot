@@ -47,11 +47,8 @@ func resourceTurbotShadowResourceCreate(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("resource and filter must not both be specified")
 	}
 
-	if resourceAka != "" {
-		filter = fmt.Sprintf("resource:%s level: self", resourceAka)
-	}
 	// create folder returns turbot resource metadata containing the id
-	resource, err := waitForResource(filter, client)
+	resource, err := waitForResource(filter, resourceAka, client)
 	if err != nil {
 		log.Println("[ERROR] Turbot shadow resource creation failed...", err)
 		return err
@@ -62,7 +59,7 @@ func resourceTurbotShadowResourceCreate(d *schema.ResourceData, meta interface{}
 	return nil
 }
 
-func waitForResource(filter string, client *apiClient.Client) (*apiClient.Resource, error) {
+func waitForResource(filter, resourceAka string, client *apiClient.Client) (*apiClient.Resource, error) {
 	retryCount := 0
 	// retry for 5 minutes
 	timeoutMins := 5
@@ -70,8 +67,8 @@ func waitForResource(filter string, client *apiClient.Client) (*apiClient.Resour
 	maxRetries := (timeoutMins * 60) / retryIntervalSecs
 	sleep := time.Duration(retryIntervalSecs) * time.Second
 	for retryCount < maxRetries {
-		resource, err := getResource(filter, client)
-		if err != nil {
+		resource, err := getResource(filter, resourceAka, client)
+		if err != nil && !apiClient.NotFoundError(err) {
 			return nil, err
 		}
 		if resource != nil {
@@ -85,7 +82,17 @@ func waitForResource(filter string, client *apiClient.Client) (*apiClient.Resour
 	return nil, fmt.Errorf("fetching resource with filter timed out after %d minutes", timeoutMins)
 }
 
-func getResource(filter string, client *apiClient.Client) (*apiClient.Resource, error) {
+func getResource(filter, resourceAka string, client *apiClient.Client) (*apiClient.Resource, error) {
+	if resourceAka != "" {
+		resource, err := client.ReadResource(resourceAka, nil)
+		if err != nil {
+			return nil, err
+		}
+		if resource.Turbot.Id != "" {
+			return resource, nil
+		}
+		return nil, nil
+	}
 	resourceList, err := client.ReadResourceList(filter, nil)
 	if err != nil {
 		return nil, err
