@@ -1,3 +1,10 @@
+## 1.0.0-beta.12 (December 12, 2019)
+BUG FIXES
+* resource/turbot_shadow_resource `create error` - Replaced `resourceList` with `resource` query to do a direct match.([#176](https://github.com/turbotio/terraform-provider-turbot/issues/176))
+
+ENHANCEMENTS:
+* Add Documentation for Resources and Data sources ([#178](https://github.com/turbotio/terraform-provider-turbot/issues/178))
+* Add vendor folder to git ([#181](https://github.com/turbotio/terraform-provider-turbot/issues/181))
 ## 1.0.0-beta.11 (December 6, 2019)
 BUG FIXES
 * resource/turbot_shadow_resource `read error`. When doing the read of tracked resource, the shadow resource read query returns `child elements` as well. Fix this return tracked resource.([#162](https://github.com/turbotio/terraform-provider-turbot/issues/162))  
@@ -15,7 +22,6 @@ TECHNICAL:
 * resource/turbot_smart_folder- update `create/update` mutations to accomodate `read` operation attribute changes([#168](https://github.com/turbotio/terraform-provider-turbot/issues/168))
 * resource/turbot_profile - update `create/update` mutations to accomodate `read` operation attribute changes([#158](https://github.com/turbotio/terraform-provider-turbot/issues/154))
 
-Ω
 ## 1.0.0-beta.10 (November 20, 2019)
 
 BUG FIXES
@@ -29,7 +35,6 @@ BUG FIXES
 ENHANCEMENTS:
 * resource/turbot_profile - make `directory_pool_id` optional
 * resource/turbot_folder - make `description` optional
-Ω
 ## 1.0.0-beta.8 (November 4, 2019)
 NOTES: 
 This requires core version >=5.0.0-beta.96  
