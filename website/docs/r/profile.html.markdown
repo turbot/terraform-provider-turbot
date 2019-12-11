@@ -1,0 +1,62 @@
+---
+title: turbot_profile
+template: Documentation
+nav:
+  title: turbot_profile
+---
+
+# turbot_profile
+
+The `Turbot Profile` resource adds support for creating user profiles. It is used to create, manage and delete profile settings.
+
+## Example Usage
+
+**Creating Your First Profile**
+
+```hcl
+resource "turbot_profile" "test" {
+  parent              = "tmod:@turbot/turbot#/"
+  title               = "Snape"
+  display_name        = "Severus Snape"
+  email               = "severus.slytherin@hogwards.com"
+  given_name          = "Severus Snape"
+  family_name         = "Snape"
+  directory_pool_id   = "snapeseverus"
+  profile_id          = "170759063660234"
+}
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+- `display_name` - (Required) The display name of the profile.
+- `email` - (Required) Email ID associated with the profile.
+- `family_name` - (Required) Last name of the user associated with the profile.
+- `given_name` - (Required) First name of the user associated with the profile.
+- `parent` - (Required) The `aka` or `id` of the level at which the profile is created.
+- `profile_id` - (Required) An unique identifier of the profile.
+- `title` - (Required) Name of the profile.
+- `directory_pool_id` - (Required) Pool ID for the directory in the current resource. Allows grouping of related directories e.g. SAML for authentication and LDAP for AD searching.
+- `external_id` - (Optional) A link between the local directory and the profile.
+- `last_login_timestamp` - (Optional) The most recent login through the profile.
+- `middle_name` - (Optional) Middle name of the user associated with the profile.
+- `picture` - (Optional) A picture associated with the profile.
+- `status` - (Optional) Status of the profile, which defaults to `active`. Probable options are `active` and `inactive`.
+
+**Note:** In case of a local directory, both the `profile_id` and `external_id` are required parameters.
+
+## Attributes Reference
+
+In addition to all the arguments above, the following attributes are exported:
+
+- `id` - Unique identifier of the resource.
+- `parent_akas` - A list of all `akas` for this Turbot profiles's parent resource.
+
+## Import
+
+Turbot profiles can be imported using the `id`. For example,
+
+```
+terraform import turbot_folder.my_folder 123456789012
+```
