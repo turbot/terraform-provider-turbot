@@ -27,4 +27,3 @@ codebuild_artifacts
 terraform-provider-turbot*
 config.tf
 override.tf
-/vendor/
