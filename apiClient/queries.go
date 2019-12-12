@@ -183,11 +183,10 @@ func readPolicyValueQuery(policyTypeUri string, resourceId string) string {
 }
 
 // smart folder
+// filter and description are removed for a workaround, will be removed after a Core change.
 func createSmartFolderMutation() string {
 	return fmt.Sprintf(`mutation CreateSmartFolder($input: CreateSmartFolderInput!) {
 		smartFolder: createSmartFolder(input: $input) {
-			description: get(path:"description")
-			filters: get(path:"filters")
 			turbot {
 				id
 				parentId
@@ -218,8 +217,6 @@ func readSmartFolderQuery(id string) string {
 func updateSmartFolderMutation() string {
 	return fmt.Sprintf(`mutation UpdateSmartFolder($input: UpdateSmartFolderInput!) {
 		smartFolder: updateSmartFolder(input: $input) {
-			description: get(path:"description")
-			filters: get(path:"filters")
 			turbot {
 				id
 				parentId

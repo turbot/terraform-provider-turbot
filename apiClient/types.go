@@ -213,6 +213,7 @@ type Profile struct {
 }
 
 // Smart folder
+
 type SmartFolderResponse struct {
 	SmartFolder SmartFolder
 }
