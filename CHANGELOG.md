@@ -1,10 +1,13 @@
 ## 1.0.0-beta.13 (December 12, 2019)
 BUG FIXES
-* resource_turbot_smart_folder: Smart folder creation was failing due to `get nested resolver` in smart folder mutation.([#183](https://github.com/turbotio/terraform-provider-turbot/issues/183))
-* Improved error logging of each. ([#182](https://github.com/turbotio/terraform-provider-turbot/issues/182))
+* resource_turbot_smart_folder: Smart folder creation was failing due to invalid graphql mutation.([#183](https://github.com/turbotio/terraform-provider-turbot/issues/183))
 
 TECHNICAL:
-* Update acceptance function names to have underscores as per review from `tfproviderlint`.([#186](https://github.com/turbotio/terraform-provider-turbot/issues/186))
+* Update acceptance test function names to have underscores.([#186](https://github.com/turbotio/terraform-provider-turbot/issues/186))
+
+ENHANCEMENTS:
+* Improved error logging. ([#182](https://github.com/turbotio/terraform-provider-turbot/issues/182))
+
 ## 1.0.0-beta.12 (December 12, 2019)
 BUG FIXES
 * resource/turbot_shadow_resource. When an aka is provided in the `resource` argument, multiple results are sometimes being returned. Use a `resource` query instead of a `resourceList` query with the filter `resource:<aka>`.([#176](https://github.com/turbotio/terraform-provider-turbot/issues/176))
