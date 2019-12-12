@@ -9,7 +9,7 @@ import (
 )
 
 // test suites
-func TestAccSmartFolder(t *testing.T) {
+func TestAccSmartFolder_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestAccGoogleDirectoryPgp(t *testing.T) {
+func TestAccGoogleDirectory_Pgp(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -29,7 +29,7 @@ func TestAccGoogleDirectoryPgp(t *testing.T) {
 }
 
 // test suites
-func TestAccGoogleDirectory(t *testing.T) {
+func TestAccGoogleDirectory_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

@@ -9,7 +9,7 @@ import (
 )
 
 // test suites
-func TestAccShadowResource(t *testing.T) {
+func TestAccShadowResource_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

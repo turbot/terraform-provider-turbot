@@ -9,7 +9,7 @@ import (
 )
 
 // test suites
-func TestAccLocalDirectoryUser(t *testing.T) {
+func TestAccLocalDirectoryUser_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

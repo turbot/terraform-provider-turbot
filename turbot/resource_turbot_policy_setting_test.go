@@ -199,7 +199,7 @@ func TestAccPolicySetting_SecretEncrypted(t *testing.T) {
 	})
 }
 
-func TestAccPolicySettingPrecedenceValueCheck(t *testing.T) {
+func TestAccPolicySetting_Precedence_Value_Check(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -217,7 +217,7 @@ func TestAccPolicySettingPrecedenceValueCheck(t *testing.T) {
 	})
 }
 
-func TestAccPolicySettingNullValueCheck(t *testing.T) {
+func TestAccPolicySetting_Null_Value_Check(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

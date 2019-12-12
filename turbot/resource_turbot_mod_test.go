@@ -10,7 +10,7 @@ import (
 
 // test suites
 
-func TestAccMod(t *testing.T) {
+func TestAccMod_Basic(t *testing.T) {
 	latestProviderTestVersion := "5.0.15"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
