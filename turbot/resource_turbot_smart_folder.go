@@ -75,6 +75,7 @@ func resourceTurbotSmartFolderCreate(d *schema.ResourceData, meta interface{}) e
 
 	// assign the id
 	d.SetId(smartFolder.Turbot.Id)
+	// TODO Remove Read call once schema changes are In.
 	return resourceTurbotSmartFolderRead(d, meta)
 }
 
@@ -91,6 +92,7 @@ func resourceTurbotSmartFolderUpdate(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 	// set 'Read' Properties
+	// TODO Remove Read call once schema changes are In.
 	return resourceTurbotSmartFolderRead(d, meta)
 }
 

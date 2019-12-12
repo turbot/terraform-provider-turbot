@@ -9,7 +9,7 @@ import (
 )
 
 // test suites
-func TestAccSamlDirectory(t *testing.T) {
+func TestAccSamlDirectory_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

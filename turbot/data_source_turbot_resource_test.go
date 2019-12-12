@@ -21,8 +21,8 @@ func TestAccResourceDataSource_Basic(t *testing.T) {
 			},
 		},
 	})
-
 }
+
 func testAccResourceDataSourceConfig() string {
 	return `
 resource "turbot_folder" "test" {

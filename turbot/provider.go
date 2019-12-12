@@ -8,7 +8,6 @@ import (
 	"log"
 )
 
-// TODO turbot_smartFolder & turbot_smart_folder_attachment does'nt have DB support
 func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{

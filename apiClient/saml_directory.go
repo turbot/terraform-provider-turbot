@@ -25,7 +25,7 @@ func (client *Client) CreateSamlDirectory(input map[string]interface{}) (*SamlDi
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating folder: %s", err.Error())
+		return nil, fmt.Errorf("error creating saml directory: %s", err.Error())
 	}
 	return &responseData.Resource, nil
 }
@@ -37,7 +37,7 @@ func (client *Client) ReadSamlDirectory(id string) (*SamlDirectory, error) {
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, fmt.Errorf("error reading folder: %s", err.Error())
+		return nil, fmt.Errorf("error saml directory: %s", err.Error())
 	}
 	return &responseData.Resource, nil
 }
@@ -51,7 +51,7 @@ func (client *Client) UpdateSamlDirectory(input map[string]interface{}) (*SamlDi
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating folder: %s", err.Error())
+		return nil, fmt.Errorf("error creating saml directory: %s", err.Error())
 	}
 	return &responseData.Resource, nil
 }

@@ -25,7 +25,7 @@ func (client *Client) ReadGrant(id string) (*Grant, error) {
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, fmt.Errorf("error reading folder: %s", err.Error())
+		return nil, fmt.Errorf("error reading grant: %s", err.Error())
 	}
 	return &responseData.Grant, nil
 }
@@ -41,7 +41,7 @@ func (client *Client) DeleteGrant(id string) error {
 
 	// execute api call
 	if err := client.doRequest(query, variables, &responseData); err != nil {
-		return fmt.Errorf("error deleting folder: %s", err.Error())
+		return fmt.Errorf("error deleting grant: %s", err.Error())
 	}
 	return nil
 }

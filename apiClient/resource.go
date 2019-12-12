@@ -106,7 +106,7 @@ func (client *Client) UpdateResource(input map[string]interface{}) (*TurbotResou
 	}
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating folder: %s", err.Error())
+		return nil, fmt.Errorf("error updating resource: %s", err.Error())
 	}
 	return &responseData.Resource.Turbot, nil
 }
@@ -124,7 +124,7 @@ func (client *Client) DeleteResource(aka string) error {
 
 	// execute api call
 	if err := client.doRequest(query, variables, &responseData); err != nil {
-		return fmt.Errorf("error deleting folder: %s", err.Error())
+		return fmt.Errorf("error deleting resource: %s", err.Error())
 	}
 	return nil
 }

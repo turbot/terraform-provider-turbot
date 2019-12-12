@@ -1,10 +1,21 @@
-## 1.0.0-beta.12 (December 12, 2019)
+## 1.0.0-beta.13 (December 12, 2019)
 BUG FIXES
-* resource/turbot_shadow_resource `create error` - Replaced `resourceList` with `resource` query to do a direct match.([#176](https://github.com/turbotio/terraform-provider-turbot/issues/176))
+* resource_turbot_smart_folder: Smart folder creation was failing due to invalid graphql mutation.([#183](https://github.com/turbotio/terraform-provider-turbot/issues/183))
+
+TECHNICAL:
+* Update acceptance test function names to have underscores.([#186](https://github.com/turbotio/terraform-provider-turbot/issues/186))
 
 ENHANCEMENTS:
-* Add Documentation for Resources and Data sources ([#178](https://github.com/turbotio/terraform-provider-turbot/issues/178))
+* Improved error logging. ([#182](https://github.com/turbotio/terraform-provider-turbot/issues/182))
+
+## 1.0.0-beta.12 (December 12, 2019)
+BUG FIXES
+* resource/turbot_shadow_resource. When an aka is provided in the `resource` argument, multiple results are sometimes being returned. Use a `resource` query instead of a `resourceList` query with the filter `resource:<aka>`.([#176](https://github.com/turbotio/terraform-provider-turbot/issues/176))
+
+ENHANCEMENTS:
+* Add documentation for resources and data sources ([#178](https://github.com/turbotio/terraform-provider-turbot/issues/178))
 * Add vendor folder to git ([#181](https://github.com/turbotio/terraform-provider-turbot/issues/181))
+
 ## 1.0.0-beta.11 (December 6, 2019)
 BUG FIXES
 * resource/turbot_shadow_resource `read error`. When doing the read of tracked resource, the shadow resource read query returns `child elements` as well. Fix this return tracked resource.([#162](https://github.com/turbotio/terraform-provider-turbot/issues/162))  

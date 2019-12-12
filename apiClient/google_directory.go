@@ -20,7 +20,7 @@ func (client *Client) CreateGoogleDirectory(input map[string]interface{}) (*Turb
 	}
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating folder: %s", err.Error())
+		return nil, fmt.Errorf("error creating google directory: %s", err.Error())
 	}
 	return &responseData.Resource.Turbot, nil
 }
@@ -37,7 +37,7 @@ func (client *Client) ReadGoogleDirectory(id string) (*GoogleDirectory, error) {
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, fmt.Errorf("error reading folder: %s", err.Error())
+		return nil, fmt.Errorf("error reading google directory: %s", err.Error())
 	}
 	return &responseData.Directory, nil
 }
@@ -51,7 +51,7 @@ func (client *Client) UpdateGoogleDirectory(input map[string]interface{}) (*Turb
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating folder: %s", err.Error())
+		return nil, fmt.Errorf("error creating google directory: %s", err.Error())
 	}
 	return &responseData.Resource.Turbot, nil
 }
