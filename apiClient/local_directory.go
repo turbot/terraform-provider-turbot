@@ -36,7 +36,7 @@ func (client *Client) ReadLocalDirectory(id string) (*LocalDirectory, error) {
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, fmt.Errorf("error reading folder: %s", err.Error())
+		return nil, fmt.Errorf("error reading local directory: %s", err.Error())
 	}
 	return &responseData.Resource, nil
 }
@@ -50,7 +50,7 @@ func (client *Client) UpdateLocalDirectory(input map[string]interface{}) (*Local
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating folder: %s", err.Error())
+		return nil, fmt.Errorf("error creating local directory: %s", err.Error())
 	}
 	return &responseData.Resource, nil
 }

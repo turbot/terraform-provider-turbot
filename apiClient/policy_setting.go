@@ -65,7 +65,7 @@ func (client *Client) FindPolicySetting(policyTypeUri, resourceAka string) (Poli
 
 	// execute api call
 	if err := client.doRequest(query, nil, &responseData); err != nil {
-		return PolicySetting{}, fmt.Errorf("error reading folder: %s", err.Error())
+		return PolicySetting{}, fmt.Errorf("error reading policy setting: %s", err.Error())
 	}
 
 	for _, setting := range responseData.PolicySettings.Items {

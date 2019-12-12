@@ -14,7 +14,7 @@ func (client *Client) CreateSmartFolderAttachment(input map[string]interface{}) 
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating folder: %s", err.Error())
+		return nil, fmt.Errorf("error creating smart folder attachment: %s", err.Error())
 	}
 	return &responseData.SmartFolderAttach.Turbot, nil
 }
@@ -28,7 +28,7 @@ func (client *Client) DeleteSmartFolderAttachment(input map[string]interface{}) 
 	}
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return fmt.Errorf("error deleting smart folder: %s", err.Error())
+		return fmt.Errorf("error deleting smart folder attachment: %s", err.Error())
 	}
 	return nil
 }

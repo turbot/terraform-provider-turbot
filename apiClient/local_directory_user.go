@@ -28,7 +28,7 @@ func (client *Client) CreateLocalDirectoryUser(input map[string]interface{}) (*L
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating folder: %s", err.Error())
+		return nil, fmt.Errorf("error creating local directory user: %s", err.Error())
 	}
 	return &responseData.Resource, nil
 }
@@ -39,7 +39,7 @@ func (client *Client) ReadLocalDirectoryUser(id string) (*LocalDirectoryUser, er
 	responseData := &LocalDirectoryUserResponse{}
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, fmt.Errorf("error reading folder: %s", err.Error())
+		return nil, fmt.Errorf("error reading local directory user: %s", err.Error())
 	}
 	return &responseData.Resource, nil
 }
@@ -52,7 +52,7 @@ func (client *Client) UpdateLocalDirectoryUserResource(input map[string]interfac
 	}
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating folder: %s", err.Error())
+		return nil, fmt.Errorf("error creating local directory user: %s", err.Error())
 	}
 	return &responseData.Resource, nil
 }

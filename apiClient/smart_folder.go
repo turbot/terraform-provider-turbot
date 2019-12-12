@@ -13,7 +13,7 @@ func (client *Client) CreateSmartFolder(input map[string]interface{}) (*SmartFol
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating folder: %s", err.Error())
+		return nil, fmt.Errorf("error creating smart folder: %s", err.Error())
 	}
 	return &responseData.SmartFolder, nil
 }
@@ -24,7 +24,7 @@ func (client *Client) ReadSmartFolder(id string) (*SmartFolder, error) {
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, fmt.Errorf("error reading folder: %s", err.Error())
+		return nil, fmt.Errorf("error reading smart folder: %s", err.Error())
 	}
 	return &responseData.SmartFolder, nil
 }
