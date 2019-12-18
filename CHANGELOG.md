@@ -1,4 +1,8 @@
-## 1.0.0(Unreleased)
+## 1.1.0 (Unreleased)
+
+## 1.0.0 (December 18, 2019)
+GENERAL
+* Add MPL license
 
 ## 1.0.0-beta.13 (December 12, 2019)
 BUG FIXES
