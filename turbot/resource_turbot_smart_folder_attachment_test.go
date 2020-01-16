@@ -36,7 +36,7 @@ resource "turbot_folder" "test" {
 
 resource "turbot_smart_folder" "test" {
   parent  = "tmod:@turbot/turbot#/"
-  filter = "resourceType:166872393063899 $.turbot.tags.a:b"
+  filter = "resourceType:181381985925765 $.turbot.tags.a:b"
   description = "Smart Folder Testing"
   title = "smart_folder"
 }

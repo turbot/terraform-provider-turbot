@@ -22,7 +22,7 @@ func TestAccSmartFolder_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("turbot_smart_folder.test", "title", "smart_folder"),
 					resource.TestCheckResourceAttr("turbot_smart_folder.test", "description", "Smart Folder Testing"),
 					resource.TestCheckResourceAttr("turbot_smart_folder.test", "parent", "tmod:@turbot/turbot#/"),
-					resource.TestCheckResourceAttr("turbot_smart_folder.test", "filter", "resourceType:166872393063899 $.turbot.tags.a:b"),
+					resource.TestCheckResourceAttr("turbot_smart_folder.test", "filter", "resourceType:181381985925765 $.turbot.tags.a:b"),
 				),
 			}, {
 				Config: testAccSmartFolderUpdateDescConfig(),
@@ -31,7 +31,7 @@ func TestAccSmartFolder_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("turbot_smart_folder.test", "title", "smart_folder"),
 					resource.TestCheckResourceAttr("turbot_smart_folder.test", "description", "Smart Folder updated"),
 					resource.TestCheckResourceAttr("turbot_smart_folder.test", "parent", "tmod:@turbot/turbot#/"),
-					resource.TestCheckResourceAttr("turbot_smart_folder.test", "filter", "resourceType:166872393063899 $.turbot.tags.a:b"),
+					resource.TestCheckResourceAttr("turbot_smart_folder.test", "filter", "resourceType:181381985925765 $.turbot.tags.a:b"),
 				),
 			},
 		},
@@ -43,7 +43,7 @@ func testAccSmartFolderConfig() string {
 	return `
 resource "turbot_smart_folder" "test" {
 	parent  = "tmod:@turbot/turbot#/"
-	filter = "resourceType:166872393063899 $.turbot.tags.a:b"
+	filter = "resourceType:181381985925765 $.turbot.tags.a:b"
 	description = "Smart Folder Testing"
 	title = "smart_folder"
 }
@@ -54,7 +54,7 @@ func testAccSmartFolderUpdateDescConfig() string {
 	return `
 resource "turbot_smart_folder" "test" {
 	parent  = "tmod:@turbot/turbot#/"
-	filter = "resourceType:166872393063899 $.turbot.tags.a:b"
+	filter = "resourceType:181381985925765 $.turbot.tags.a:b"
 	description = "Smart Folder updated"
 	title ="smart_folder"
 }
