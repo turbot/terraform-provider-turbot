@@ -18,9 +18,9 @@ func TestAccGrant_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_grant.test_grant", "resource", "tmod:@turbot/turbot#/"),
 					resource.TestCheckResourceAttr(
-						"turbot_grant.test_grant", "type", "tmod:@turbot/aws#/permission/types/aws"),
+						"turbot_grant.test_grant", "type", "tmod:@turbot/turbot-iam#/permission/types/turbot"),
 					resource.TestCheckResourceAttr(
-						"turbot_grant.test_grant", "level", "tmod:@turbot/turbot-iam#/permission/levels/superuser"),
+						"turbot_grant.test_grant", "level", "tmod:@turbot/turbot-iam#/permission/levels/owner"),
 				),
 			},
 		},
