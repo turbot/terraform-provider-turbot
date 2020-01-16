@@ -363,7 +363,6 @@ func readGoogleDirectoryQuery(aka string) string {
 		directoryType:     	get(path:"directoryType")
 		profileIdTemplate: 	get(path:"profileIdTemplate")
 		clientID:          	get(path:"clientID")
-		clientSecret:      	getSecret(path:"clientSecret")
 		poolId:            	get(path:"poolId")
 		groupIdTemplate:   	get(path:"groupIdTemplate")
 		loginNameTemplate: 	get(path:"loginNameTemplate")
