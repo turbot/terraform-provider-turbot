@@ -16,7 +16,7 @@ func TestAccPolicyValueDataSource_Basic(t *testing.T) {
 				Config: testAccPolicyValueConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.turbot_policy_value.test_policy", "value", "alpha.turbot.com"),
+						"data.turbot_policy_value.test_policy", "value", "turbot"),
 					resource.TestCheckResourceAttr(
 						"data.turbot_policy_value.test_policy", "precedence", "must"),
 				),
@@ -28,8 +28,8 @@ func TestAccPolicyValueDataSource_Basic(t *testing.T) {
 func testAccPolicyValueConfig() string {
 	return `
 data "turbot_policy_value" "test_policy" {
-  resource = "tmod:@turbot/turbot#/"
-  type = "tmod:@turbot/turbot#/policy/types/domainName"
+  resource = "arn:aws:::650022101893"
+  type = "tmod:@turbot/aws#/policy/types/turbotIamRoleExternalId"
 }
 `
 }
