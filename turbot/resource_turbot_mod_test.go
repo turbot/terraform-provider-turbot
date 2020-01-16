@@ -11,7 +11,7 @@ import (
 // test suites
 
 func TestAccMod_Basic(t *testing.T) {
-	latestProviderTestVersion := "5.0.15"
+	latestProviderTestVersion := "5.0.2"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -24,7 +24,7 @@ func TestAccMod_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "org", "turbot"),
 					resource.TestCheckResourceAttr(
-						"turbot_mod.test", "mod", "provider-test"),
+						"turbot_mod.test", "mod", "turbot-terraform-provider-test"),
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "version_current", "5.0.0"),
 				),
@@ -36,7 +36,7 @@ func TestAccMod_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "org", "turbot"),
 					resource.TestCheckResourceAttr(
-						"turbot_mod.test", "mod", "provider-test"),
+						"turbot_mod.test", "mod", "turbot-terraform-provider-test"),
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "version_current", latestProviderTestVersion),
 				),
@@ -49,7 +49,7 @@ func TestAccMod_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "org", "turbot"),
 					resource.TestCheckResourceAttr(
-						"turbot_mod.test", "mod", "provider-test"),
+						"turbot_mod.test", "mod", "turbot-terraform-provider-test"),
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "version_current", "5.0.1"),
 				),
@@ -62,7 +62,7 @@ func TestAccMod_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "org", "turbot"),
 					resource.TestCheckResourceAttr(
-						"turbot_mod.test", "mod", "provider-test"),
+						"turbot_mod.test", "mod", "turbot-terraform-provider-test"),
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "version_current", latestProviderTestVersion),
 				),
@@ -75,7 +75,7 @@ func TestAccMod_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "org", "turbot"),
 					resource.TestCheckResourceAttr(
-						"turbot_mod.test", "mod", "provider-test"),
+						"turbot_mod.test", "mod", "turbot-terraform-provider-test"),
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "version_current", latestProviderTestVersion),
 				),
@@ -88,7 +88,7 @@ func TestAccMod_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "org", "turbot"),
 					resource.TestCheckResourceAttr(
-						"turbot_mod.test", "mod", "provider-test"),
+						"turbot_mod.test", "mod", "turbot-terraform-provider-test"),
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "version_current", "5.0.2"),
 				),
@@ -101,7 +101,7 @@ func TestAccMod_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "org", "turbot"),
 					resource.TestCheckResourceAttr(
-						"turbot_mod.test", "mod", "provider-test"),
+						"turbot_mod.test", "mod", "turbot-terraform-provider-test"),
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "version_current", latestProviderTestVersion),
 				),
@@ -114,7 +114,7 @@ func TestAccMod_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "org", "turbot"),
 					resource.TestCheckResourceAttr(
-						"turbot_mod.test", "mod", "provider-test"),
+						"turbot_mod.test", "mod", "turbot-terraform-provider-test"),
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "version_current", "5.0.0"),
 				),
@@ -129,7 +129,7 @@ func testAccMod_v5_0_0_Config() string {
 resource "turbot_mod" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	org = "turbot"
-	mod = "provider-test"
+	mod = "turbot-terraform-provider-test"
 	version = "5.0.0"
 }
 `
@@ -140,7 +140,7 @@ func testAccMod_v5_0_1_Config() string {
 resource "turbot_mod" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	org = "turbot"
-	mod = "provider-test"
+	mod = "turbot-terraform-provider-test"
 	version = "5.0.1"
 }
 `
@@ -151,7 +151,7 @@ func testAccMod_ge_v5_0_0_Config() string {
 resource "turbot_mod" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	org = "turbot"
-	mod = "provider-test"
+	mod = "turbot-terraform-provider-test"
 	version = ">=5.0.0"
 }
 `
@@ -162,7 +162,7 @@ func testAccMod_lt_v5_0_3_Config() string {
 resource "turbot_mod" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	org = "turbot"
-	mod = "provider-test"
+	mod = "turbot-terraform-provider-test"
 	version = "<5.0.3"
 }
 `
@@ -173,7 +173,7 @@ func testAccModWildCardConfig() string {
 resource "turbot_mod" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	org = "turbot"
-	mod = "provider-test"
+	mod = "turbot-terraform-provider-test"
 	version = "*"
 }
 `
@@ -184,7 +184,7 @@ func testAccModWildCardConfig2() string {
 resource "turbot_mod" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	org = "turbot"
-	mod = "provider-test"
+	mod = "turbot-terraform-provider-test"
 	version = "5.0.*"
 }
 `
@@ -195,7 +195,7 @@ func testAccModNoVersionConfig() string {
 resource "turbot_mod" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	org = "turbot"
-	mod = "provider-test"
+	mod = "turbot-terraform-provider-test"
 }
 `
 }
@@ -204,7 +204,7 @@ func testAccModNoParentConfig() string {
 	return `
 resource "turbot_mod" "test"{
 	org = "turbot"
-	mod = "provider-test"
+	mod = "turbot-terraform-provider-test"
 	version = "5.0.0"
 }
 `

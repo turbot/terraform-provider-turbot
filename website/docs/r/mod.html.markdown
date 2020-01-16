@@ -17,7 +17,7 @@ The `Turbot Mod` resource adds support to install, update and uninstall a mod. T
 resource "turbot_mod" "test" {
   parent    = "tmod:@turbot/turbot#/"
   org       = "turbot"
-  mod       = "provider-test"
+  mod       = "turbot-terraform-provider-test"
   version   = "5.0.0"
 }
 ```

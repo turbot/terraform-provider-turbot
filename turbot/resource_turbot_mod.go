@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -286,7 +287,7 @@ func getLatestCompatibleVersion(org, modName, version string, meta interface{}) 
 	// now get latest version
 	var latestVersion *semver.Version
 	for _, modVersion := range modVersions {
-		if modVersion.Status == "available" {
+		if strings.ToLower(modVersion.Status) == "available" {
 			// create semver version from this version
 			v, err := semver.NewVersion(modVersion.Version)
 			if err != nil {
