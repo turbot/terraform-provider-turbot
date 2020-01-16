@@ -63,7 +63,7 @@ func GetCredentials(config ClientConfig) (ClientCredentials, error) {
 
 		// if no credentials path was specified, use ~/.turbot/credentials
 		if len(credentialsPath) == 0 {
-			config.CredentialsPath = filepath.Join(userHomeDir(), ".config", "turbot", "credentials.yml")
+			credentialsPath = filepath.Join(userHomeDir(), ".config", "turbot", "credentials.yml")
 		} else {
 			credentialsPath, err = homedir.Expand(credentialsPath)
 			if err != nil {
@@ -74,7 +74,7 @@ func GetCredentials(config ClientConfig) (ClientCredentials, error) {
 		if len(config.Profile) == 0 {
 			config.Profile = os.Getenv("TURBOT_PROFILE")
 		}
-		credentials, err = loadProfile(config.CredentialsPath, config.Profile)
+		credentials, err = loadProfile(credentialsPath, config.Profile)
 		if err != nil {
 			return ClientCredentials{}, err
 		}
