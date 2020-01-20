@@ -256,10 +256,10 @@ resource "turbot_policy_setting" "test_policy" {
 }
 
 // configs
-var stringPolicyType = "tmod:@turbot/turbot-terraform-provider-test#/policy/types/stringPolicy"
-var intPolicyType = "tmod:@turbot/turbot-terraform-provider-test#/policy/types/integerPolicy"
-var stringArrayPolicyType = "tmod:@turbot/turbot-terraform-provider-test#/policy/types/stringArrayPolicy"
-var secretPolicyType = "tmod:@turbot/turbot-terraform-provider-test#/policy/types/secretPolicy"
+var stringPolicyType = "tmod:@turbot/provider-policy-test#/policy/types/stringPolicy"
+var intPolicyType = "tmod:@turbot/provider-policy-test#/policy/types/integerPolicy"
+var stringArrayPolicyType = "tmod:@turbot/provider-policy-test#/policy/types/stringArrayPolicy"
+var secretPolicyType = "tmod:@turbot/provider-policy-test#/policy/types/secretPolicy"
 var stringPolicyTemplate = "{% if $.account.Id == '650022101893' %}Skip{% else %}'Check: Configured'{% endif %}"
 var stringPolicyTemplateInput = "{ account{ Id } }"
 
