@@ -1,7 +1,7 @@
 TEST?=$$(go list ./... |grep -v 'vendor')
 GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 WEBSITE_REPO=github.com/hashicorp/terraform-website
-PKG_NAME=datadog
+PKG_NAME=turbot
 DIR=~/.terraform.d/plugins
 
 default: build
@@ -11,10 +11,10 @@ build: fmtcheck
 
 install: fmtcheck
 	mkdir -vp $(DIR)
-	go build -o $(DIR)/terraform-provider-datadog
+	go build -o $(DIR)/terraform-provider-$(PKG_NAME)
 
 uninstall:
-	@rm -vf $(DIR)/terraform-provider-datadog
+	@rm -vf $(DIR)/terraform-provider-$(PKG_NAME)
 
 test: fmtcheck
 	go test -i $(TEST) || exit 1
