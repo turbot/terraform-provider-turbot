@@ -1,5 +1,9 @@
 ## 1.1.0 (Unreleased)
 
+## 1.0.1 (February 5, 2020)
+ENHANCEMENTS:
+* resource_turbot_shadow_resource: Improved error handling with retries to improve resilience.([#42](https://github.com/turbot/terraform-provider-turbot/issues/42))
+
 ## 1.0.0 (December 18, 2019)
 GENERAL
 * Add MPL license
