@@ -61,15 +61,25 @@ func resourceTurbotShadowResourceCreate(d *schema.ResourceData, meta interface{}
 
 func waitForResource(filter, resourceAka string, client *apiClient.Client) (*apiClient.Resource, error) {
 	retryCount := 0
+	errorCount := 0
 	// retry for 5 minutes
 	timeoutMins := 5
 	retryIntervalSecs := 5
+	maxErrorRetries := 5
 	maxRetries := (timeoutMins * 60) / retryIntervalSecs
 	sleep := time.Duration(retryIntervalSecs) * time.Second
 	for retryCount < maxRetries {
 		resource, err := getResource(filter, resourceAka, client)
-		if err != nil && !apiClient.NotFoundError(err) {
-			return nil, err
+		// when we get NotFoundError, we retry for 5 mins(timeoutMins) otherwise on a random/transient errors retry 5 times (maxErrorRetries)
+		if err != nil {
+			if apiClient.NotFoundError(err) {
+				errorCount = 0
+			} else {
+				errorCount++
+			}
+		}
+		if errorCount == maxErrorRetries {
+			return nil, fmt.Errorf("fetching resource with filter error out : %s", err)
 		}
 		if resource != nil {
 			log.Printf("found resource")
