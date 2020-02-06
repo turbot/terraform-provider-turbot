@@ -1,6 +1,7 @@
 ---
-title: turbot_profile
+title: turbot
 template: Documentation
+page_title: "Turbot: turbot_profile"
 nav:
   title: turbot_profile
 ---

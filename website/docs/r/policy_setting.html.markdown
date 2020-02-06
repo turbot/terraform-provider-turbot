@@ -1,6 +1,7 @@
 ---
-title: turbot_policy_setting
+title: "turbot"
 template: Documentation
+page_title: "Turbot: turbot_policy_setting"
 nav:
   title: turbot_policy_setting
 ---
@@ -27,6 +28,7 @@ resource "turbot_folder" "test" {
 resource "turbot_policy_setting" "test_policy" {
   resource    = turbot_folder.parent.id
   type        = "tmod:@turbot/turbot-iam#/policy/types/permissions"
+}
 ```
 
 **Setting Your Policy Using Nunjucks Template**

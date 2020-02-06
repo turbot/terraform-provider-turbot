@@ -1,6 +1,7 @@
 ---
-title: turbot_shadow_resource
+title: "turbot"
 template: Documentation
+page_title: "Turbot: turbot_shadow_resource"
 nav:
   title: turbot_shadow_resource
 ---

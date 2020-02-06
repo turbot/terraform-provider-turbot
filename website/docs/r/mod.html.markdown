@@ -1,6 +1,7 @@
 ---
-title: turbot_mod
+title: "turbot"
 template: Documentation
+page_title: "Turbot: turbot_mod"
 nav:
   title: turbot_mod
 ---

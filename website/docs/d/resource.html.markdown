@@ -1,6 +1,7 @@
 ---
-title: "Data Source: turbot_resource"
+title: "turbot"
 template: Documentation
+page_title: "Turbot: turbot_resource"
 nav:
   title: turbot_resource
 ---
@@ -13,11 +14,11 @@ This data source can be used to fetch information about a specific resource.
 
 ```hcl
 data "turbot_resource" "test_resource" {
-  id = "172720296209928"
+  id = "arn:aws:s3:::my-test"
 }
 
 output "json" {
-  value = data.turbot_resource.test_resource.json_data
+  value = "${data.turbot_resource.test_resource}".data
 }
 ```
 
@@ -31,5 +32,4 @@ output "json" {
 * `metadata` - A set of data that describes and gives information about the data of the resource
 * `akas` - A list of akas for the resource
 * `tags` - User defined way of logically grouping resources.
-* `json_data` - JSON representation of the full resource.
-* `turbot` - JSON representation of the full data of theresource stored in Turbot.
+* `turbot` - JSON representation of turbot data of the resource.

@@ -1,6 +1,7 @@
 ---
-title: turbot_smart_folder_attachment
+title: "turbot"
 template: Documentation
+page_title: "Turbot: turbot_smart_folder_attachment"
 nav:
   title: turbot_smart_folder_attachment
 ---
@@ -13,22 +14,12 @@ The `Turbot Smart Folder Attachment` resource attaches the smart folder to speci
 
 ## Example Usage
 
-**Creating a Smart Folder Attachment**
-
-```hcl
-resource "turbot_smart_folder_attachment" "test" {
-  resource     = "167225763707951"
-  smart_folder = "171222424857954"
-}
-```
-The above example attaches a smart folder (`id: 171222424857954`) to a resource (`id: 167225763707951`). It is important to understand that you have a smart folder and a resource for the attachment process. The following example provides a systematic approach of creating a smart folder attachment.
-
 **Creating Your Smart Folder**
 
 ```hcl
-resource "turbot_smart_folder" "test" {
-  parent      = "tmod:@turbot/turbot#/"
-  title       = "My smart folder"
+resource "turbot_smart_folder" "smart_folder" {
+  parent  = "tmod:@turbot/turbot#/"
+  title   = "My smart folder"
 }
 ```
 
@@ -52,10 +43,11 @@ resource "turbot_resource" "my_resource" {
 
 ```hcl
 resource "turbot_smart_folder_attachment" "test" {
-  resource     = "167225763707951"
-  smart_folder = "171222424857954"
+  resource     = "${turbot_resource.my_resource.id}" 
+  smart_folder = "${turbot_smart_folder.smart_folder.id}"
 }
 ```
+The above example attaches a smart folder (`smart_folder`) to a resource (`my_resource`). It is important to understand that you have a smart folder and a resource for the attachment process. The following example provides a systematic approach of creating a smart folder attachment.
 
 ## Argument Reference
 

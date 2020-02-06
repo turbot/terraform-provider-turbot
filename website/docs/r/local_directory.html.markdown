@@ -1,6 +1,7 @@
 ---
-title: turbot_local_directory
+title: "turbot"
 template: Documentation
+page_title: "Turbot: turbot_local_directory"
 nav:
   title: turbot_local_directory
 ---

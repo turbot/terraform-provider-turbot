@@ -1,6 +1,7 @@
 ---
-title: turbot_google_directory
+title: "turbot"
 template: Documentation
+page_title: "Turbot: turbot_google_directory"
 nav:
   title: turbot_google_directory
 ---

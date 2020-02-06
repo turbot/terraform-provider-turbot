@@ -1,6 +1,7 @@
 ---
-title: turbot_smart_folder
+title: "turbot"
 template: Documentation
+page_title: "Turbot: turbot_smart_folder"
 nav:
   title: turbot_smart_folder
 ---
@@ -13,12 +14,12 @@ nav:
 
 **Creating Your First Smart Folder**
 
-```hcl
-resource "turbot_smart_folder" "test" {
-  parent      = "tmod:@turbot/turbot#/"
-  title       = "smart_folder"
+ ```hcl
+resource "turbot_smart_folder" "folder" {
+  parent  = "tmod:@turbot/turbot#/"
+  title   = "My smart folder"
 }
-```
+  ```
 
 ## Argument Reference
 

@@ -1,6 +1,7 @@
 ---
-title: turbot_resource
+title: "turbot"
 template: Documentation
+page_title: "Turbot: turbot_resource"
 nav:
   title: turbot_resource
 ---
@@ -17,11 +18,12 @@ The `turbot_resource` defines a resource in Turbot. Typically it is used to defi
 resource "turbot_resource" "my_resource" {
   parent      = "tmod:@turbot/turbot#/"
   type        = "tmod:@turbot/aws#/resource/types/account"
-payload =  <<EOF
+  payload     = <<EOF
 {
   "Id": "123456789000",
-  "turbot": {}
-}EOF
+   "turbot": {}
+}
+EOF
 }
 ```
 

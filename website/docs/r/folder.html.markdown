@@ -1,6 +1,7 @@
 ---
-title: turbot_folder
+title: "turbot"
 template: Documentation
+page_title: "Turbot: turbot_folder"
 nav:
   title: turbot_folder
 ---

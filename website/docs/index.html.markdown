@@ -21,28 +21,31 @@ The Turbot provider offers a flexible means of providing credentials for authent
 
 ### Credentials file
 
-The Turbot provider credentials can be authenticated using the Turbot credentials file. In this case you need to add the provider information in the Terraform configuration file. By default Turbot stores your `credentials.yml` file at a default location - `.config/turbot/`. To understand more about Turbot credentials, click [here](/docs/api/credentials).
+The Turbot provider credentials can be authenticated using the Turbot credentials file. In this case you need to add the provider information in the Terraform configuration file. By default Turbot stores your `credentials.yml` file at a default location - `.config/turbot/`.
 
 **Example (Using your default profile)**
-```hcl
-  provider "turbot" {}
-```
 
-**Example (Using a named profile)**
-```hcl
-  provider "turbot" {
-    profile  = "MyProfile"
-  }
-```
+   ```hcl
+     provider "turbot" {}
+   ```
+
+**Example (Using a named profile)** 
+
+   ```hcl
+    provider "turbot" {
+        profile  = "MyProfile"
+    }
+   ```
 
 Alternatively you can also store your credentials in your desired path. This can be accessed by using the `credentials_file` argument along with `profile` argument.
 
 **Example Usage**
+
   ```hcl
-    provider "turbot" {
-      profile                  = MyProfile
-      credentials_file         = "/Users/test_user_name/{{credential_file_path}}"
-    }
+   provider "turbot" {
+     profile                  = MyProfile
+     credentials_file         = "/Users/test_user_name/{{credential_file_path}}"
+   }
   ```
 
 ### Static Credentials
@@ -76,11 +79,11 @@ You can provide your credentials via `TURBOT_ACCESS_KEY`, `TURBOT_SECRET_KEY` an
 
 **Example Usage**
 
-```ruby
-export TURBOT_SECRET_KEY=xxxxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-export TURBOT_ACCESS_KEY=xxxxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-export TURBOT_WORKSPACE=https://bananaman-turbot.putney.turbot.io
-```
+   ```ruby
+    export TURBOT_SECRET_KEY=xxxxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    export TURBOT_ACCESS_KEY=xxxxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    export TURBOT_WORKSPACE=https://bananaman-turbot.putney.turbot.io
+   ```
 
 ## Argument Reference
 

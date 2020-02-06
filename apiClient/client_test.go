@@ -62,7 +62,7 @@ func TestValidateBadWorkspace(t *testing.T) {
 	assert.Equal(t, expected, err.Error())
 }
 
-func TestValidatePass(t *testing.T) {
+func TestAccValidatePass(t *testing.T) {
 	config := ClientConfig{
 		Credentials: ClientCredentials{},
 	}

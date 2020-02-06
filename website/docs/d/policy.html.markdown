@@ -1,6 +1,7 @@
 ---
-title: "Data Source: turbot_policy_value"
+title: "turbot"
 template: Documentation
+page_title: "Turbot: turbot_policy_value"
 nav:
   title: turbot_policy_value
 ---
@@ -16,20 +17,24 @@ A simple example to extract the value of a policy.
 
 ```hcl
 data "turbot_policy_value" "example" {
-  type      = "tmod:@turbot/turbot-iam#/policy/types/permissions"
-  resource  = "172720296209928"
+  type      = "tmod:@turbot/aws-s3#/policy/types/bucketVersioning"
+  resource  = "arn:aws:s3:::my-test"
+}
+
+output "json" {
+  value = "${data.turbot_policy_value.example}".value
 }
 ```
 Here is another example wherein the value of a turbot policy is used to set another policy on a folder.
 
 ```hcl
 data "turbot_policy_value" "example" {
-  type            = "tmod:@turbot/turbot-iam#/policy/types/permissions"
-  resource        = "172720296209928"
+  type      = "tmod:@turbot/aws-s3#/policy/types/bucketVersioning"
+  resource  = "arn:aws:s3:::my-test"
 }
 
-output "op1" {
-  value = "data.turbot_policy_value.example.value"
+output "json" {
+  value = "${data.turbot_policy_value.example}".value
 }
 
 resource "turbot_folder" "parent" {
@@ -39,7 +44,7 @@ resource "turbot_folder" "parent" {
 }
 resource "turbot_policy_setting" "test_policy" {
   resource      = "turbot_folder.parent.id"
-  type          = "tmod:@turbot/turbot-iam#/policy/types/permissions"
+  type          = "tmod:@turbot/aws-s3#/policy/types/bucketVersioning"
   value         = "data.turbot_policy_value.example.value"
   precedence    = "must"
 }

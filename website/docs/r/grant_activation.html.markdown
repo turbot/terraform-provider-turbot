@@ -1,6 +1,7 @@
 ---
-title: turbot_grant_activation
+title: "turbot"
 template: Documentation
+page_title: "Turbot: turbot_grant_activation"
 nav:
   title: turbot_grant_activation
 ---
