@@ -115,10 +115,15 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 
 	// build required properties from data.
 	// properties is a map of property name -> property path
-	properties, err := helpers.PropertyMapFromJson(d.Get("data").(string))
 
-	if err != nil {
-		return fmt.Errorf("error retrieving properties from resource data: %s", err.Error())
+	var properties map[string]string = nil
+
+	if _, ok := d.GetOk("data"); ok {
+		var err error = nil
+		properties, err = helpers.PropertyMapFromJson(d.Get("data").(string))
+		if err != nil {
+			return fmt.Errorf("error retrieving properties from resource data: %s", err.Error())
+		}
 	}
 
 	resource, err := client.ReadResource(id, properties)

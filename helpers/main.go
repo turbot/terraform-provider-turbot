@@ -97,6 +97,9 @@ func FormatJson(body string) string {
 
 // given a json representation of an object, build a map of the property names: property alias -> property path
 func PropertyMapFromJson(body string) (map[string]string, error) {
+	if body == "" {
+		return nil, nil
+	}
 	data := map[string]interface{}{}
 	if err := json.Unmarshal([]byte(body), &data); err != nil {
 		return nil, err
