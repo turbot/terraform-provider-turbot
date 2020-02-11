@@ -1,5 +1,9 @@
 ## 1.1.0 (Unreleased)
 
+## 1.0.2 (February 11, 2020)
+BUG FIXES
+* resource_turbot_resource: Import was failing with error: `Unexpected JSON`.([#50](https://github.com/turbot/terraform-provider-turbot/issues/50))
+
 ## 1.0.1 (February 5, 2020)
 ENHANCEMENTS:
 * resource_turbot_shadow_resource: Improved error handling with retries to improve resilience.([#42](https://github.com/turbot/terraform-provider-turbot/issues/42))
