@@ -8,7 +8,7 @@ var googleDirectoryProperties = []interface{}{
 	// explicit mapping
 	map[string]string{"client_id": "clientID"},
 	// implicit mappings
-	"title", "pool_id", "profile_id_template", "group_id_template", "login_name_template", "client_secret", "hosted_name", "description"}
+	"title", "poolId", "profileIdTemplate", "groupIdTemplate", "loginNameTemplate", "clientSecret", "hostedName", "description"}
 
 func (client *Client) CreateGoogleDirectory(input map[string]interface{}) (*TurbotResourceMetadata, error) {
 	query := createResourceMutation(googleDirectoryProperties)
