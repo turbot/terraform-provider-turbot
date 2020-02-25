@@ -59,6 +59,9 @@ func validationQuery() (string, ValidationResponse) {
 func createPolicySettingMutation() string {
 	return `mutation CreatePolicySetting($input: CreatePolicySettingInput!) {
 	policySetting: createPolicySetting(input: $input ) {
+		type {
+			uri
+		}
 		value: secretValue
 		valueSource: secretValueSource
 		template
@@ -79,6 +82,9 @@ func createPolicySettingMutation() string {
 func readPolicySettingQuery(policySettingId string) string {
 	return fmt.Sprintf(`{
 policySetting(id:"%s") {
+	type {
+		uri
+	}
 	value: secretValue
 	valueSource: secretValueSource
 	template
@@ -100,6 +106,9 @@ policySetting(id:"%s") {
 func updatePolicySettingMutation() string {
 	return `mutation UpdatePolicySetting($input: UpdatePolicySettingInput!) {
 	policySetting: updatePolicySetting(input: $input ) {
+		type {
+			uri
+		}
 		value: secretValue
 		valueSource: secretValueSource
 		template

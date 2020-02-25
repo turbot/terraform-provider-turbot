@@ -83,6 +83,9 @@ type FindPolicySettingResponse struct {
 }
 
 type PolicySetting struct {
+	Type struct {
+		Uri string
+	}
 	Value              interface{}
 	ValueSource        string
 	Default            bool

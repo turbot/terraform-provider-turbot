@@ -169,6 +169,7 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 	d.Set("note", policySetting.Note)
 	d.Set("valid_from_timestamp", policySetting.ValidFromTimestamp)
 	d.Set("valid_to_timestamp", policySetting.ValidToTimestamp)
+	d.Set("type", policySetting.Type.Uri)
 	// assign the id
 	d.SetId(policySetting.Turbot.Id)
 
@@ -179,7 +180,7 @@ func resourceTurbotPolicySettingRead(d *schema.ResourceData, meta interface{}) e
 	client := meta.(*apiClient.Client)
 	id := d.Id()
 
-	setting, err := client.ReadPolicySetting(id)
+	policySetting, err := client.ReadPolicySetting(id)
 	if err != nil {
 		if apiClient.NotFoundError(err) {
 			// setting was not found - clear id
@@ -189,20 +190,20 @@ func resourceTurbotPolicySettingRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	// set akas properties by loading resource and fetching the akas
-	if err := storeAkas(setting.Turbot.ResourceId, "resource_akas", d, meta); err != nil {
+	if err := storeAkas(policySetting.Turbot.ResourceId, "resource_akas", d, meta); err != nil {
 		return err
 	}
 
 	// assign results back into ResourceData
 	// if pgp_key has been supplied, encrypt value and value_source
-	storeValue(d, setting)
-	d.Set("precedence", setting.Precedence)
-	d.Set("template", setting.Template)
-	d.Set("template_input", setting.TemplateInput)
-	d.Set("note", setting.Note)
-	d.Set("valid_from_timestamp", setting.ValidFromTimestamp)
-	d.Set("valid_to_timestamp", setting.ValidToTimestamp)
-
+	storeValue(d, policySetting)
+	d.Set("precedence", policySetting.Precedence)
+	d.Set("template", policySetting.Template)
+	d.Set("template_input", policySetting.TemplateInput)
+	d.Set("note", policySetting.Note)
+	d.Set("valid_from_timestamp", policySetting.ValidFromTimestamp)
+	d.Set("valid_to_timestamp", policySetting.ValidToTimestamp)
+	d.Set("type", policySetting.Type.Uri)
 	return nil
 }
 
@@ -245,6 +246,7 @@ func resourceTurbotPolicySettingUpdate(d *schema.ResourceData, meta interface{})
 	d.Set("note", policySetting.Note)
 	d.Set("valid_from_timestamp", policySetting.ValidFromTimestamp)
 	d.Set("valid_to_timestamp", policySetting.ValidToTimestamp)
+	d.Set("type", policySetting.Type.Uri)
 	return nil
 }
 
