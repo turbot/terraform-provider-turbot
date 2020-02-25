@@ -1,5 +1,11 @@
 ## 1.1.0 (Unreleased)
 
+## 1.0.3 (February 25, 2020)
+BUG FIXES
+* resource_turbot_policy_setting: Import was not setting the type property, causing terraform plan to require replacement of the resource.([#57](https://github.com/turbot/terraform-provider-turbot/issues/57))
+
+TECHNICAL:
+** resource_turbot_google_directory:  Invalid properties were being passed to the turbot API.([#56](https://github.com/turbot/terraform-provider-turbot/issues/56))
 ## 1.0.2 (February 11, 2020)
 BUG FIXES
 * resource_turbot_resource: Import was failing with error: `Unexpected JSON`.([#50](https://github.com/turbot/terraform-provider-turbot/issues/50))
