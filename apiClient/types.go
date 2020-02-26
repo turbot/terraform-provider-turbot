@@ -28,6 +28,9 @@ type ReadResourceListResponse struct {
 type Resource struct {
 	Turbot TurbotResourceMetadata
 	Data   map[string]interface{}
+	Type   struct {
+		Uri string
+	}
 }
 
 type ReadSerializableResourceResponse struct {

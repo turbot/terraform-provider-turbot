@@ -82,6 +82,7 @@ func resourceTurbotResourceExists(d *schema.ResourceData, meta interface{}) (b b
 
 func resourceTurbotResourceCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
+	typeUri := d.Get("type")
 	var err error
 
 	// build input map to pass to mutation
@@ -106,6 +107,7 @@ func resourceTurbotResourceCreate(d *schema.ResourceData, meta interface{}) erro
 	if metadata, ok := d.GetOk("metadata"); ok {
 		d.Set("metadata", helpers.FormatJson(metadata.(string)))
 	}
+	d.Set("type", typeUri)
 	return nil
 }
 
@@ -147,7 +149,9 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 	if err := storeAkas(resource.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
+
 	d.Set("parent", resource.Turbot.ParentId)
+	d.Set("type", resource.Type.Uri)
 	d.Set("data", data)
 	return nil
 }

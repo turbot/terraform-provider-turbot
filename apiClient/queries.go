@@ -329,6 +329,9 @@ func deleteResourceMutation() string {
 func readResourceQuery(aka string, properties []interface{}) string {
 	return fmt.Sprintf(`{
 	resource(id:"%s") {
+		type {
+			uri
+		}
 %s
 		turbot: get(path:"turbot")
   	}

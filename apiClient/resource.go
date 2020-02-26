@@ -165,6 +165,10 @@ func (client *Client) AssignResourceResults(responseData interface{}, properties
 	if err := mapstructure.Decode(responseData.(map[string]interface{})["turbot"], &resource.Turbot); err != nil {
 		return nil, err
 	}
+	// convert type property
+	if err := mapstructure.Decode(responseData.(map[string]interface{})["type"], &resource.Type); err != nil {
+		return nil, err
+	}
 	// write properties into a map
 	if properties != nil {
 		for p := range properties {
