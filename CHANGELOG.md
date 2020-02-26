@@ -1,5 +1,9 @@
 ## 1.1.0 (Unreleased)
 
+## 1.0.4 (February 26, 2020)
+BUG FIXES
+* resource_turbot_resource: Import was not setting the type property, causing terraform plan to require replacement of the resource.([#62](https://github.com/turbot/terraform-provider-turbot/issues/62))
+
 ## 1.0.3 (February 25, 2020)
 BUG FIXES
 * resource_turbot_policy_setting: Import was not setting the type property, causing terraform plan to require replacement of the resource.([#57](https://github.com/turbot/terraform-provider-turbot/issues/57))
