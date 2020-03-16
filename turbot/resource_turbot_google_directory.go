@@ -71,7 +71,7 @@ func resourceGoogleDirectory() *schema.Resource {
 			"client_secret": {
 				Type:             schema.TypeString,
 				Required:         true,
-				DiffSuppressFunc: suppressIfPgpKeyPresent,
+				DiffSuppressFunc: suppressIfClientSecretPresent,
 			},
 			"pgp_key": {
 				Type:     schema.TypeString,
@@ -228,8 +228,10 @@ func storeClientSecret(d *schema.ResourceData, clientSecret string) error {
 	return nil
 }
 
-// if the value is encrypted we cannot perform drift detection - suppress the diff if a pgp key has been specified
-func suppressIfPgpKeyPresent(k, old, new string, d *schema.ResourceData) bool {
-	_, keyPresent := d.GetOk("pgp_key")
-	return old != "" && keyPresent
+func suppressIfClientSecretPresent(k, old, new string, d *schema.ResourceData) bool {
+	// We do not read back client secret so suppress diff caused by empty value
+	if old != "" && new == "" {
+		return true
+	}
+	return false
 }
