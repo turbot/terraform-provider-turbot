@@ -62,16 +62,6 @@ func TestValidateBadWorkspace(t *testing.T) {
 	assert.Equal(t, expected, err.Error())
 }
 
-func TestAccValidatePass(t *testing.T) {
-	config := ClientConfig{
-		Credentials: ClientCredentials{},
-	}
-	client, err := CreateClient(config)
-	assert.Nil(t, err, "error creating client")
-	err = client.Validate()
-	assert.Equal(t, nil, err)
-}
-
 func TestBuildApiUrl(t *testing.T) {
 	type urlTest struct {
 		url         string
