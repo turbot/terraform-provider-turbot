@@ -18,7 +18,7 @@ func TestAccShadowResource_Basic(t *testing.T) {
 				Config: testAccShadowResourceConfig(providerResource),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckShadowResourceExists("turbot_shadow_resource.shadow_resource"),
-					resource.TestCheckResourceAttr("turbot_shadow_resource.shadow_resource", "resource", "arn:aws:logs:us-east-2:650022101893:log-group:provider-test-hashicorp"),
+					resource.TestCheckResourceAttr("turbot_shadow_resource.shadow_resource", "resource", "arn:aws:logs:us-east-2:713469427990:log-group:provider-test-hashicorp"),
 				),
 			},
 		},
@@ -31,7 +31,7 @@ var providerResource = "provider-test-hashicorp"
 func testAccShadowResourceConfig(resource string) string {
 	return fmt.Sprintf(`
 resource "turbot_policy_setting" "region_stack_source" {
-  resource = "arn:aws::us-east-2:650022101893"
+  resource = "arn:aws::us-east-2:713469427990"
  type = "tmod:@turbot/aws#/policy/types/regionStackSource"
   value = <<EOF
 resource "aws_cloudwatch_log_group" "provider" {
@@ -45,7 +45,7 @@ EOF
   precedence = "REQUIRED"
 }
 resource "turbot_shadow_resource" "shadow_resource" {
-  resource    = "arn:aws:logs:us-east-2:650022101893:log-group:provider-test-hashicorp"
+  resource    = "arn:aws:logs:us-east-2:713469427990:log-group:provider-test-hashicorp"
 }`, resource)
 }
 

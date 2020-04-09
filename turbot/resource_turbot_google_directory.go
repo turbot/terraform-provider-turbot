@@ -230,8 +230,11 @@ func storeClientSecret(d *schema.ResourceData, clientSecret string) error {
 
 func suppressIfClientSecretPresent(k, old, new string, d *schema.ResourceData) bool {
 	// We do not read back client secret so suppress diff caused by empty value
-	if old != "" && new == "" {
-		return true
+	_, keyPresent := d.GetOk("pgp_key")
+	if old != "" {
+		if keyPresent || new == "" {
+			return true
+		}
 	}
 	return false
 }

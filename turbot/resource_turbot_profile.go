@@ -3,12 +3,17 @@ package turbot
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
+	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 )
 
 // properties which must be passed to a create/update call
 var profileInputProperties = []interface{}{"parent"}
 var profileDataProperties = []interface{}{"title", "status", "display_name", "given_name", "family_name", "email", "directory_pool_id", "profile_id"}
 
+func getProfileUpdateProperties() []interface{} {
+	excludedProperties := []string{"profile_id"}
+	return helpers.RemoveProperties(profileDataProperties, excludedProperties)
+}
 func resourceTurbotProfile() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceTurbotProfileCreate,
@@ -153,7 +158,7 @@ func resourceTurbotProfileUpdate(d *schema.ResourceData, meta interface{}) error
 	client := meta.(*apiClient.Client)
 	// build mutation data
 	input := mapFromResourceData(d, profileInputProperties)
-	input["data"] = mapFromResourceData(d, profileDataProperties)
+	input["data"] = mapFromResourceData(d, getProfileUpdateProperties())
 	input["id"] = d.Id()
 
 	// do create

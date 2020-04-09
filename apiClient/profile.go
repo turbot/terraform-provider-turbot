@@ -51,7 +51,7 @@ func (client *Client) UpdateProfile(input map[string]interface{}) (*Profile, err
 	}
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating profile: %s", err.Error())
+		return nil, fmt.Errorf("error updating profile: %s", err.Error())
 	}
 	return &responseData.Resource, nil
 }

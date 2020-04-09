@@ -28,7 +28,7 @@ func TestAccPolicyValueDataSource_Basic(t *testing.T) {
 func testAccPolicyValueConfig() string {
 	return `
 data "turbot_policy_value" "test_policy" {
-  resource = "arn:aws:::650022101893"
+  resource = "arn:aws:::713469427990"
   type = "tmod:@turbot/aws#/policy/types/turbotIamRoleExternalId"
 }
 `
