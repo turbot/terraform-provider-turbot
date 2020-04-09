@@ -37,29 +37,15 @@ func TestAccGrantActivate_Basic(t *testing.T) {
 // configs
 func testAccGrantActivateConfig() string {
 	return `
-resource "turbot_local_directory" "test_dir" {
-	parent              = "tmod:@turbot/turbot#/"
-	title               = "provider_test_directory"
-	description         = "provider_test_directory"
-	profile_id_template = "{{profile.email}}"
-}
-
-resource "turbot_local_directory_user" "test_user" {
-	title        = "Kai Daguerre"
-	email        = "kai@turbot.com"
-	display_name = "Kai Daguerre"
-	parent       = turbot_local_directory.test_dir.id
-}
-
 resource "turbot_profile" "test_profile" {
-	title             = turbot_local_directory_user.test_user.title
-	email             = turbot_local_directory_user.test_user.email
+	title             = "provider_test"
+	email             = "rupesh@turbot.com"
 	directory_pool_id = "dpi"
-	given_name 		  = "Kai"
-	family_name       = "Daguerre"
-	display_name      = turbot_local_directory_user.test_user.display_name
-	parent            = turbot_local_directory.test_dir.id
-	profile_id        = turbot_local_directory_user.test_user.email
+	given_name 		  = "rupesh"
+	family_name       = "patil"
+	display_name      = "rupesh"
+	parent            = "tmod:@turbot/turbot#/"
+	profile_id        = "170759063660234"
 }
 
 resource "turbot_grant" "test_grant" {

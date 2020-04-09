@@ -52,18 +52,11 @@ func TestAccLocalDirectoryUser_Basic(t *testing.T) {
 // configs
 func testAccLocalDirectoryUserConfig() string {
 	return `
-resource "turbot_local_directory" "test_dir" {
-	parent              = "tmod:@turbot/turbot#/"
-	title               = "provider_test_directory"
-	description         = "provider_test_directory"
-	profile_id_template = "{{profile.email}}"
-}
-
 resource "turbot_local_directory_user" "test_user" {
 	title        = "Kai Daguerre"
 	email        = "kai@turbot.com"
 	display_name = "Kai Daguerre"
-	parent       = turbot_local_directory.test_dir.id
+	parent       = "tmod:@turbot/turbot#/"
 }
 `
 }
@@ -81,24 +74,17 @@ resource "turbot_local_directory_user" "test_user" {
 	title        = "Kai Daguerre2"
 	email        = "kai@turbot.com"
 	display_name = "Kai Daguerre"
-	parent       = turbot_local_directory.test_dir.id
+	parent       = "tmod:@turbot/turbot#/"
 }`
 }
 
 func testAccLocalDirectoryUserUpdateEmailConfig() string {
 	return `
-resource "turbot_local_directory" "test_dir" {
-	parent              = "tmod:@turbot/turbot#/"
-	title               = "provider_test_directory"
-	description         = "provider_test_directory"
-	profile_id_template = "{{profile.email}}"
-}
-
 resource "turbot_local_directory_user" "test_user" {
 	title        = "Kai Daguerre"
 	email        = "kai2@turbot.com"
 	display_name = "Kai Daguerre"
-	parent       = turbot_local_directory.test_dir.id
+	parent       = "tmod:@turbot/turbot#/"
 }`
 }
 

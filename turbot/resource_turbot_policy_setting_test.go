@@ -279,14 +279,8 @@ func testAccPolicySettingStringConfigWithPgp(policyType, value string, precedenc
 	}
 
 	config := fmt.Sprintf(`
-resource "turbot_folder" "parent" {
-	parent = "tmod:@turbot/turbot#/"
-	title = "provider_acceptance_tests"
-	description = "Acceptance testing folder"
-}
-
 resource "turbot_policy_setting" "test_policy" {
-	resource = turbot_folder.parent.id
+	resource = "tmod:@turbot/turbot#/"
 	type = "%s"
 	value = %s
 	precedence = "%s"
@@ -302,13 +296,8 @@ func testAccPolicySettingIntConfig(policyType string, value int, precedence stri
 
 func testAccPolicySettingTemplateConfig(policyType, template, templateInput, precedence string) string {
 	return fmt.Sprintf(`
-resource "turbot_folder" "parent" {
-	parent = "tmod:@turbot/turbot#/"
-	title = "terraform-provider-turbot"
-	description = "terraform-provider-turbot"
-}
 resource "turbot_policy_setting" "test_policy" {
-	resource = turbot_folder.parent.id
+	resource = "tmod:@turbot/turbot#/"
 	type = "%s"
 	template = "%s"
 	template_input = "%s"
@@ -319,13 +308,8 @@ resource "turbot_policy_setting" "test_policy" {
 func buildConfig(policyType, value string, precedence string) string {
 
 	config := fmt.Sprintf(`
-resource "turbot_folder" "parent" {
-	parent = "tmod:@turbot/turbot#/"
-	title = "provider_acceptance_tests"
-	description = "Acceptance testing folder"
-}
 resource "turbot_policy_setting" "test_policy" {
-	resource = turbot_folder.parent.id
+	resource = "tmod:@turbot/turbot#/"
 	type = "%s"
 	value = %s
 	precedence = "%s"
