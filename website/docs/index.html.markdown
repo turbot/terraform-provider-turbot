@@ -1,4 +1,5 @@
 ---
+layout: "github"
 title: Provider
 template: Documentation
 nav:
