@@ -1,4 +1,4 @@
-## 1.1.0 (Unreleased)
+## 1.1.0 (April 21, 2020)
 BUG FIXES
 * `resource/resource_turbot_google_directory`: For security, the client secret is not read from the resource. This causes diffs to be identified after importing the resource, requiring replacement of the resource. Suppress diffs caused by client_secret.([#66](https://github.com/turbot/terraform-provider-turbot/issues/66))
 
