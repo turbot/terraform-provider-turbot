@@ -1,4 +1,5 @@
 ---
+layout: "turbot"
 title: Provider
 template: Documentation
 nav:
