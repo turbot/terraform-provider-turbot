@@ -58,7 +58,7 @@ Alternatively you can also store your credentials in your desired path. This can
   ```hcl
   # Configure the Turbot provider
   provider "turbot" {
-    workspace           = "https://punisher-turbot.cloud.turbot-dev.com"
+    workspace           = "https://example.com"
     access_key          = "b05*****-****-****-****-********580a"
     secret_key          = "d79*****-****-****-****-********b28"
   }
@@ -83,15 +83,15 @@ You can provide your credentials via `TURBOT_ACCESS_KEY`, `TURBOT_SECRET_KEY` an
    ```ruby
     export TURBOT_SECRET_KEY=xxxxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     export TURBOT_ACCESS_KEY=xxxxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-    export TURBOT_WORKSPACE=https://bananaman-turbot.putney.turbot.io
+    export TURBOT_WORKSPACE=https://example.com
    ```
 
 ## Argument Reference
 
 The following arguments are used:
 
-* `workspace`  - Turbot workspace endpoint, e.g. `https://console-acme.cloud.turbot.com/api/latest/graphql`. May also be set via the `TURBOT_WORKSPACE` environment variable.
-* `access_key` - Turbot access key, e.g. `c32ee14d-615b-4efb-95c3-0cf3f680d2fc`. May also be set via the `TURBOT_ACCESS_KEY` environment variable.
-* `secret_key` - Turbot secret key, e.g. `a2d6660d-0feb-42c7-9718-274cb5a82ed7`. May also be set via the `TURBOT_SECRET_KEY` environment variable.
+* `workspace`  - Turbot workspace endpoint, e.g. `https://example.com/api/latest/graphql`. May also be set via the `TURBOT_WORKSPACE` environment variable.
+* `access_key` - Turbot access key, e.g. `1wxxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxe6`. May also be set via the `TURBOT_ACCESS_KEY` environment variable.
+* `secret_key` - Turbot secret key, e.g. `b90xxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxnp`. May also be set via the `TURBOT_SECRET_KEY` environment variable.
 * `profile`    - Turbot workspace profile, e.g. `testProfile`. May also be set via the `TURBOT_PROFILE` environment variable.
 * `credentials_file`    - Turbot shared credentials path, e.g. `user/testUser/{{credential_file_path}}`. May also be set via the `TURBOT_SHARED_CREDENTIALS_PATH` environment variable.
