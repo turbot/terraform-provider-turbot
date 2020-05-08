@@ -3,11 +3,21 @@ package turbot
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
+	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 )
 
-// these are the properties which must be passed to a create/update call
-var samlDirectoryDataProperties = []interface{}{"description", "status", "entry_point", "issuer", "certificate", "profile_id_template", "group_id_template", "name_id_format", "sign_requests", "signature_private_key", "signature_algorithm", "pool_id"}
-var samlDirectoryInputProperties = []interface{}{"parent", "tags"}
+// these are the properties which must be passed to a legacy create/update call
+var samlDirectoryDataPropertiesLegacy = []interface{}{"description", "title", "status", "entry_point", "issuer", "certificate", "profile_id_template", "group_id_template", "name_id_format", "sign_requests", "signature_private_key", "signature_algorithm", "pool_id"}
+var samlDirectoryInputPropertiesLegacy = []interface{}{"parent", "tags"}
+
+// input properties which must be passed to a create/update call
+var samlDirectoryInputProperties = []interface{}{"title", "description", "status", "entry_point", "issuer", "certificate", "profile_id_template", "group_id_template", "name_id_format", "sign_requests", "signature_private_key", "signature_algorithm", "pool_id", "parent", "tags"}
+
+// exclude properties from input map to make a create call
+func getSamlDirectoryProperties() []interface{} {
+	excludedProperties := []string{"group_id_template", "tags", "pool_id", "profile_id_template"}
+	return helpers.RemoveProperties(localDirectoryInputProperties, excludedProperties)
+}
 
 func resourceTurbotSamlDirectory() *schema.Resource {
 	return &schema.Resource{
@@ -35,6 +45,10 @@ func resourceTurbotSamlDirectory() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+			},
+			"title": {
+				Type:     schema.TypeString,
+				Required: true,
 			},
 			"description": {
 				Type:     schema.TypeString,
@@ -107,17 +121,39 @@ func resourceTurbotSamlDirectoryExists(d *schema.ResourceData, meta interface{})
 
 func resourceTurbotSamlDirectoryCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
-	// build mutation payload
-	input := mapFromResourceData(d, samlDirectoryInputProperties)
-	data := mapFromResourceData(d, samlDirectoryDataProperties)
-	// set computed properties
-	data["status"] = "Active"
-	data["directoryType"] = "saml"
-	input["data"] = data
 
-	samlDirectory, err := client.CreateSamlDirectory(input)
+	useLegacyMutations, err := client.UseLegacyDirectoryMutations()
 	if err != nil {
 		return err
+	}
+	// build mutation payload
+	var samlDirectory *apiClient.SamlDirectory
+
+	if useLegacyMutations {
+		input := mapFromResourceData(d, samlDirectoryInputPropertiesLegacy)
+		data := mapFromResourceData(d, samlDirectoryDataPropertiesLegacy)
+
+		// set computed properties
+		data["status"] = "Active"
+		data["directoryType"] = "saml"
+		input["data"] = data
+
+		samlDirectory, err = client.CreateSamlDirectoryLegacy(input)
+		if err != nil {
+			return err
+		}
+		d.Set("status", data["status"])
+		d.Set("directoryType", data["directoryType"])
+	} else {
+		input := mapFromResourceData(d, samlDirectoryInputProperties)
+		// set computed properties
+		input["status"] = "ACTIVE"
+
+		samlDirectory, err = client.CreateSamlDirectory(input)
+		if err != nil {
+			return err
+		}
+		d.Set("status", input["status"])
 	}
 
 	// set parent_akas property by loading parent resource and fetching the akas
@@ -130,8 +166,6 @@ func resourceTurbotSamlDirectoryCreate(d *schema.ResourceData, meta interface{})
 	d.Set("parent", samlDirectory.Parent)
 	d.Set("title", samlDirectory.Title)
 	// assign computed properties
-	d.Set("status", data["status"])
-	d.Set("directoryType", data["directoryType"])
 	return nil
 }
 
@@ -161,16 +195,36 @@ func resourceTurbotSamlDirectoryRead(d *schema.ResourceData, meta interface{}) e
 
 func resourceTurbotSamlDirectoryUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
-	// build mutation payload
-	input := mapFromResourceData(d, samlDirectoryInputProperties)
-	input["data"] = mapFromResourceData(d, samlDirectoryDataProperties)
-	input["id"] = d.Id()
 
-	// create folder returns turbot resource metadata containing the id
-	samlDirectory, err := client.UpdateSamlDirectory(input)
+	useLegacyMutations, err := client.UseLegacyDirectoryMutations()
 	if err != nil {
 		return err
 	}
+
+	// build mutation payload
+	var samlDirectory *apiClient.SamlDirectory
+
+	if useLegacyMutations {
+		input := mapFromResourceData(d, samlDirectoryInputPropertiesLegacy)
+		input["data"] = mapFromResourceData(d, samlDirectoryDataPropertiesLegacy)
+		input["id"] = d.Id()
+
+		// update saml directory returns saml directory
+		samlDirectory, err = client.UpdateSamlDirectoryLegacy(input)
+		if err != nil {
+			return err
+		}
+	} else {
+		input := mapFromResourceData(d, getSamlDirectoryProperties())
+		input["id"] = d.Id()
+
+		// update saml directory returns saml directory
+		samlDirectory, err = client.UpdateSamlDirectory(input)
+		if err != nil {
+			return err
+		}
+	}
+
 	// assign Read query properties
 	d.Set("parent", samlDirectory.Parent)
 	d.Set("title", samlDirectory.Title)

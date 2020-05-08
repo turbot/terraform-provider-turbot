@@ -14,7 +14,7 @@ var samlDirectoryProperties = []interface{}{
 	"profileIdTemplate",
 }
 
-func (client *Client) CreateSamlDirectory(input map[string]interface{}) (*SamlDirectory, error) {
+func (client *Client) CreateSamlDirectoryLegacy(input map[string]interface{}) (*SamlDirectory, error) {
 	query := createResourceMutation(samlDirectoryProperties)
 	responseData := &SamlDirectoryResponse{}
 	// set type in input data
@@ -42,7 +42,7 @@ func (client *Client) ReadSamlDirectory(id string) (*SamlDirectory, error) {
 	return &responseData.Resource, nil
 }
 
-func (client *Client) UpdateSamlDirectory(input map[string]interface{}) (*SamlDirectory, error) {
+func (client *Client) UpdateSamlDirectoryLegacy(input map[string]interface{}) (*SamlDirectory, error) {
 	query := updateResourceMutation(samlDirectoryProperties)
 	responseData := &SamlDirectoryResponse{}
 	variables := map[string]interface{}{
@@ -51,7 +51,35 @@ func (client *Client) UpdateSamlDirectory(input map[string]interface{}) (*SamlDi
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
+		return nil, fmt.Errorf("error updating saml directory: %s", err.Error())
+	}
+	return &responseData.Resource, nil
+}
+
+func (client *Client) CreateSamlDirectory(input map[string]interface{}) (*SamlDirectory, error) {
+	query := createSamlDirectoryMutation(samlDirectoryProperties)
+	responseData := &SamlDirectoryResponse{}
+	variables := map[string]interface{}{
+		"input": input,
+	}
+
+	// execute api call
+	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error creating saml directory: %s", err.Error())
+	}
+	return &responseData.Resource, nil
+}
+
+func (client *Client) UpdateSamlDirectory(input map[string]interface{}) (*SamlDirectory, error) {
+	query := updateSamlDirectoryMutation(samlDirectoryProperties)
+	responseData := &SamlDirectoryResponse{}
+	variables := map[string]interface{}{
+		"input": input,
+	}
+
+	// execute api call
+	if err := client.doRequest(query, variables, responseData); err != nil {
+		return nil, fmt.Errorf("error updating saml directory: %s", err.Error())
 	}
 	return &responseData.Resource, nil
 }

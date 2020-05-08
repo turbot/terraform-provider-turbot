@@ -3,6 +3,7 @@ package apiClient
 import (
 	"bytes"
 	"fmt"
+	"github.com/blang/semver"
 	"strings"
 )
 
@@ -149,8 +150,8 @@ func findPolicySettingQuery(policyTypeUri, resourceAka string) string {
 	return fmt.Sprintf(`{
   policySettings: policySettingList(filter: "policyType:%s resource:%s") {
     items {
-      value
-		valueSource
+      	value: secretValue
+		valueSource: secretValueSource
 		template
 		precedence
 		templateInput
@@ -452,4 +453,95 @@ func buildResourceProperties(resourceProperties []interface{}) string {
 		}
 	}
 	return propertiesString.String()
+}
+
+// local directory
+func createLocalDirectoryMutation(properties []interface{}) string {
+	return fmt.Sprintf(`mutation createLocalDirectory($input: CreateLocalDirectoryInput!) {
+ 	 	resource: createLocalDirectory(input: $input){
+%s
+    	turbot : get(path:"turbot")
+  }
+}`, buildResourceProperties(properties))
+}
+
+func updateLocalDirectoryMutation(properties []interface{}) string {
+	return fmt.Sprintf(`mutation updateLocalDirectory($input: UpdateLocalDirectoryInput!) {
+  		resource: updateLocalDirectory(input: $input){
+%s
+		turbot : get(path:"turbot")
+  }
+}`, buildResourceProperties(properties))
+}
+
+// google directory
+func createGoogleDirectoryMutation(properties []interface{}) string {
+	return fmt.Sprintf(`mutation createGoogleDirectory($input: CreateGoogleDirectoryInput!) {
+  		resource: createGoogleDirectory(input: $input){
+%s
+    	turbot:get(path:"turbot")
+  }
+}`, buildResourceProperties(properties))
+}
+
+func updateGoogleDirectoryMutation(properties []interface{}) string {
+	return fmt.Sprintf(`mutation updateGoogleDirectory($input: UpdateGoogleDirectoryInput!) {
+  		resource: updateGoogleDirectory(input: $input){
+%s
+    	turbot:get(path:"turbot")
+  }
+}`, buildResourceProperties(properties))
+}
+
+// saml directory
+func createSamlDirectoryMutation(properties []interface{}) string {
+	return fmt.Sprintf(`mutation createSamlDirectory($input: CreateSamlDirectoryInput!) {
+  		resource: createSamlDirectory(input: $input){
+%s
+    	turbot:get(path:"turbot")
+  }
+}`, buildResourceProperties(properties))
+}
+
+func updateSamlDirectoryMutation(properties []interface{}) string {
+	return fmt.Sprintf(`mutation updateSamlDirectory($input: UpdateSamlDirectoryInput!) {
+  		resource: updateSamlDirectory(input: $input){
+%s
+    	turbot:get(path:"turbot")
+  }
+}`, buildResourceProperties(properties))
+}
+
+// get turbot workspace version
+func (client *Client) GetTurbotWorkspaceVersion() (*semver.Version, error) {
+	query := readPolicyValueQuery("tmod:@turbot/turbot#/policy/types/workspaceVersion", "tmod:@turbot/turbot#/")
+	responseData := &PolicyValueResponse{}
+	// execute api call
+	if err := client.doRequest(query, nil, responseData); err != nil {
+		return nil, fmt.Errorf("error reading policy value: %s", err.Error())
+	}
+	// convert interface {} to string
+	versionValue := fmt.Sprintf("%v", responseData.PolicyValue.Value)
+	// convert version value to semver value
+	version, err := semver.New(versionValue)
+	if err != nil {
+		return nil, fmt.Errorf("error reading turbot workspace version value: %s", err.Error())
+	}
+	return version, nil
+}
+
+// For turbot workspace version >= 5.10.0 we use different mutations in create/update call
+func (client *Client) UseLegacyDirectoryMutations() (bool, error) {
+	newMutationVersion, _ := semver.New("5.10.0")
+	turbotWorkspaceVersion, err := client.GetTurbotWorkspaceVersion()
+	if err != nil {
+		return false, err
+	}
+	// Compare compares this version to another one. It returns -1, 0, or 1 if
+	// the version smaller, equal, or larger than the other version.
+	compareVersion := turbotWorkspaceVersion.Compare(*newMutationVersion)
+	if compareVersion == -1 {
+		return true, nil
+	}
+	return false, nil
 }

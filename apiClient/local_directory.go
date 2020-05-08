@@ -13,7 +13,7 @@ var localDirectoryProperties = []interface{}{
 	"profileIdTemplate",
 }
 
-func (client *Client) CreateLocalDirectory(input map[string]interface{}) (*LocalDirectory, error) {
+func (client *Client) CreateLocalDirectoryLegacy(input map[string]interface{}) (*LocalDirectory, error) {
 	query := createResourceMutation(localDirectoryProperties)
 	responseData := &LocalDirectoryResponse{}
 	// set type in input data
@@ -41,7 +41,7 @@ func (client *Client) ReadLocalDirectory(id string) (*LocalDirectory, error) {
 	return &responseData.Resource, nil
 }
 
-func (client *Client) UpdateLocalDirectory(input map[string]interface{}) (*LocalDirectory, error) {
+func (client *Client) UpdateLocalDirectoryLegacy(input map[string]interface{}) (*LocalDirectory, error) {
 	query := updateResourceMutation(localDirectoryProperties)
 	responseData := &LocalDirectoryResponse{}
 	variables := map[string]interface{}{
@@ -50,7 +50,35 @@ func (client *Client) UpdateLocalDirectory(input map[string]interface{}) (*Local
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
+		return nil, fmt.Errorf("error updating local directory: %s", err.Error())
+	}
+	return &responseData.Resource, nil
+}
+
+func (client *Client) CreateLocalDirectory(input map[string]interface{}) (*LocalDirectory, error) {
+	query := createLocalDirectoryMutation(localDirectoryProperties)
+	responseData := &LocalDirectoryResponse{}
+	variables := map[string]interface{}{
+		"input": input,
+	}
+
+	// execute api call
+	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error creating local directory: %s", err.Error())
+	}
+	return &responseData.Resource, nil
+}
+
+func (client *Client) UpdateLocalDirectory(input map[string]interface{}) (*LocalDirectory, error) {
+	query := updateLocalDirectoryMutation(localDirectoryProperties)
+	responseData := &LocalDirectoryResponse{}
+	variables := map[string]interface{}{
+		"input": input,
+	}
+
+	// execute api call
+	if err := client.doRequest(query, variables, responseData); err != nil {
+		return nil, fmt.Errorf("error updating local directory: %s", err.Error())
 	}
 	return &responseData.Resource, nil
 }

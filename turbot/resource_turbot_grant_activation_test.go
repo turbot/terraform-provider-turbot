@@ -44,7 +44,7 @@ resource "turbot_profile" "test_profile" {
 	given_name 		  = "rupesh"
 	family_name       = "patil"
 	display_name      = "rupesh"
-	parent            = "tmod:@turbot/turbot#/"
+	parent            = "184227597889872"
 	profile_id        = "170759063660234"
 }
 

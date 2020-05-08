@@ -52,7 +52,7 @@ func (client *Client) UpdateLocalDirectoryUserResource(input map[string]interfac
 	}
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating local directory user: %s", err.Error())
+		return nil, fmt.Errorf("error updating local directory user: %s", err.Error())
 	}
 	return &responseData.Resource, nil
 }
