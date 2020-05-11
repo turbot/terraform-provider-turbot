@@ -52,7 +52,7 @@ func (client *Client) UpdateFolder(input map[string]interface{}) (*Folder, error
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating folder: %s", err.Error())
+		return nil, fmt.Errorf("error updating folder: %s", err.Error())
 	}
 	return &responseData.Resource, nil
 }

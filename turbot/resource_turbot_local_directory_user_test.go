@@ -56,25 +56,18 @@ resource "turbot_local_directory_user" "test_user" {
 	title        = "Kai Daguerre"
 	email        = "kai@turbot.com"
 	display_name = "Kai Daguerre"
-	parent       = "tmod:@turbot/turbot#/"
+	parent       = "184298093985240"
 }
 `
 }
 
 func testAccLocalDirectoryUserUpdateTitleConfig() string {
 	return `
-resource "turbot_local_directory" "test_dir" {
-	parent              = "tmod:@turbot/turbot#/"
-	title               = "provider_test_directory"
-	description         = "provider_test_directory"
-	profile_id_template = "{{profile.email}}"
-}
-
 resource "turbot_local_directory_user" "test_user" {
 	title        = "Kai Daguerre2"
 	email        = "kai@turbot.com"
 	display_name = "Kai Daguerre"
-	parent       = "tmod:@turbot/turbot#/"
+	parent       = "184298093985240"
 }`
 }
 
@@ -84,7 +77,7 @@ resource "turbot_local_directory_user" "test_user" {
 	title        = "Kai Daguerre"
 	email        = "kai2@turbot.com"
 	display_name = "Kai Daguerre"
-	parent       = "tmod:@turbot/turbot#/"
+	parent       = "184298093985240"
 }`
 }
 

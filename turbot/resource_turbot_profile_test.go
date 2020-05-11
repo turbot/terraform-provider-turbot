@@ -51,7 +51,7 @@ func TestAccProfile_Basic(t *testing.T) {
 func testAccProfileConfig() string {
 	return `
 	resource "turbot_profile" "test" {
-		parent = "tmod:@turbot/turbot#/"
+		parent = "184298093985240"
 		title = "Snape"
 		display_name = "Severus Snape"
 		email = "severus.slytherin@hogwards.com"
@@ -67,7 +67,7 @@ func testAccProfileConfig() string {
 func testAccProfileUpdateDispNameConfig() string {
 	return `
 resource "turbot_profile" "test" {
-	parent = "tmod:@turbot/turbot#/"
+	parent = "184298093985240"
 	title = "Snape"
 	display_name = "Severus M Snape"
 	email = "severus.slytherin@hogwards.com"
@@ -83,7 +83,7 @@ resource "turbot_profile" "test" {
 func testAccProfileUpdateTitleConfig() string {
 	return `
 resource "turbot_profile" "test" {
-	parent = "tmod:@turbot/turbot#/"
+	parent = "184298093985240"
 	title = "Snape"
 	display_name = "Severus Snape"
 	email = "severus.slytherin@hogwards.com"
