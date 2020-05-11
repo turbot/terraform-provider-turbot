@@ -323,6 +323,20 @@ type GoogleDirectory struct {
 	HostedName        string
 }
 
+// Turbot directory
+type TurbotDirectory struct {
+	Turbot            TurbotResourceMetadata
+	Title             string
+	Description       string
+	ProfileIdTemplate string
+	Status            string
+	Server            string
+}
+
+type TurbotDirectoryResponse struct {
+	Resource TurbotDirectory
+}
+
 // Metadata
 type TurbotResourceMetadata struct {
 	Id                string

@@ -437,6 +437,25 @@ func deactivateGrantMutation() string {
 }`, turbotActiveGrantMetadataFragment("\t\t\t"))
 }
 
+// turbot directory
+func createTurbotDirectoryMutation(properties []interface{}) string {
+	return fmt.Sprintf(`mutation createTurbotDirectory($input: CreateTurbotDirectoryInput!) {
+ 	 	resource: createTurbotDirectory(input: $input){
+%s
+    	turbot : get(path:"turbot")
+  }
+}`, buildResourceProperties(properties))
+}
+
+func updateTurbotDirectoryMutation(properties []interface{}) string {
+	return fmt.Sprintf(`mutation updateTurbotDirectory($input: UpdateTurbotDirectoryInput!) {
+  		resource: updateTurbotDirectory(input: $input){
+%s
+		turbot : get(path:"turbot")
+  }
+}`, buildResourceProperties(properties))
+}
+
 func buildResourceProperties(resourceProperties []interface{}) string {
 	var propertiesString bytes.Buffer
 	if resourceProperties != nil {
