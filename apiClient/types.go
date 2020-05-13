@@ -291,15 +291,26 @@ type SamlDirectoryResponse struct {
 }
 
 type SamlDirectory struct {
-	Turbot            TurbotResourceMetadata
-	Title             string
-	Description       string
-	Parent            string
-	Status            string
-	DirectoryType     string
-	ProfileIdTemplate string
-	EntryPoint        string
-	Certificate       string
+	Turbot                 TurbotResourceMetadata
+	Title                  string
+	Description            string
+	Parent                 string
+	Status                 string
+	DirectoryType          string
+	ProfileIdTemplate      string
+	EntryPoint             string
+	Certificate            string
+	Issuer                 string
+	GroupIdTemplate        string
+	NameIdFormat           string
+	SignRequests           string
+	SignaturePrivateKey    string
+	SignatureAlgorithm     string
+	PoolId                 string
+	ProfileGroupsAttribute string
+	AllowGroupSyncing      bool
+	GroupFilter            string
+	Tags                   map[string]string
 }
 
 // Google directory
