@@ -137,6 +137,11 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 	// 1) pass value as 'value'
 	// 2) pass value as 'valueSource'. update d.value to be the yaml parsed version of 'value'
 	input := mapFromResourceData(d, policySettingInputProperties)
+
+	if value, ok := d.GetOk("template_input"); ok {
+		input["templateInput"], err = helpers.ParseYamlString(value)
+	}
+
 	policySetting, err := client.CreatePolicySetting(input)
 	if err != nil {
 		if !apiClient.FailedValidationError(err) {
@@ -157,15 +162,15 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 	}
 	// if pgp_key has been supplied, encrypt value and value_source
 	storeValue(d, policySetting)
-
 	// set akas properties by loading resource and fetching the akas
 	if err := storeAkas(resourceAka, "resource_akas", d, meta); err != nil {
 		return err
 	}
+	templateInput, err := yaml.Marshal(policySetting.TemplateInput)
 	// assign read properties
 	d.Set("precedence", policySetting.Precedence)
 	d.Set("template", policySetting.Template)
-	d.Set("template_input", policySetting.TemplateInput)
+	d.Set("template_input", templateInput)
 	d.Set("note", policySetting.Note)
 	d.Set("valid_from_timestamp", policySetting.ValidFromTimestamp)
 	d.Set("valid_to_timestamp", policySetting.ValidToTimestamp)
@@ -193,13 +198,13 @@ func resourceTurbotPolicySettingRead(d *schema.ResourceData, meta interface{}) e
 	if err := storeAkas(policySetting.Turbot.ResourceId, "resource_akas", d, meta); err != nil {
 		return err
 	}
-
+	templateInput, err := yaml.Marshal(policySetting.TemplateInput)
 	// assign results back into ResourceData
 	// if pgp_key has been supplied, encrypt value and value_source
 	storeValue(d, policySetting)
 	d.Set("precedence", policySetting.Precedence)
 	d.Set("template", policySetting.Template)
-	d.Set("template_input", policySetting.TemplateInput)
+	d.Set("template_input", templateInput)
 	d.Set("note", policySetting.Note)
 	d.Set("valid_from_timestamp", policySetting.ValidFromTimestamp)
 	d.Set("valid_to_timestamp", policySetting.ValidToTimestamp)
@@ -323,7 +328,7 @@ func storeValue(d *schema.ResourceData, setting *apiClient.PolicySetting) error 
 
 	if pgpKey, ok := d.GetOk("pgp_key"); ok {
 		// format the value as a string to allow us to handle object/array values using a string schema
-		valueFingerprint, encryptedValue, err := helpers.EncryptValue(pgpKey.(string), settingValueToString(setting.Value))
+		valueFingerprint, encryptedValue, err := helpers.EncryptValue(pgpKey.(string), helpers.SettingValueToString(setting.Value))
 		if err != nil {
 			return err
 		}
@@ -337,17 +342,9 @@ func storeValue(d *schema.ResourceData, setting *apiClient.PolicySetting) error 
 		d.Set("value_source", encryptedValueSource)
 		d.Set("value_source_key_fingerprint", valueSourceFingerprint)
 	} else {
-		d.Set("value", settingValueToString(setting.Value))
+		d.Set("value", helpers.SettingValueToString(setting.Value))
 		d.Set("value_source", setting.ValueSource)
 	}
 
 	return nil
-}
-
-// convert value to a string. If it is a complex type (object/array) then the diff calculation will use the value_source so the precise format is not critical
-func settingValueToString(value interface{}) string {
-	if value == nil {
-		return ""
-	}
-	return fmt.Sprintf("%v", value)
 }

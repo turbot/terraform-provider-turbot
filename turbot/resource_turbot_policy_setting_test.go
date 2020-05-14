@@ -217,22 +217,130 @@ func TestAccPolicySetting_Precedence_Value_Check(t *testing.T) {
 	})
 }
 
-func TestAccPolicySetting_Null_Value_Check(t *testing.T) {
+func TestAccPolicySetting_TemplateInputJsonValue(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckPolicySettingDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPolicySettingStringConfig(stringPolicyType, " ", "REQUIRED"),
+				Config: testAccPolicySettingJsonTemplateInput(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPolicySettingExists("turbot_policy_setting.test_policy"),
 					resource.TestCheckResourceAttr(
-						"turbot_policy_setting.test_policy", "precedence", "REQUIRED"),
+						"turbot_policy_setting.test_policy", "template_input", "[\n  \"{\\n \\titem: bucket {\\n   \\tName\\n \\t}\\n}\\n\",\n  \"{\\n \\tresources(filter: \\\"$.DistributionConfig.Origins.Items.*.DomainName:'{{$.item.Name}}.s3.amazonaws.com' resourceTypeId:tmod:@turbot/aws-cloudfront#/resource/types/cloudFront\\\") {\\n   \\titems {\\n   \\t  Id: get(path:\\\"Id\\\")\\n   \\t}\\n \\t}\\n}\\n\"\n]\n"),
+					resource.TestCheckResourceAttr("turbot_policy_setting.test_policy", "precedence", "REQUIRED"),
 				),
 			},
 		},
 	})
+}
+func TestAccPolicySetting_TemplateInputYamlValue(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPolicySettingDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccPolicySettingYamlTemplateInput(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPolicySettingExists("turbot_policy_setting.test_policy"),
+					resource.TestCheckResourceAttr(
+						"turbot_policy_setting.test_policy", "template_input", "- | \n {\n  \titem: bucket {\n    \tName\n  \t}\n }\n- | \n {\n  \tresources(filter: \"$.DistributionConfig.Origins.Items.*.DomainName:'{{$.item.Name}}.s3.amazonaws.com' resourceTypeId:tmod:@turbot/aws-cloudfront#/resource/types/cloudFront\") {\n    \titems {\n    \t  Id: get(path:\"Id\")\n    \t}\n  \t}\n }\n"),
+					resource.TestCheckResourceAttr("turbot_policy_setting.test_policy", "precedence", "REQUIRED"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccPolicySetting_TemplateInputStringValue(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPolicySettingDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccPolicySettingStringTemplateInput(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPolicySettingExists("turbot_policy_setting.test_policy"),
+					resource.TestCheckResourceAttr(
+						"turbot_policy_setting.test_policy", "template_input", "{\n    item: bucket {\n      Name\n    }\n}\n"),
+					resource.TestCheckResourceAttr("turbot_policy_setting.test_policy", "precedence", "REQUIRED"),
+				),
+			},
+		},
+	})
+}
+
+// configs
+var stringPolicyType = "tmod:@turbot/provider-policy-test#/policy/types/stringPolicy"
+var intPolicyType = "tmod:@turbot/provider-policy-test#/policy/types/integerPolicy"
+var stringArrayPolicyType = "tmod:@turbot/provider-policy-test#/policy/types/stringArrayPolicy"
+var secretPolicyType = "tmod:@turbot/provider-policy-test#/policy/types/secretPolicy"
+var stringPolicyTemplate = "{% if $.account.Id == '650022101893' %}Skip{% else %}'Check: Configured'{% endif %}"
+var stringPolicyTemplateInput = "{ account{ Id } }"
+
+func testAccPolicySettingStringTemplateInput() string {
+	return fmt.Sprintf(`
+resource "turbot_policy_setting" "test_policy" {
+  	resource    = "tmod:@turbot/turbot#/"
+  	type = "tmod:@turbot/aws-s3#/policy/types/bucketApprovedUsage"
+  	template_input = <<EOF
+{
+    item: bucket {
+      Name
+    }
+}
+EOF
+	template =  "Testing"
+	precedence = "REQUIRED"
+}
+`)
+}
+
+func testAccPolicySettingJsonTemplateInput() string {
+	return fmt.Sprintf(`
+resource "turbot_policy_setting" "test_policy" {
+  	resource    = "tmod:@turbot/turbot#/"
+  	type = "tmod:@turbot/aws-s3#/policy/types/bucketApprovedUsage"
+  	template_input = <<EOF
+[
+  "{\n \titem: bucket {\n   \tName\n \t}\n}\n",
+  "{\n \tresources(filter: \"$.DistributionConfig.Origins.Items.*.DomainName:'{{$.item.Name}}.s3.amazonaws.com' resourceTypeId:tmod:@turbot/aws-cloudfront#/resource/types/cloudFront\") {\n   \titems {\n   \t  Id: get(path:\"Id\")\n   \t}\n \t}\n}\n"
+]
+EOF
+	template =  "Testing"
+	precedence = "REQUIRED"
+}
+`)
+}
+
+func testAccPolicySettingYamlTemplateInput() string {
+	return fmt.Sprintf(`
+resource "turbot_policy_setting" "test_policy" {
+  	resource    = "tmod:@turbot/turbot#/"
+  	type = "tmod:@turbot/aws-s3#/policy/types/bucketApprovedUsage"
+  	template_input = <<EOF
+- | 
+ {
+  	item: bucket {
+    	Name
+  	}
+ }
+- | 
+ {
+  	resources(filter: "$.DistributionConfig.Origins.Items.*.DomainName:'{{$.item.Name}}.s3.amazonaws.com' resourceTypeId:tmod:@turbot/aws-cloudfront#/resource/types/cloudFront") {
+    	items {
+    	  Id: get(path:"Id")
+    	}
+  	}
+ }
+EOF
+	template =  "Testing"
+	precedence = "REQUIRED"
+}
+`)
 }
 
 func testAccPolicySettingPrecedenceAttr(value string) string {
@@ -254,14 +362,6 @@ resource "turbot_policy_setting" "test_policy" {
 }
 `, value)
 }
-
-// configs
-var stringPolicyType = "tmod:@turbot/provider-policy-test#/policy/types/stringPolicy"
-var intPolicyType = "tmod:@turbot/provider-policy-test#/policy/types/integerPolicy"
-var stringArrayPolicyType = "tmod:@turbot/provider-policy-test#/policy/types/stringArrayPolicy"
-var secretPolicyType = "tmod:@turbot/provider-policy-test#/policy/types/secretPolicy"
-var stringPolicyTemplate = "{% if $.account.Id == '650022101893' %}Skip{% else %}'Check: Configured'{% endif %}"
-var stringPolicyTemplateInput = "{ account{ Id } }"
 
 func testAccPolicySettingStringConfig(policyType, value string, precedence string) string {
 	// wrap value in quotes if necessary (this is so we can support heredoc)

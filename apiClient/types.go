@@ -94,7 +94,7 @@ type PolicySetting struct {
 	Default            bool
 	Precedence         string
 	Template           string
-	TemplateInput      string
+	TemplateInput      interface{}
 	Input              string
 	Note               string
 	ValidFromTimestamp string
