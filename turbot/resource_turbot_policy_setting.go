@@ -70,8 +70,9 @@ func resourceTurbotPolicySetting() *schema.Resource {
 				Optional: true,
 			},
 			"template_input": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: suppressEquivalentTemplateInputDiffs,
 			},
 			"note": {
 				Type:     schema.TypeString,
@@ -166,11 +167,18 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 	if err := storeAkas(resourceAka, "resource_akas", d, meta); err != nil {
 		return err
 	}
-	templateInput, err := yaml.Marshal(policySetting.TemplateInput)
+
+	var templateInput interface{}
+	if policySetting.TemplateInput != nil {
+		if templateInput, err = yaml.Marshal(policySetting.TemplateInput); err != nil {
+			return err
+		}
+	}
+
 	// assign read properties
 	d.Set("precedence", policySetting.Precedence)
 	d.Set("template", policySetting.Template)
-	d.Set("template_input", templateInput)
+	d.Set("template_input", helpers.InterfaceToString(templateInput))
 	d.Set("note", policySetting.Note)
 	d.Set("valid_from_timestamp", policySetting.ValidFromTimestamp)
 	d.Set("valid_to_timestamp", policySetting.ValidToTimestamp)
@@ -198,13 +206,19 @@ func resourceTurbotPolicySettingRead(d *schema.ResourceData, meta interface{}) e
 	if err := storeAkas(policySetting.Turbot.ResourceId, "resource_akas", d, meta); err != nil {
 		return err
 	}
-	templateInput, err := yaml.Marshal(policySetting.TemplateInput)
+
+	var templateInput interface{}
+	if policySetting.TemplateInput != nil {
+		if templateInput, err = yaml.Marshal(policySetting.TemplateInput); err == nil {
+			return err
+		}
+	}
 	// assign results back into ResourceData
 	// if pgp_key has been supplied, encrypt value and value_source
 	storeValue(d, policySetting)
 	d.Set("precedence", policySetting.Precedence)
 	d.Set("template", policySetting.Template)
-	d.Set("template_input", templateInput)
+	d.Set("template_input", helpers.InterfaceToString(templateInput))
 	d.Set("note", policySetting.Note)
 	d.Set("valid_from_timestamp", policySetting.ValidFromTimestamp)
 	d.Set("valid_to_timestamp", policySetting.ValidToTimestamp)
@@ -328,7 +342,7 @@ func storeValue(d *schema.ResourceData, setting *apiClient.PolicySetting) error 
 
 	if pgpKey, ok := d.GetOk("pgp_key"); ok {
 		// format the value as a string to allow us to handle object/array values using a string schema
-		valueFingerprint, encryptedValue, err := helpers.EncryptValue(pgpKey.(string), helpers.SettingValueToString(setting.Value))
+		valueFingerprint, encryptedValue, err := helpers.EncryptValue(pgpKey.(string), helpers.InterfaceToString(setting.Value))
 		if err != nil {
 			return err
 		}
@@ -342,9 +356,21 @@ func storeValue(d *schema.ResourceData, setting *apiClient.PolicySetting) error 
 		d.Set("value_source", encryptedValueSource)
 		d.Set("value_source_key_fingerprint", valueSourceFingerprint)
 	} else {
-		d.Set("value", helpers.SettingValueToString(setting.Value))
+		d.Set("value", helpers.InterfaceToString(setting.Value))
 		d.Set("value_source", setting.ValueSource)
 	}
 
 	return nil
+}
+
+func suppressEquivalentTemplateInputDiffs(k, old, new string, d *schema.ResourceData) bool {
+	if old == "" {
+		return false
+	}
+	equivalent, err := helpers.YamlValuesAreEquivalent(old, new)
+	if err != nil {
+		return false
+	}
+
+	return equivalent
 }

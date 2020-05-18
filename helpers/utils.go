@@ -8,7 +8,7 @@ import (
 func ParseYamlString(value interface{}) (interface{}, error) {
 	var temp interface{}
 
-	s := SettingValueToString(value)
+	s := InterfaceToString(value)
 	err := yaml.Unmarshal([]byte(s), &temp)
 	if err != nil {
 		return s, err
@@ -20,9 +20,25 @@ func ParseYamlString(value interface{}) (interface{}, error) {
 }
 
 // convert value to a string. If it is a complex type (object/array) then the diff calculation will use the value_source so the precise format is not critical
-func SettingValueToString(value interface{}) string {
+func InterfaceToString(value interface{}) string {
 	if value == nil {
 		return ""
 	}
 	return fmt.Sprintf("%v", value)
+}
+
+func YamlValuesAreEquivalent(yaml1, yaml2 string) (bool, error) {
+	var yaml1intermediate, yaml2intermediate interface{}
+
+	if err := yaml.Unmarshal([]byte(yaml1), &yaml1intermediate); err != nil {
+		return false, fmt.Errorf("Error unmarshaling yaml string: %s", err)
+	}
+
+	if err := yaml.Unmarshal([]byte(yaml2), &yaml2intermediate); err != nil {
+		return false, fmt.Errorf("Error unmarshaling yaml string: %s", err)
+	}
+	if reflect.DeepEqual(yaml1intermediate, yaml2intermediate) {
+		return true, nil
+	}
+	return false, nil
 }
