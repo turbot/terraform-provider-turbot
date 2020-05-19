@@ -1,4 +1,10 @@
-## 1.1.1 (Unreleased)
+## 1.2.0 (Unreleased)
+FEATURES:
+* **New Resource:** `turbot_turbot_directory` ([#1](https://github.com/terraform-providers/terraform-provider-turbot/issues/1))
+ENHANCEMENTS:
+* `resource/resource_turbot_saml_directory`:  Add arguments `allow_group_syncing`,`profile_groups_attribute`, `group_filter` and default value of `name_id_format` to `UNSPECIFIED`. ([#3](https://github.com/terraform-providers/terraform-provider-turbot/issues/3))
+BUG FIXES
+* `resource/resource_turbot_resource`: Fix `Data validation error` while doing a update on resource.([#13](https://github.com/terraform-providers/terraform-provider-turbot/issues/13))
 ## 1.1.0 (April 21, 2020)
 BUG FIXES
 * `resource/resource_turbot_google_directory`: For security, the client secret is not read from the resource. This causes diffs to be identified after importing the resource, requiring replacement of the resource. Suppress diffs caused by client_secret.([#66](https://github.com/turbot/terraform-provider-turbot/issues/66))
