@@ -159,10 +159,16 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 func resourceTurbotResourceUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
 	// build input map to pass to mutation
+	id := d.Id()
 	input, err := buildResourceInput(d, getResourceUpdateProperties())
 	if err != nil {
 		return err
 	}
+	excludedPropertiesInUpdate, err := client.BuildPropertiesFromUpdateSchema(id, []interface{}{"updateSchema"})
+	if err != nil {
+		return err
+	}
+	input["data"], _ = buildDataUpdateProperties(d, excludedPropertiesInUpdate)
 	input["id"] = d.Id()
 
 	turbotMetadata, err := client.UpdateResource(input)
@@ -197,6 +203,23 @@ func resourceTurbotResourceImport(d *schema.ResourceData, meta interface{}) ([]*
 		return nil, err
 	}
 	return []*schema.ResourceData{d}, nil
+}
+
+func buildDataUpdateProperties(d *schema.ResourceData, properties []interface{}) (map[string]interface{}, error) {
+	var err error
+	// convert data from json string to map
+	var dataMap map[string]interface{}
+	dataString := d.Get("data").(string)
+	if dataMap, err = helpers.JsonStringToMap(dataString); err != nil {
+		return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal data: \n%s\nerror: %s", dataString, err.Error())
+	}
+	for _, element := range properties {
+		if _, ok := dataMap[element.(string)]; ok {
+			delete(dataMap, element.(string))
+		}
+	}
+
+	return dataMap, nil
 }
 
 func buildResourceInput(d *schema.ResourceData, properties []interface{}) (map[string]interface{}, error) {

@@ -184,6 +184,49 @@ func basicAuthHeader(username, password string) string {
 	return "Basic " + base64.StdEncoding.EncodeToString([]byte(auth))
 }
 
+func (client *Client) BuildPropertiesFromUpdateSchema(resourceId string, properties []interface{}) ([]interface{}, error) {
+	getResourceQuery := getResourceTypeIdQuery(resourceId)
+	responseData := &ResourceResponse{}
+	// execute api call
+	if err := client.doRequest(getResourceQuery, nil, &responseData); err != nil {
+		return nil, fmt.Errorf("error reading resource type id: %s", err.Error())
+	}
+
+	resourceTypeId := responseData.Resource.Turbot.ResourceTypeId
+
+	query := readResourceQuery(resourceTypeId, properties)
+	response := &ResourceSchema{}
+	// execute api call
+	if err := client.doRequest(query, nil, &response); err != nil {
+		return nil, fmt.Errorf("error reading resource type id: %s", err.Error())
+	}
+
+	if response.Resource.UpdateSchema == nil {
+		return nil, nil
+	}
+
+	var m = response.Resource.UpdateSchema.(map[string]interface{})
+	var excluded []interface{}
+	if value, ok := m["allOf"]; ok {
+		for _, schema := range value.([]interface{}) {
+			if res, ok := schema.(map[string]interface{}); ok {
+				if _, ok := res["type"]; ok {
+					if properties, ok := res["properties"]; ok {
+						for id, valueObject := range properties.(map[string]interface{}) {
+							if m, ok := valueObject.(map[string]interface{}); ok {
+								if m["type"] == "null" {
+									excluded = append(excluded, id)
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return excluded, nil
+}
+
 // execute graphql request
 func (client *Client) doRequest(query string, vars map[string]interface{}, responseData interface{}) error {
 	// make a request

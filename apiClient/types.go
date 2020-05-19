@@ -25,11 +25,26 @@ type ReadResourceListResponse struct {
 	}
 }
 
+type ResourceResponse struct {
+	Resource Resource
+}
+
 type Resource struct {
 	Turbot TurbotResourceMetadata
 	Data   map[string]interface{}
 	Type   struct {
 		Uri string
+	}
+}
+
+type ResourceSchema struct {
+	Resource struct {
+		Turbot       TurbotResourceMetadata
+		UpdateSchema interface{}
+		CreateSchema interface{}
+		Type         struct {
+			Uri string
+		}
 	}
 }
 
