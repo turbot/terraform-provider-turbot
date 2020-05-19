@@ -12,6 +12,18 @@ var samlDirectoryProperties = []interface{}{
 	"status",
 	"directoryType",
 	"profileIdTemplate",
+	"entryPoint",
+	"certificate",
+	"issuer",
+	"nameIdFormat",
+	"signRequests",
+	"signaturePrivateKey",
+	"signatureAlgorithm",
+	"poolId",
+	"allowGroupSyncing",
+	"profileGroupsAttribute",
+	"groupFilter",
+	"tags",
 }
 
 func (client *Client) CreateSamlDirectoryLegacy(input map[string]interface{}) (*SamlDirectory, error) {

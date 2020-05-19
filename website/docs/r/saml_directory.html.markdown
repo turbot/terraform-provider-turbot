@@ -36,11 +36,14 @@ The following arguments are supported:
 - `profile_id_template` - (Required) A template to generate profile id for users authenticated through this directory. For example, email id of the user.
 - `issuer` - (Optional) a URL that uniquely identifies your SAML identity provider.
 - `group_id_template` - (Optional)  In case of a group profile, this template generates profile id for users authenticated through this directory. For example, email id of the group.
-- `name_id_format` - (Optional) The name identifier format to request from the identity provider. Usually the Email Address is the accepted format.
+- `name_id_format` - (Optional) The name identifier format to request from the identity provider. Usually the Email Address is the accepted format.It accepts one of the two values - `UNSPECIFIED` and `EMAIL`. Defaults to `UNSPECIFIED`
 - `sign_requests` - (Optional) Signing request for SAML authentication. It accepts one of the two values - `Enabled` and `Disabled`. If enabled, requests will be signed using the specified private key and signature algorithm.
 - `signature_private_key` - (Optional) Private key used to sign authentication requests, in multiline PEM format starting with -----BEGIN PRIVATE KEY-----.
 - `signature_algorithm` - (Optional) If a private key has been provided, it determines the signature algorithm for signing requests. If not specified defaults to *SHA-1*.
 - `pool_id` - (Optional) Pool id associated with SAML directory.
+- `allow_group_syncing` -  (Optional) Boolean value to indicate whether groups will be synchronized for SAML users. Defaults to `false`.
+- `profile_groups_attribute` - (Optional) Attribute returning list of groups that a SAML user is a part of.
+-  `group_filter` -  (Optional) Regular expression to filter out groups that are to be synced from SAML.
 - `tags` - (Optional) User defined label for grouping resources.
 
 ## Attributes Reference

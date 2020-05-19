@@ -11,7 +11,7 @@ var samlDirectoryDataPropertiesLegacy = []interface{}{"description", "title", "s
 var samlDirectoryInputPropertiesLegacy = []interface{}{"parent", "tags"}
 
 // input properties which must be passed to a create/update call
-var samlDirectoryInputProperties = []interface{}{"title", "description", "status", "entry_point", "issuer", "certificate", "profile_id_template", "group_id_template", "name_id_format", "sign_requests", "signature_private_key", "signature_algorithm", "pool_id", "parent", "tags"}
+var samlDirectoryInputProperties = []interface{}{"title", "description", "status", "entry_point", "issuer", "certificate", "profile_id_template", "group_id_template", "name_id_format", "sign_requests", "allow_group_syncing", "profile_groups_attribute", "group_filter", "signature_private_key", "signature_algorithm", "pool_id", "parent", "tags"}
 
 // exclude properties from input map to make a create call
 func getSamlDirectoryProperties() []interface{} {
@@ -85,6 +85,7 @@ func resourceTurbotSamlDirectory() *schema.Resource {
 			"name_id_format": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Default:  "UNSPECIFIED",
 			},
 			"sign_requests": {
 				Type:     schema.TypeString,
@@ -99,6 +100,19 @@ func resourceTurbotSamlDirectory() *schema.Resource {
 				Optional: true,
 			},
 			"pool_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"allow_group_syncing": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
+			"profile_groups_attribute": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"group_filter": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
@@ -165,7 +179,7 @@ func resourceTurbotSamlDirectoryCreate(d *schema.ResourceData, meta interface{})
 	// assign Read query properties
 	d.Set("parent", samlDirectory.Parent)
 	d.Set("title", samlDirectory.Title)
-	// assign computed properties
+	d.Set("description", samlDirectory.Description)
 	return nil
 }
 
@@ -182,14 +196,31 @@ func resourceTurbotSamlDirectoryRead(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 
-	// assign results back into ResourceData
-
 	// set parent_akas property by loading parent resource and fetching the akas
 	if err := storeAkas(samlDirectory.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
+	//TODO remove directory status check, after graphQL API supports new enum values - [UNSPECIFIED, EMAIL]
+	if samlDirectory.NameIdFormat == "unspecified" {
+		d.Set("name_id_format", "UNSPECIFIED")
+	} else {
+		d.Set("name_id_format", "EMAIL")
+	}
+	// assign results back into ResourceData
 	d.Set("parent", samlDirectory.Parent)
 	d.Set("title", samlDirectory.Title)
+	d.Set("description", samlDirectory.Description)
+	d.Set("profile_id_template", samlDirectory.ProfileIdTemplate)
+	d.Set("entry_point", samlDirectory.EntryPoint)
+	d.Set("certificate", samlDirectory.Certificate)
+	d.Set("group_id_template", samlDirectory.GroupIdTemplate)
+	d.Set("sign_requests", samlDirectory.SignRequests)
+	d.Set("signature_private_key", samlDirectory.SignaturePrivateKey)
+	d.Set("signature_algorithm", samlDirectory.SignatureAlgorithm)
+	d.Set("pool_id", samlDirectory.PoolId)
+	d.Set("allow_group_syncing", samlDirectory.AllowGroupSyncing)
+	d.Set("profile_groups_attribute", samlDirectory.ProfileGroupsAttribute)
+	d.Set("group_filter", samlDirectory.GroupFilter)
 	return nil
 }
 
@@ -228,6 +259,7 @@ func resourceTurbotSamlDirectoryUpdate(d *schema.ResourceData, meta interface{})
 	// assign Read query properties
 	d.Set("parent", samlDirectory.Parent)
 	d.Set("title", samlDirectory.Title)
+	d.Set("description", samlDirectory.Description)
 	// set parent_akas property by loading parent resource and fetching the akas
 	return storeAkas(samlDirectory.Turbot.ParentId, "parent_akas", d, meta)
 }
