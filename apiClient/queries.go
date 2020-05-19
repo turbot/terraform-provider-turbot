@@ -339,6 +339,16 @@ func readResourceQuery(aka string, properties []interface{}) string {
 }`, aka, buildResourceProperties(properties))
 }
 
+func getResourceTypeIdQuery(aka string) string {
+	return fmt.Sprintf(`{
+	resource(id:"%s") {
+		turbot {
+			resourceTypeId
+		}
+  	}
+}`, aka)
+}
+
 func readResourceListQuery(filter string, properties map[string]string) string {
 	var propertiesString bytes.Buffer
 	if properties != nil {

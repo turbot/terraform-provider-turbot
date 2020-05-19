@@ -8,6 +8,7 @@ import (
 	"github.com/go-yaml/yaml"
 	"github.com/machinebox/graphql"
 	"github.com/mitchellh/go-homedir"
+	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -182,6 +183,44 @@ func loadProfile(credentialsPath, profile string) (ClientCredentials, error) {
 func basicAuthHeader(username, password string) string {
 	auth := username + ":" + password
 	return "Basic " + base64.StdEncoding.EncodeToString([]byte(auth))
+}
+
+func (client *Client) BuildPropertiesFromUpdateSchema(resourceId string, properties []interface{}) ([]interface{}, error) {
+	getResourceQuery := getResourceTypeIdQuery(resourceId)
+	responseData := &ResourceResponse{}
+	// execute api call
+	if err := client.doRequest(getResourceQuery, nil, &responseData); err != nil {
+		return nil, fmt.Errorf("error reading resource type id: %s", err.Error())
+	}
+
+	resourceTypeId := responseData.Resource.Turbot.ResourceTypeId
+
+	query := readResourceQuery(resourceTypeId, properties)
+	response := &ResourceSchema{}
+	// execute api call
+	if err := client.doRequest(query, nil, &response); err != nil {
+		return nil, fmt.Errorf("error reading resource type id: %s", err.Error())
+	}
+
+	if response.Resource.UpdateSchema == nil {
+		return nil, nil
+	}
+
+	var m = response.Resource.UpdateSchema.(map[string]interface{})
+	var excluded []interface{}
+	if value, ok := m["allOf"]; ok {
+		for _, schema := range value.([]interface{}) {
+			if res, ok := schema.(map[string]interface{}); ok {
+				if res["type"] == "object" {
+					// loop to flatten interface, so we will not get this structure - [[id1,id2],[id3,id4]]
+					for _, element := range helpers.GetNullProperties(res) {
+						excluded = append(excluded, element)
+					}
+				}
+			}
+		}
+	}
+	return excluded, nil
 }
 
 // execute graphql request

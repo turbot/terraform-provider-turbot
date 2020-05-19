@@ -18,7 +18,7 @@ func TestAccResourceFolder_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckResourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccResourceConfig(folderType, folderData, folderMetadata),
+				Config: testAccResourceConfigFolder(folderType, folderData, metadata),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists("turbot_resource.test"),
 					resource.TestCheckResourceAttr(
@@ -26,7 +26,7 @@ func TestAccResourceFolder_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_resource.test", "data", helpers.FormatJson(folderData)),
 					resource.TestCheckResourceAttr(
-						"turbot_resource.test", "metadata", helpers.FormatJson(folderMetadata)),
+						"turbot_resource.test", "metadata", helpers.FormatJson(metadata)),
 				),
 			},
 			{
@@ -34,7 +34,7 @@ func TestAccResourceFolder_Basic(t *testing.T) {
 				ImportState:  true,
 			},
 			{
-				Config: testAccResourceConfig(folderType, folderDataUpdatedDescription, folderMetadata),
+				Config: testAccResourceConfigFolder(folderType, folderDataUpdatedDescription, metadata),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists("turbot_resource.test"),
 					resource.TestCheckResourceAttr(
@@ -42,11 +42,11 @@ func TestAccResourceFolder_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_resource.test", "data", helpers.FormatJson(folderDataUpdatedDescription)),
 					resource.TestCheckResourceAttr(
-						"turbot_resource.test", "metadata", helpers.FormatJson(folderMetadata)),
+						"turbot_resource.test", "metadata", helpers.FormatJson(metadata)),
 				),
 			},
 			{
-				Config: testAccResourceConfig(folderType, folderDataUpdatedTitle, folderMetadata),
+				Config: testAccResourceConfigFolder(folderType, folderDataUpdatedTitle, metadata),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists("turbot_resource.test"),
 					resource.TestCheckResourceAttr(
@@ -54,11 +54,11 @@ func TestAccResourceFolder_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_resource.test", "data", helpers.FormatJson(folderDataUpdatedTitle)),
 					resource.TestCheckResourceAttr(
-						"turbot_resource.test", "metadata", helpers.FormatJson(folderMetadata)),
+						"turbot_resource.test", "metadata", helpers.FormatJson(metadata)),
 				),
 			},
 			{
-				Config: testAccResourceConfig(folderType, folderDataUpdatedTitle, folderMetadataUpdated),
+				Config: testAccResourceConfigFolder(folderType, folderDataUpdatedTitle, metadataUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists("turbot_resource.test"),
 					resource.TestCheckResourceAttr(
@@ -66,7 +66,39 @@ func TestAccResourceFolder_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_resource.test", "data", helpers.FormatJson(folderDataUpdatedTitle)),
 					resource.TestCheckResourceAttr(
-						"turbot_resource.test", "metadata", helpers.FormatJson(folderMetadataUpdated)),
+						"turbot_resource.test", "metadata", helpers.FormatJson(metadataUpdated)),
+				),
+			},
+		},
+	})
+}
+
+func TestAccResourceFolder_Account(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckResourceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccResourceConfigAccount(accountType, metadata, accountData),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("turbot_resource.account_resource"),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.account_resource", "type", accountType),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.account_resource", "data", helpers.FormatJson(accountData)),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.account_resource", "metadata", helpers.FormatJson(metadata)),
+				),
+			},
+			{
+				Config: testAccResourceConfigAccount(accountType, metadata, accountDataUpdatedTitle),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("turbot_resource.account_resource"),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.account_resource", "type", accountType),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.account_resource", "data", helpers.FormatJson(accountDataUpdatedTitle)),
 				),
 			},
 		},
@@ -75,17 +107,31 @@ func TestAccResourceFolder_Basic(t *testing.T) {
 
 // configs
 var folderType = `tmod:@turbot/turbot#/resource/types/folder`
+var accountType = `tmod:@turbot/aws#/resource/types/account`
+
+var accountData = `{
+ "Id": "112233445566",
+ "title": "account"
+}
+`
+
+var accountDataUpdatedTitle = `{
+ "Id": "112233445566",
+ "title": "account_updated"
+}
+`
+
 var folderData = `{
  "title": "provider_test",
  "description": "test resource"
 }
 `
-var folderMetadata = `{
+var metadata = `{
  "c1": "custom1",
  "c2": "custom2"
 }
 `
-var folderMetadataUpdated = `{
+var metadataUpdated = `{
  "c1": "custom1",
  "c2": "custom3"
 }
@@ -101,7 +147,7 @@ var folderDataUpdatedDescription = `{
 }
 `
 
-func testAccResourceConfig(resourceType, data, metadata string) string {
+func testAccResourceConfigFolder(resourceType, data, metadata string) string {
 	config := fmt.Sprintf(`
 resource "turbot_resource" "test" {
 	parent = "tmod:@turbot/turbot#/"
@@ -112,6 +158,24 @@ resource "turbot_resource" "test" {
 %sEOF
 }
 `, resourceType, data, metadata)
+	return config
+}
+
+func testAccResourceConfigAccount(resourceType, metadata, data string) string {
+	config := fmt.Sprintf(`
+resource "turbot_folder" "test" {
+	parent = "tmod:@turbot/turbot#/"
+	title = "account_import"
+	description = "test folder for turbot terraform provider"
+}
+resource "turbot_resource" "account_resource" {
+  parent     = turbot_folder.test.id
+  type       = "%s"
+  data       = <<EOF
+%sEOF
+  metadata = <<EOF
+%sEOF
+}`, resourceType, data, metadata)
 	return config
 }
 
