@@ -212,7 +212,10 @@ func (client *Client) BuildPropertiesFromUpdateSchema(resourceId string, propert
 		for _, schema := range value.([]interface{}) {
 			if res, ok := schema.(map[string]interface{}); ok {
 				if res["type"] == "object" {
-					excluded = helpers.GetNullProperties(res)
+					// loop to flatten interface, so we will not get this structure - [[id1,id2],[id3,id4]]
+					for _, element := range helpers.GetNullProperties(res) {
+						excluded = append(excluded, element)
+					}
 				}
 			}
 		}
