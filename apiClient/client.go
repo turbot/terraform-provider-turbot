@@ -8,6 +8,7 @@ import (
 	"github.com/go-yaml/yaml"
 	"github.com/machinebox/graphql"
 	"github.com/mitchellh/go-homedir"
+	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -210,16 +211,8 @@ func (client *Client) BuildPropertiesFromUpdateSchema(resourceId string, propert
 	if value, ok := m["allOf"]; ok {
 		for _, schema := range value.([]interface{}) {
 			if res, ok := schema.(map[string]interface{}); ok {
-				if _, ok := res["type"]; ok {
-					if properties, ok := res["properties"]; ok {
-						for id, valueObject := range properties.(map[string]interface{}) {
-							if m, ok := valueObject.(map[string]interface{}); ok {
-								if m["type"] == "null" {
-									excluded = append(excluded, id)
-								}
-							}
-						}
-					}
+				if res["type"] == "object" {
+					excluded = helpers.GetNullProperties(res)
 				}
 			}
 		}

@@ -80,21 +80,25 @@ func TestAccResourceFolder_Account(t *testing.T) {
 		CheckDestroy: testAccCheckResourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccResourceConfigAccount(accountType, "188042518944165", metadata),
+				Config: testAccResourceConfigAccount(accountType, metadata, accountData),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists("turbot_resource.account_resource"),
 					resource.TestCheckResourceAttr(
 						"turbot_resource.account_resource", "type", accountType),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.account_resource", "data", helpers.FormatJson(accountData)),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.account_resource", "metadata", helpers.FormatJson(metadata)),
 				),
 			},
 			{
-				Config: testAccResourceConfigAccount(accountType, "192355801560817", metadata),
+				Config: testAccResourceConfigAccount(accountType, metadata, accountDataUpdatedTitle),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists("turbot_resource.account_resource"),
 					resource.TestCheckResourceAttr(
 						"turbot_resource.account_resource", "type", accountType),
 					resource.TestCheckResourceAttr(
-						"turbot_resource.account_resource", "parent", "192355801560817"),
+						"turbot_resource.account_resource", "data", helpers.FormatJson(accountDataUpdatedTitle)),
 				),
 			},
 		},
@@ -156,17 +160,22 @@ resource "turbot_resource" "test" {
 `, resourceType, data, metadata)
 	return config
 }
-func testAccResourceConfigAccount(resourceType, parent, metadata string) string {
+
+func testAccResourceConfigAccount(resourceType, metadata, data string) string {
 	config := fmt.Sprintf(`
+resource "turbot_folder" "test" {
+	parent = "tmod:@turbot/turbot#/"
+	title = "account_import"
+	description = "test folder for turbot terraform provider"
+}
 resource "turbot_resource" "account_resource" {
-  parent     = "%s"
+  parent     = turbot_folder.test.id
   type       = "%s"
-  data       = jsonencode({
-    "Id": "786233995633"
-  })
+  data       = <<EOF
+%sEOF
   metadata = <<EOF
 %sEOF
-}`, parent, resourceType, metadata)
+}`, resourceType, data, metadata)
 	return config
 }
 

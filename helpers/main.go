@@ -129,3 +129,17 @@ func ConvertToStringMap(data map[string]interface{}) (map[string]string, error) 
 	}
 	return outputMap, nil
 }
+
+func GetNullProperties(propertyMap map[string]interface{}) []interface{} {
+	var result []interface{}
+	if properties, ok := propertyMap["properties"]; ok {
+		for id, valueObject := range properties.(map[string]interface{}) {
+			if m, ok := valueObject.(map[string]interface{}); ok {
+				if m["type"] == "null" {
+					result = append(result, id)
+				}
+			}
+		}
+	}
+	return result
+}
