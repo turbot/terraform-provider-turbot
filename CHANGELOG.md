@@ -1,4 +1,4 @@
-## 1.2.0 (Unreleased)
+## 1.2.0 (May 20, 2020)
 FEATURES:
 * **New Resource:** `turbot_turbot_directory` ([#1](https://github.com/terraform-providers/terraform-provider-turbot/issues/1))
 
