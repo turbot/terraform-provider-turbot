@@ -181,7 +181,6 @@ func TestGetNullProperties(t *testing.T) {
 				}
 			}
 		}
-		log.Print(excluded)
 		assert.ObjectsAreEqual(test.expected, excluded)
 	}
 }
