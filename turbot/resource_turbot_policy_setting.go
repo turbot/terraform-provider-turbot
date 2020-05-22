@@ -141,6 +141,9 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 
 	if value, ok := d.GetOk("template_input"); ok {
 		input["templateInput"], err = helpers.ParseYamlString(value)
+		if err != nil {
+			return err
+		}
 	}
 
 	policySetting, err := client.CreatePolicySetting(input)
@@ -168,17 +171,14 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	var templateInput interface{}
-	if policySetting.TemplateInput != nil {
-		if templateInput, err = yaml.Marshal(policySetting.TemplateInput); err != nil {
-			return err
-		}
+	templateInput, err := helpers.InterfaceToYaml(policySetting.TemplateInput)
+	if err != nil {
+		return err
 	}
-
 	// assign read properties
 	d.Set("precedence", policySetting.Precedence)
 	d.Set("template", policySetting.Template)
-	d.Set("template_input", helpers.InterfaceToString(templateInput))
+	d.Set("template_input", templateInput)
 	d.Set("note", policySetting.Note)
 	d.Set("valid_from_timestamp", policySetting.ValidFromTimestamp)
 	d.Set("valid_to_timestamp", policySetting.ValidToTimestamp)
@@ -207,18 +207,17 @@ func resourceTurbotPolicySettingRead(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 
-	var templateInput interface{}
-	if policySetting.TemplateInput != nil {
-		if templateInput, err = yaml.Marshal(policySetting.TemplateInput); err == nil {
-			return err
-		}
+	templateInput, err := helpers.InterfaceToYaml(policySetting.TemplateInput)
+
+	if err != nil {
+		return err
 	}
 	// assign results back into ResourceData
 	// if pgp_key has been supplied, encrypt value and value_source
 	storeValue(d, policySetting)
 	d.Set("precedence", policySetting.Precedence)
 	d.Set("template", policySetting.Template)
-	d.Set("template_input", helpers.InterfaceToString(templateInput))
+	d.Set("template_input", templateInput)
 	d.Set("note", policySetting.Note)
 	d.Set("valid_from_timestamp", policySetting.ValidFromTimestamp)
 	d.Set("valid_to_timestamp", policySetting.ValidToTimestamp)
@@ -240,6 +239,14 @@ func resourceTurbotPolicySettingUpdate(d *schema.ResourceData, meta interface{})
 	input := mapFromResourceData(d, getPolicySettingUpdateProperties())
 	input["id"] = id
 
+	var err error
+	if value, ok := d.GetOk("template_input"); ok {
+		input["templateInput"], err = helpers.ParseYamlString(value)
+		if err != nil {
+			return err
+		}
+	}
+
 	policySetting, err := client.UpdatePolicySetting(input)
 	if err != nil {
 		if !apiClient.FailedValidationError(err) {
@@ -258,10 +265,16 @@ func resourceTurbotPolicySettingUpdate(d *schema.ResourceData, meta interface{})
 		// update state value setting with yaml parsed valueSource
 		setValueFromValueSource(input["valueSource"].(string), d)
 	}
+
+	templateInput, err := helpers.InterfaceToYaml(policySetting.TemplateInput)
+	if err != nil {
+		return err
+	}
+
 	//assign read properties
 	d.Set("precedence", policySetting.Precedence)
 	d.Set("template", policySetting.Template)
-	d.Set("template_input", policySetting.TemplateInput)
+	d.Set("template_input", templateInput)
 	d.Set("note", policySetting.Note)
 	d.Set("valid_from_timestamp", policySetting.ValidFromTimestamp)
 	d.Set("valid_to_timestamp", policySetting.ValidToTimestamp)

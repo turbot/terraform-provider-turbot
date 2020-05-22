@@ -3,19 +3,23 @@ package helpers
 import (
 	"fmt"
 	"github.com/go-yaml/yaml"
+	"reflect"
 )
 
 func ParseYamlString(value interface{}) (interface{}, error) {
 	var temp interface{}
 
 	s := InterfaceToString(value)
+
 	err := yaml.Unmarshal([]byte(s), &temp)
 	if err != nil {
 		return s, err
 	}
+
 	if temp == "" {
 		return value, nil
 	}
+
 	return temp, nil
 }
 
@@ -25,6 +29,21 @@ func InterfaceToString(value interface{}) string {
 		return ""
 	}
 	return fmt.Sprintf("%v", value)
+}
+
+func InterfaceToYaml(value interface{}) (string, error) {
+	if value == nil {
+		return "", nil
+	}
+	if res, ok := value.(string); ok {
+		return res, nil
+	}
+
+	data, err := yaml.Marshal(value)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
 }
 
 func YamlValuesAreEquivalent(yaml1, yaml2 string) (bool, error) {
