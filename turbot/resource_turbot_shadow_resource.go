@@ -52,9 +52,19 @@ func resourceTurbotShadowResourceCreate(d *schema.ResourceData, meta interface{}
 
 	var turbotResource *apiClient.Resource
 	var err error
+	errorCount := 0
+	maxErrorRetries := 5
 	err = resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
 		turbotResource, err = getResource(filter, resourceAka, client)
 		if err != nil {
+			if errorCount == maxErrorRetries {
+				return resource.NonRetryableError(err)
+			}
+			if apiClient.NotFoundError(err) {
+				errorCount = 0
+			} else {
+				errorCount++
+			}
 			return resource.RetryableError(err)
 		}
 		return nil
