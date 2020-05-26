@@ -61,3 +61,11 @@ At least one of `resource` or `filter` must be specified:
 
 - `resource` - (Optional) ID of the resource that the shadow resource will represent.
 - `filter` - (Optional) Filter query matching a single resource.
+
+
+## Timeouts
+
+`turbot_shadow_resource` provides the following [Timeouts](/docs/configuration/resources.html#timeouts)
+configuration options:
+
+- `create` - (Default `5m`) How long to wait for a resource to be created.

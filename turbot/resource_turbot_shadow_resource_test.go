@@ -46,6 +46,9 @@ EOF
 }
 resource "turbot_shadow_resource" "shadow_resource" {
   resource    = "arn:aws:logs:us-east-2:713469427990:log-group:provider-test-hashicorp"
+  timeouts    {
+    create = "5m"
+}
 }`, resource)
 }
 

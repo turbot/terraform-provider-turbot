@@ -2,9 +2,9 @@ package turbot
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
-	"log"
 	"time"
 )
 
@@ -18,6 +18,9 @@ func resourceTurbotShadowResource() *schema.Resource {
 		Delete: resourceTurbotShadowResourceDelete,
 		Importer: &schema.ResourceImporter{
 			State: resourceTurbotShadowResourceImport,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(5 * time.Minute),
 		},
 		Schema: map[string]*schema.Schema{
 			"filter": {
@@ -47,49 +50,21 @@ func resourceTurbotShadowResourceCreate(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("resource and filter must not both be specified")
 	}
 
-	// create folder returns turbot resource metadata containing the id
-	resource, err := waitForResource(filter, resourceAka, client)
-	if err != nil {
-		log.Println("[ERROR] Turbot shadow resource creation failed...", err)
-		return err
-	}
-
-	// assign the id
-	d.SetId(resource.Turbot.Id)
-	return nil
-}
-
-func waitForResource(filter, resourceAka string, client *apiClient.Client) (*apiClient.Resource, error) {
-	retryCount := 0
-	errorCount := 0
-	// retry for 5 minutes
-	timeoutMins := 5
-	retryIntervalSecs := 5
-	maxErrorRetries := 5
-	maxRetries := (timeoutMins * 60) / retryIntervalSecs
-	sleep := time.Duration(retryIntervalSecs) * time.Second
-	for retryCount < maxRetries {
-		resource, err := getResource(filter, resourceAka, client)
-		// when we get NotFoundError, we retry for 5 mins(timeoutMins) otherwise on a random/transient errors retry 5 times (maxErrorRetries)
+	var turbotResource *apiClient.Resource
+	var err error
+	err = resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		turbotResource, err = getResource(filter, resourceAka, client)
 		if err != nil {
-			if apiClient.NotFoundError(err) {
-				errorCount = 0
-			} else {
-				errorCount++
-			}
+			return resource.RetryableError(err)
 		}
-		if errorCount == maxErrorRetries {
-			return nil, fmt.Errorf("fetching resource with filter error out : %s", err)
-		}
-		if resource != nil {
-			log.Printf("found resource")
-			// success
-			return resource, nil
-		}
-		time.Sleep(sleep)
-		retryCount++
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("turbot shadow resource creation failed: %s", err)
 	}
-	return nil, fmt.Errorf("fetching resource with filter timed out after %d minutes", timeoutMins)
+	// assign the id
+	d.SetId(turbotResource.Turbot.Id)
+	return nil
 }
 
 func getResource(filter, resourceAka string, client *apiClient.Client) (*apiClient.Resource, error) {
