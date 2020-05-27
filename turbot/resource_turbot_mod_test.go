@@ -124,7 +124,7 @@ func TestAccMod_Basic(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"tags"},
+				ImportStateVerifyIgnore: []string{"version"},
 			},
 		},
 	})
