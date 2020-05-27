@@ -10,6 +10,7 @@ import (
 
 // test suites
 func TestAccLocalDirectoryUser_Basic(t *testing.T) {
+	resourceName := "turbot_local_directory_user.test_user"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -44,6 +45,12 @@ func TestAccLocalDirectoryUser_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_local_directory_user.test_user", "email", "kai@turbot.com"),
 				),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"tags"},
 			},
 		},
 	})

@@ -10,6 +10,7 @@ import (
 
 // test suites
 func TestAccSamlDirectory_Basic(t *testing.T) {
+	resourceName := "turbot_saml_directory.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -32,6 +33,11 @@ func TestAccSamlDirectory_Basic(t *testing.T) {
 					testAccCheckSamlDirectoryExists("turbot_saml_directory.test"),
 					resource.TestCheckResourceAttr("turbot_saml_directory.test", "description", "SAML Directory Testing1 updated"),
 				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

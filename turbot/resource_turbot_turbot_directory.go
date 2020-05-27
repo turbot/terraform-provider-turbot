@@ -4,6 +4,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 	"github.com/terraform-providers/terraform-provider-turbot/helpers"
+	"strings"
 )
 
 // these are the properties which must be passed to a create/update call
@@ -116,13 +117,11 @@ func resourceTurbotTurbotDirectoryRead(d *schema.ResourceData, meta interface{})
 		}
 		return err
 	}
-	//TODO remove directory status check, after graphQL API supports new enum values - [ACTIVE, INACTIVE]
-	if turbotDirectory.Status == "Active" {
-		d.Set("status", "ACTIVE")
-	} else {
-		d.Set("status", "INACTIVE")
-	}
 	// assign results back into ResourceData
+	d.Set("status", strings.ToUpper(turbotDirectory.Status))
+	d.Set("description", turbotDirectory.Description)
+	d.Set("profile_id_template", turbotDirectory.ProfileIdTemplate)
+	d.Set("server", turbotDirectory.Server)
 	d.Set("parent", turbotDirectory.Turbot.ParentId)
 	d.Set("title", turbotDirectory.Title)
 	// set parent_akas property by loading resource and fetching the akas

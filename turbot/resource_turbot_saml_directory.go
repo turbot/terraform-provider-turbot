@@ -4,6 +4,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 	"github.com/terraform-providers/terraform-provider-turbot/helpers"
+	"strings"
 )
 
 // these are the properties which must be passed to a legacy create/update call
@@ -156,7 +157,6 @@ func resourceTurbotSamlDirectoryCreate(d *schema.ResourceData, meta interface{})
 		if err != nil {
 			return err
 		}
-		d.Set("status", data["status"])
 		d.Set("directoryType", data["directoryType"])
 	} else {
 		input := mapFromResourceData(d, samlDirectoryInputProperties)
@@ -167,7 +167,6 @@ func resourceTurbotSamlDirectoryCreate(d *schema.ResourceData, meta interface{})
 		if err != nil {
 			return err
 		}
-		d.Set("status", input["status"])
 	}
 
 	// set parent_akas property by loading parent resource and fetching the akas
@@ -177,6 +176,7 @@ func resourceTurbotSamlDirectoryCreate(d *schema.ResourceData, meta interface{})
 	// assign the id
 	d.SetId(samlDirectory.Turbot.Id)
 	// assign Read query properties
+	d.Set("status", strings.ToUpper(samlDirectory.Status))
 	d.Set("parent", samlDirectory.Parent)
 	d.Set("title", samlDirectory.Title)
 	d.Set("description", samlDirectory.Description)
@@ -210,6 +210,7 @@ func resourceTurbotSamlDirectoryRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("parent", samlDirectory.Parent)
 	d.Set("title", samlDirectory.Title)
 	d.Set("description", samlDirectory.Description)
+	d.Set("status", strings.ToUpper(samlDirectory.Status))
 	d.Set("profile_id_template", samlDirectory.ProfileIdTemplate)
 	d.Set("entry_point", samlDirectory.EntryPoint)
 	d.Set("certificate", samlDirectory.Certificate)

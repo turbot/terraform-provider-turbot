@@ -30,6 +30,7 @@ func TestAccGoogleDirectory_Pgp(t *testing.T) {
 
 // test suites
 func TestAccGoogleDirectory_Basic(t *testing.T) {
+	resourceName := "turbot_google_directory.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -44,6 +45,12 @@ func TestAccGoogleDirectory_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_google_directory.test", "description", "test directory"),
 				),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"client_secret"},
 			},
 			{
 				Config: testAccGoogleDirectoryUpdateTitleConfig(),

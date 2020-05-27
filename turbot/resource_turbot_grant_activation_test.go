@@ -10,6 +10,7 @@ import (
 
 // test suites
 func TestAccGrantActivate_Basic(t *testing.T) {
+	resourceName := "turbot_grant_activation.test_activation"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -29,6 +30,11 @@ func TestAccGrantActivate_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_grant_activation.test_activation", "resource", "178806508050433"),
 				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

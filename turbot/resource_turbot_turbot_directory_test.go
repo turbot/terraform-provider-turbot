@@ -10,6 +10,7 @@ import (
 
 // test suites
 func TestAccTurbotDirectory_Basic(t *testing.T) {
+	resourceName := "turbot_turbot_directory.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -46,6 +47,12 @@ func TestAccTurbotDirectory_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_turbot_directory.test", "tags.%", "1"),
 				),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"tags"},
 			},
 		},
 	})
