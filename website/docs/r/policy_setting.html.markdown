@@ -13,7 +13,7 @@ The `Turbot Policy Setting` resource adds support for setting policies for resou
 
 ## Example Usage
 
-**Creating Your First Folder**
+**Setting Your First Policy**
 
 ```hcl
 resource "turbot_folder" "test" {
@@ -21,11 +21,6 @@ resource "turbot_folder" "test" {
   title           = "My Folder"
   description     = "My first test folder"
 }
-```
-
-**Setting Your First Policy**
-
-```hcl
 resource "turbot_policy_setting" "test_policy" {
   resource    = turbot_folder.parent.id
   type        = "tmod:@turbot/turbot-iam#/policy/types/permissions"
@@ -44,6 +39,34 @@ resource "turbot_policy_setting" "template_policy" {
 }
 ```
 
+**Setting Your Calculated Policy Using Nunjucks Template **
+
+```hcl
+resource "turbot_policy_setting" "test_policy" {
+  	resource    = "tmod:@turbot/turbot#/"
+  	type = "tmod:@turbot/aws-s3#/policy/types/bucketApprovedUsage"
+  	template_input = <<EOF
+- | 
+ {
+  	item: bucket {
+    	Name
+  	}
+ }
+- | 
+ {
+  	resources(filter: "$.DistributionConfig.Origins.Items.*.DomainName:'{{$.item.Name}}.s3.amazonaws.com' resourceTypeId:tmod:@turbot/aws-cloudfront#/resource/types/cloudFront") {
+    	items {
+    	  Id: get(path:"Id")
+    	}
+  	}
+ }
+EOF
+	template =  "{% if $.Id == '112233445566' %}Skip{% else %}'Done'{% endif %}"
+	precedence = "REQUIRED"
+}
+
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -52,7 +75,7 @@ The following arguments are supported:
 - `resource` - (Required) The `aka` of the resource.
 - `note` - (Optional) Additional notes, if desired.
 - `precedence` - (Optional) Determines whether the policy setting should be `required` or `recommended`. Defaults to `required`.
-- `template` - (Optional) Nunjucks template that is used to render the policy.
+- `template` - (Optional) Nunjucks template that is used to render the policy, it can be either in `YAML`, `JSON` or `string` representation.
 - `template_input` - (Optional) A GraphQL query required as the input for the `template`.
 - `valid_from_timestamp` - (Optional) The start of a specific time period for which the policy setting is valid.
 - `valid_to_timestamp` - (Optional) The expiration date of a policy value.
