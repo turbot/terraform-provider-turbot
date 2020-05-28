@@ -140,7 +140,7 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 	input := mapFromResourceData(d, policySettingInputProperties)
 
 	if value, ok := d.GetOk("template_input"); ok {
-		// NOTE: ParseYamlString does'nt validate input as valid YAML format, on error it returns value
+		// NOTE: ParseYamlString doesn't validate input as valid YAML format, on error it returns value
 		valueString := fmt.Sprintf("%v", value)
 		input["templateInput"], err = helpers.ParseYamlString(valueString)
 	}
