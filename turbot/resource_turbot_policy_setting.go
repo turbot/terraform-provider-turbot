@@ -72,7 +72,7 @@ func resourceTurbotPolicySetting() *schema.Resource {
 			"template_input": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				DiffSuppressFunc: suppressEquivalentTemplateInputDiffs,
+				DiffSuppressFunc: suppressIfTemplateInputEquivalent,
 			},
 			"note": {
 				Type:     schema.TypeString,
@@ -140,10 +140,10 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 	input := mapFromResourceData(d, policySettingInputProperties)
 
 	if value, ok := d.GetOk("template_input"); ok {
-		input["templateInput"], err = helpers.ParseYamlString(value)
-		if err != nil {
-			return err
-		}
+		// NOTE: ParseYamlString expects a string
+		// It does'nt validate input as valid YAML format, on error it returns value itself
+		valueString := fmt.Sprintf("%v", value)
+		input["templateInput"], err = helpers.ParseYamlString(valueString)
 	}
 
 	policySetting, err := client.CreatePolicySetting(input)
@@ -171,7 +171,10 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	templateInput, err := helpers.InterfaceToYaml(policySetting.TemplateInput)
+	// NOTE: TemplateInput can be string or array of strings
+	// - In case of string, we return string
+	// - In array of strings, we return a valid YAML string
+	templateInput, err := helpers.InterfaceToStringOrYaml(policySetting.TemplateInput)
 	if err != nil {
 		return err
 	}
@@ -207,7 +210,10 @@ func resourceTurbotPolicySettingRead(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 
-	templateInput, err := helpers.InterfaceToYaml(policySetting.TemplateInput)
+	// NOTE: TemplateInput can be string or array of strings
+	// - In case of string, we return string
+	// - In array of strings, we return a valid YAML string
+	templateInput, err := helpers.InterfaceToStringOrYaml(policySetting.TemplateInput)
 
 	if err != nil {
 		return err
@@ -241,10 +247,10 @@ func resourceTurbotPolicySettingUpdate(d *schema.ResourceData, meta interface{})
 
 	var err error
 	if value, ok := d.GetOk("template_input"); ok {
-		input["templateInput"], err = helpers.ParseYamlString(value)
-		if err != nil {
-			return err
-		}
+		// NOTE: ParseYamlString expects a string
+		// It does'nt validate input as valid YAML format, on error it returns value itself
+		valueString := fmt.Sprintf("%v", value)
+		input["templateInput"], err = helpers.ParseYamlString(valueString)
 	}
 
 	policySetting, err := client.UpdatePolicySetting(input)
@@ -266,7 +272,10 @@ func resourceTurbotPolicySettingUpdate(d *schema.ResourceData, meta interface{})
 		setValueFromValueSource(input["valueSource"].(string), d)
 	}
 
-	templateInput, err := helpers.InterfaceToYaml(policySetting.TemplateInput)
+	// NOTE: TemplateInput can be string or array of strings
+	// - In case of string, we return string
+	// - In array of strings, we return a valid YAML string
+	templateInput, err := helpers.InterfaceToStringOrYaml(policySetting.TemplateInput)
 	if err != nil {
 		return err
 	}
@@ -354,6 +363,7 @@ func storeValue(d *schema.ResourceData, setting *apiClient.PolicySetting) error 
 	// - valueSource is the yaml representation of the policy.
 
 	if pgpKey, ok := d.GetOk("pgp_key"); ok {
+		// NOTE: If it is a complex type (object/array) then the diff calculation will use the value_source so the precise format is not critical
 		// format the value as a string to allow us to handle object/array values using a string schema
 		valueFingerprint, encryptedValue, err := helpers.EncryptValue(pgpKey.(string), helpers.InterfaceToString(setting.Value))
 		if err != nil {
@@ -376,11 +386,11 @@ func storeValue(d *schema.ResourceData, setting *apiClient.PolicySetting) error 
 	return nil
 }
 
-func suppressEquivalentTemplateInputDiffs(k, old, new string, d *schema.ResourceData) bool {
+func suppressIfTemplateInputEquivalent(k, old, new string, d *schema.ResourceData) bool {
 	if old == "" {
 		return false
 	}
-	equivalent, err := helpers.YamlValuesAreEquivalent(old, new)
+	equivalent, err := helpers.YamlStringsAreEqual(old, new)
 	if err != nil {
 		return false
 	}

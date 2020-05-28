@@ -3,27 +3,26 @@ package helpers
 import (
 	"fmt"
 	"github.com/go-yaml/yaml"
-	"reflect"
 )
 
-func ParseYamlString(value interface{}) (interface{}, error) {
-	var temp interface{}
+// parse given string in YAML format
+func ParseYamlString(value string) (interface{}, error) {
+	var result interface{}
 
-	s := InterfaceToString(value)
-
-	err := yaml.Unmarshal([]byte(s), &temp)
+	err := yaml.Unmarshal([]byte(value), &result)
+	// returns value when unmarshal fails
 	if err != nil {
-		return s, err
+		return value, err
 	}
 
-	if temp == "" {
+	if result == "" {
 		return value, nil
 	}
 
-	return temp, nil
+	return result, nil
 }
 
-// convert value to a string. If it is a complex type (object/array) then the diff calculation will use the value_source so the precise format is not critical
+// convert value to a string.
 func InterfaceToString(value interface{}) string {
 	if value == nil {
 		return ""
@@ -31,7 +30,8 @@ func InterfaceToString(value interface{}) string {
 	return fmt.Sprintf("%v", value)
 }
 
-func InterfaceToYaml(value interface{}) (string, error) {
+// converts value to a string or YAML string
+func InterfaceToStringOrYaml(value interface{}) (string, error) {
 	if value == nil {
 		return "", nil
 	}
@@ -46,7 +46,8 @@ func InterfaceToYaml(value interface{}) (string, error) {
 	return string(data), nil
 }
 
-func YamlValuesAreEquivalent(yaml1, yaml2 string) (bool, error) {
+//implements a equal operation on 2 YAML strings
+func YamlStringsAreEqual(yaml1, yaml2 string) (bool, error) {
 	var yaml1intermediate, yaml2intermediate interface{}
 
 	if err := yaml.Unmarshal([]byte(yaml1), &yaml1intermediate); err != nil {
@@ -56,7 +57,20 @@ func YamlValuesAreEquivalent(yaml1, yaml2 string) (bool, error) {
 	if err := yaml.Unmarshal([]byte(yaml2), &yaml2intermediate); err != nil {
 		return false, fmt.Errorf("Error unmarshaling yaml string: %s", err)
 	}
-	if reflect.DeepEqual(yaml1intermediate, yaml2intermediate) {
+
+	s1, err := yaml.Marshal(yaml1intermediate)
+
+	if err != nil {
+		return false, fmt.Errorf("Error marshaling yaml string: %s", err)
+	}
+
+	s2, err := yaml.Marshal(yaml2intermediate)
+
+	if err != nil {
+		return false, fmt.Errorf("Error marshaling yaml string: %s", err)
+	}
+
+	if string(s1) == string(s2) {
 		return true, nil
 	}
 	return false, nil
