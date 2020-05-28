@@ -70,8 +70,9 @@ func resourceTurbotPolicySetting() *schema.Resource {
 				Optional: true,
 			},
 			"template_input": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: suppressIfTemplateInputEquivalent,
 			},
 			"note": {
 				Type:     schema.TypeString,
@@ -137,6 +138,13 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 	// 1) pass value as 'value'
 	// 2) pass value as 'valueSource'. update d.value to be the yaml parsed version of 'value'
 	input := mapFromResourceData(d, policySettingInputProperties)
+
+	if value, ok := d.GetOk("template_input"); ok {
+		// NOTE: ParseYamlString doesn't validate input as valid YAML format, on error it returns value
+		valueString := fmt.Sprintf("%v", value)
+		input["templateInput"], err = helpers.ParseYamlString(valueString)
+	}
+
 	policySetting, err := client.CreatePolicySetting(input)
 	if err != nil {
 		if !apiClient.FailedValidationError(err) {
@@ -157,15 +165,22 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 	}
 	// if pgp_key has been supplied, encrypt value and value_source
 	storeValue(d, policySetting)
-
 	// set akas properties by loading resource and fetching the akas
 	if err := storeAkas(resourceAka, "resource_akas", d, meta); err != nil {
+		return err
+	}
+
+	// NOTE: TemplateInput can be string or array of strings
+	// - In case of string, we return string
+	// - In array of strings, we return a valid YAML string
+	templateInput, err := helpers.InterfaceToStringOrYaml(policySetting.TemplateInput)
+	if err != nil {
 		return err
 	}
 	// assign read properties
 	d.Set("precedence", policySetting.Precedence)
 	d.Set("template", policySetting.Template)
-	d.Set("template_input", policySetting.TemplateInput)
+	d.Set("template_input", templateInput)
 	d.Set("note", policySetting.Note)
 	d.Set("valid_from_timestamp", policySetting.ValidFromTimestamp)
 	d.Set("valid_to_timestamp", policySetting.ValidToTimestamp)
@@ -194,12 +209,20 @@ func resourceTurbotPolicySettingRead(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 
+	// NOTE: TemplateInput can be string or array of strings
+	// - In case of string, we return string
+	// - In array of strings, we return a valid YAML string
+	templateInput, err := helpers.InterfaceToStringOrYaml(policySetting.TemplateInput)
+
+	if err != nil {
+		return err
+	}
 	// assign results back into ResourceData
 	// if pgp_key has been supplied, encrypt value and value_source
 	storeValue(d, policySetting)
 	d.Set("precedence", policySetting.Precedence)
 	d.Set("template", policySetting.Template)
-	d.Set("template_input", policySetting.TemplateInput)
+	d.Set("template_input", templateInput)
 	d.Set("note", policySetting.Note)
 	d.Set("valid_from_timestamp", policySetting.ValidFromTimestamp)
 	d.Set("valid_to_timestamp", policySetting.ValidToTimestamp)
@@ -221,6 +244,13 @@ func resourceTurbotPolicySettingUpdate(d *schema.ResourceData, meta interface{})
 	input := mapFromResourceData(d, getPolicySettingUpdateProperties())
 	input["id"] = id
 
+	var err error
+	if value, ok := d.GetOk("template_input"); ok {
+		// NOTE: ParseYamlString doesn't validate input as valid YAML format, on error it just returns the value
+		valueString := fmt.Sprintf("%v", value)
+		input["templateInput"], err = helpers.ParseYamlString(valueString)
+	}
+
 	policySetting, err := client.UpdatePolicySetting(input)
 	if err != nil {
 		if !apiClient.FailedValidationError(err) {
@@ -239,10 +269,19 @@ func resourceTurbotPolicySettingUpdate(d *schema.ResourceData, meta interface{})
 		// update state value setting with yaml parsed valueSource
 		setValueFromValueSource(input["valueSource"].(string), d)
 	}
+
+	// NOTE: TemplateInput can be string or array of strings
+	// - In case of string, we return string
+	// - In array of strings, we return a valid YAML string
+	templateInput, err := helpers.InterfaceToStringOrYaml(policySetting.TemplateInput)
+	if err != nil {
+		return err
+	}
+
 	//assign read properties
 	d.Set("precedence", policySetting.Precedence)
 	d.Set("template", policySetting.Template)
-	d.Set("template_input", policySetting.TemplateInput)
+	d.Set("template_input", templateInput)
 	d.Set("note", policySetting.Note)
 	d.Set("valid_from_timestamp", policySetting.ValidFromTimestamp)
 	d.Set("valid_to_timestamp", policySetting.ValidToTimestamp)
@@ -322,8 +361,9 @@ func storeValue(d *schema.ResourceData, setting *apiClient.PolicySetting) error 
 	// - valueSource is the yaml representation of the policy.
 
 	if pgpKey, ok := d.GetOk("pgp_key"); ok {
+		// NOTE: If it is a complex type (object/array) then the diff calculation will use the value_source so the precise format is not critical
 		// format the value as a string to allow us to handle object/array values using a string schema
-		valueFingerprint, encryptedValue, err := helpers.EncryptValue(pgpKey.(string), settingValueToString(setting.Value))
+		valueFingerprint, encryptedValue, err := helpers.EncryptValue(pgpKey.(string), helpers.InterfaceToString(setting.Value))
 		if err != nil {
 			return err
 		}
@@ -337,17 +377,21 @@ func storeValue(d *schema.ResourceData, setting *apiClient.PolicySetting) error 
 		d.Set("value_source", encryptedValueSource)
 		d.Set("value_source_key_fingerprint", valueSourceFingerprint)
 	} else {
-		d.Set("value", settingValueToString(setting.Value))
+		d.Set("value", helpers.InterfaceToString(setting.Value))
 		d.Set("value_source", setting.ValueSource)
 	}
 
 	return nil
 }
 
-// convert value to a string. If it is a complex type (object/array) then the diff calculation will use the value_source so the precise format is not critical
-func settingValueToString(value interface{}) string {
-	if value == nil {
-		return ""
+func suppressIfTemplateInputEquivalent(k, old, new string, d *schema.ResourceData) bool {
+	if old == "" {
+		return false
 	}
-	return fmt.Sprintf("%v", value)
+	equivalent, err := helpers.YamlStringsAreEqual(old, new)
+	if err != nil {
+		return false
+	}
+
+	return equivalent
 }
