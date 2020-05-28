@@ -23,14 +23,22 @@ func resourceTurbotSmartFolderAttachemnt() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"resource": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: suppressIfAkaMatches("resource_akas"),
 			},
 			"smart_folder": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
+			},
+			"resource_akas": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 		},
 	}
@@ -70,6 +78,10 @@ func resourceTurbotSmartFolderAttachmentCreate(d *schema.ResourceData, meta inte
 		return err
 	}
 
+	// set resource_akas property by loading resource and fetching the akas
+	if err := storeAkas(resource, "resource_akas", d, meta); err != nil {
+		return err
+	}
 	// assign the id
 	var stateId = buildId(smartFolder, resource)
 	d.SetId(stateId)
@@ -79,8 +91,18 @@ func resourceTurbotSmartFolderAttachmentCreate(d *schema.ResourceData, meta inte
 }
 
 func resourceTurbotSmartFolderAttachmentRead(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*apiClient.Client)
 	// NOTE: This will not be called if the attachment does not exist
 	smartFolder, resource := parseSmartFolderId(d.Id())
+
+	turbotResource, err := client.ReadResource(resource, nil)
+	if err != nil {
+		return err
+	}
+	// set resource_akas property by loading resource and fetching the akas
+	if err := storeAkas(turbotResource.Turbot.Id, "resource_akas", d, meta); err != nil {
+		return err
+	}
 	// assign results directly back into ResourceData
 	d.Set("resource", resource)
 	d.Set("smart_folder", smartFolder)
