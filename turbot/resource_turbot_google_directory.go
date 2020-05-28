@@ -4,6 +4,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 	"github.com/terraform-providers/terraform-provider-turbot/helpers"
+	"strings"
 )
 
 // these are the properties which must be passed to a create/update call
@@ -195,6 +196,8 @@ func resourceTurbotGoogleDirectoryRead(d *schema.ResourceData, meta interface{})
 	// assign results back into ResourceData
 	d.Set("parent", googleDirectory.Parent)
 	d.Set("title", googleDirectory.Title)
+	d.Set("directory_type", googleDirectory.DirectoryType)
+	d.Set("status", strings.ToUpper(googleDirectory.Status))
 	d.Set("profile_id_template", googleDirectory.ProfileIdTemplate)
 	d.Set("description", googleDirectory.Description)
 	d.Set("client_id", googleDirectory.ClientID)

@@ -118,7 +118,7 @@ func resourceTurbotSmartFolderRead(d *schema.ResourceData, meta interface{}) err
 	if len(smartFolder.Filters) > 0 {
 		d.Set("filter", smartFolder.Filters[0])
 	}
-	d.Set("parent_id", smartFolder.Parent)
+	d.Set("parent", smartFolder.Parent)
 	d.Set("title", smartFolder.Title)
 	d.Set("description", smartFolder.Description)
 

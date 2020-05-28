@@ -10,6 +10,7 @@ import (
 
 // test suites
 func TestAccFolder_Basic(t *testing.T) {
+	resourceName := "turbot_folder.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -24,6 +25,11 @@ func TestAccFolder_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_folder.test", "description", "test folder"),
 				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config: testAccFolderUpdateDescConfig(),

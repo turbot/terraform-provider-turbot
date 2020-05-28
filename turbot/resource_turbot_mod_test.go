@@ -12,6 +12,7 @@ import (
 
 func TestAccMod_Basic(t *testing.T) {
 	latestProviderTestVersion := "5.0.2"
+	resourceName := "turbot_mod.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -118,6 +119,12 @@ func TestAccMod_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "version_current", "5.0.0"),
 				),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"version"},
 			},
 		},
 	})

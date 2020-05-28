@@ -6,6 +6,7 @@ import (
 )
 
 func TestAccGrant_Basic(t *testing.T) {
+	resourceName := "turbot_grant.test_grant"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -22,6 +23,11 @@ func TestAccGrant_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_grant.test_grant", "level", "tmod:@turbot/turbot-iam#/permission/levels/owner"),
 				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

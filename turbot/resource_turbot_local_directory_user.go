@@ -169,7 +169,7 @@ func resourceTurbotLocalDirectoryUserRead(d *schema.ResourceData, meta interface
 	d.Set("parent", localDirectoryUser.Parent)
 	d.Set("title", localDirectoryUser.Title)
 	d.Set("email", localDirectoryUser.Email)
-	d.Set("stat	1us", localDirectoryUser.Status)
+	d.Set("status", localDirectoryUser.Status)
 	d.Set("display_name", localDirectoryUser.DisplayName)
 	d.Set("given_name", localDirectoryUser.GivenName)
 	d.Set("middle_name", localDirectoryUser.MiddleName)

@@ -10,6 +10,7 @@ import (
 
 // test suites
 func TestAccLocalDirectory_Basic(t *testing.T) {
+	resourceName := "turbot_local_directory.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -44,7 +45,8 @@ func TestAccLocalDirectory_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_local_directory.test", "description", "test directory for turbot terraform provider"),
 				),
-			}, {
+			},
+			{
 				Config: testAccDirectoryTagsConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLocalDirectoryExists("turbot_local_directory.test"),
@@ -57,6 +59,12 @@ func TestAccLocalDirectory_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_local_directory.test", "tags.Environment", "foo"),
 				),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"tags"},
 			},
 		},
 	})

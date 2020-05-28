@@ -10,6 +10,7 @@ import (
 
 // test suites
 func TestAccSmartFolder_Basic(t *testing.T) {
+	resourceName := "turbot_smart_folder.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -24,7 +25,8 @@ func TestAccSmartFolder_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("turbot_smart_folder.test", "parent", "tmod:@turbot/turbot#/"),
 					resource.TestCheckResourceAttr("turbot_smart_folder.test", "filter", "resourceType:181381985925765 $.turbot.tags.a:b"),
 				),
-			}, {
+			},
+			{
 				Config: testAccSmartFolderUpdateDescConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSmartFolderExists("turbot_smart_folder.test"),
@@ -33,6 +35,12 @@ func TestAccSmartFolder_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("turbot_smart_folder.test", "parent", "tmod:@turbot/turbot#/"),
 					resource.TestCheckResourceAttr("turbot_smart_folder.test", "filter", "resourceType:181381985925765 $.turbot.tags.a:b"),
 				),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"filter"},
 			},
 		},
 	})
