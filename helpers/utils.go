@@ -30,7 +30,7 @@ func InterfaceToString(value interface{}) string {
 	return fmt.Sprintf("%v", value)
 }
 
-// converts value to a string or YAML string
+// if the value is already a string return it, otherwise convert to the YAML representation
 func InterfaceToStringOrYaml(value interface{}) (string, error) {
 	if value == nil {
 		return "", nil
@@ -46,7 +46,7 @@ func InterfaceToStringOrYaml(value interface{}) (string, error) {
 	return string(data), nil
 }
 
-//implements a equal operation on 2 YAML strings
+// implements a equal operation on 2 YAML strings, ignoring formatting differences
 func YamlStringsAreEqual(yaml1, yaml2 string) (bool, error) {
 	var yaml1intermediate, yaml2intermediate interface{}
 
@@ -59,13 +59,11 @@ func YamlStringsAreEqual(yaml1, yaml2 string) (bool, error) {
 	}
 
 	s1, err := yaml.Marshal(yaml1intermediate)
-
 	if err != nil {
 		return false, fmt.Errorf("Error marshaling yaml string: %s", err)
 	}
 
 	s2, err := yaml.Marshal(yaml2intermediate)
-
 	if err != nil {
 		return false, fmt.Errorf("Error marshaling yaml string: %s", err)
 	}

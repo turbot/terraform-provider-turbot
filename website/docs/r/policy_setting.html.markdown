@@ -76,7 +76,7 @@ The following arguments are supported:
 - `note` - (Optional) Additional notes, if desired.
 - `precedence` - (Optional) Determines whether the policy setting should be `required` or `recommended`. Defaults to `required`.
 - `template` - (Optional) Nunjucks template that is used to render the policy.
-- `template_input` - (Optional) A GraphQL query as a `string` or array of GraphQL queries in `YAML` format required as the input for the `template` .
+- `template_input` - (Optional) A GraphQL query as a `string` or array of GraphQL queries in `YAML` format. The GraphQL output is used as the render context when rendering the `template`
 - `valid_from_timestamp` - (Optional) The start of a specific time period for which the policy setting is valid.
 - `valid_to_timestamp` - (Optional) The expiration date of a policy value.
 - `value` - (Optional) Value of the policy. This could either be the value of the setting or a `yaml` string representing the setting.

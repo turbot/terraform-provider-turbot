@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-//test suites
+// test suites
 func TestAccPolicySetting_String(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
