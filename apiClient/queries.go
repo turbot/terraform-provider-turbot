@@ -213,7 +213,7 @@ func readSmartFolderQuery(id string) string {
 		title: get(path:"turbot.title")
 		description: get(path:"description")
 		filters: get(path:"filters")
-		parent:	get(path:"turbot.id")
+		parent:	get(path:"turbot.parentId")
 		turbot: get(path:"turbot")
    		attachedResources{
 			items{
