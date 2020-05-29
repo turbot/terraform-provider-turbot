@@ -39,7 +39,7 @@ resource "turbot_policy_setting" "template_policy" {
 }
 ```
 
-**Setting Your Calculated Policy Using Nunjucks Template **
+**Setting Your Policy Using Array Of GraphQL Queries**
 
 ```hcl
 resource "turbot_policy_setting" "test_policy" {

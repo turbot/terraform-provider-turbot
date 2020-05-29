@@ -1,4 +1,9 @@
 ## 1.3.0 (Unreleased)
+ENHANCEMENTS:
+* `resource/resource_turbot_policy_setting`: `template_input` attribute now supports either a string or an array of strings in `YAML` format. ([#11](https://github.com/terraform-providers/terraform-provider-turbot/issues/11))
+* `resource/resource_turbot_shadow_resource`: Add `timeout` block to support `create` timeout. Default value of `create` timeout is 5min ([#19](https://github.com/terraform-providers/terraform-provider-turbot/issues/19))
+BUG FIXES
+* `resource/resource_turbot_smart_folder_attachment`: After importing a resource, when running `terraform plan`, a resource replacement would be required.([#8](https://github.com/terraform-providers/terraform-provider-turbot/issues/8))
 ## 1.2.0 (May 20, 2020)
 FEATURES:
 * **New Resource:** `turbot_turbot_directory` ([#1](https://github.com/terraform-providers/terraform-provider-turbot/issues/1))
