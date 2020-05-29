@@ -2,8 +2,10 @@
 ENHANCEMENTS:
 * `resource/resource_turbot_policy_setting`: `template_input` attribute now supports either a string or an array of strings in `YAML` format. ([#11](https://github.com/terraform-providers/terraform-provider-turbot/issues/11))
 * `resource/resource_turbot_shadow_resource`: Add `timeout` block to support `create` timeout. Default value of `create` timeout is 5min ([#19](https://github.com/terraform-providers/terraform-provider-turbot/issues/19))
-BUG FIXES
+
+BUG FIXES 
 * `resource/resource_turbot_smart_folder_attachment`: After importing a resource, when running `terraform plan`, a resource replacement would be required.([#8](https://github.com/terraform-providers/terraform-provider-turbot/issues/8))
+
 ## 1.2.0 (May 20, 2020)
 FEATURES:
 * **New Resource:** `turbot_turbot_directory` ([#1](https://github.com/terraform-providers/terraform-provider-turbot/issues/1))
@@ -13,6 +15,7 @@ ENHANCEMENTS:
 
 BUG FIXES
 * `resource/resource_turbot_resource`: Fix `Data validation error` while doing a update on resource.([#13](https://github.com/terraform-providers/terraform-provider-turbot/issues/13))
+
 ## 1.1.0 (April 21, 2020)
 BUG FIXES
 * `resource/resource_turbot_google_directory`: For security, the client secret is not read from the resource. This causes diffs to be identified after importing the resource, requiring replacement of the resource. Suppress diffs caused by client_secret.([#66](https://github.com/turbot/terraform-provider-turbot/issues/66))
