@@ -39,13 +39,13 @@ resource "turbot_policy_setting" "template_policy" {
 }
 ```
 
-**Setting Your Calculated Policy Using Nunjucks Template **
+**Setting Your Policy Using Array Of GraphQL Queries**
 
 ```hcl
 resource "turbot_policy_setting" "test_policy" {
-  	resource    = "tmod:@turbot/turbot#/"
-  	type = "tmod:@turbot/aws-s3#/policy/types/bucketApprovedUsage"
-  	template_input = <<EOF
+  resource        = "tmod:@turbot/turbot#/"
+  type            = "tmod:@turbot/aws-s3#/policy/types/bucketApprovedUsage"
+  template_input  = <<EOF
 - | 
  {
   	item: bucket {
@@ -61,8 +61,8 @@ resource "turbot_policy_setting" "test_policy" {
   	}
  }
 EOF
-	template =  "{% if $.Id == '112233445566' %}Skip{% else %}'Done'{% endif %}"
-	precedence = "REQUIRED"
+  template        =  "{% if $.Id == '112233445566' %}Skip{% else %}'Done'{% endif %}"
+  precedence      = "REQUIRED"
 }
 
 ```
