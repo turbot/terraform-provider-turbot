@@ -27,16 +27,23 @@ resource "turbot_smart_folder" "smart_folder" {
 **Creating Your Resource**
 
 ```hcl
-resource "turbot_resource" "my_resource" {
-  parent      = "tmod:@turbot/turbot#/"
-  type        = "tmod:@turbot/aws#/resource/types/account"
-
-  payload =  <<EOF
-  {
-    "Id": "123456789000",
-    "turbot": {}
+resource "turbot_resource" "punisher_aaa" {
+  parent   = "tmod:@turbot/turbot#/"
+  type     = "tmod:@turbot/aws#/resource/types/account"
+  akas     = ["arn:aws:::123456789012"]
+  data     = <<EOT
+{
+  "Id": "123456789012",
+}
+EOT
+  metadata = <<EOT
+{
+  "aws": {
+    "accountId": "123456789012",
+    "partition": "aws"
   }
-  EOF
+}
+EOT
 }
 ```
 
