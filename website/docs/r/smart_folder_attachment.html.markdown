@@ -27,7 +27,7 @@ resource "turbot_smart_folder" "smart_folder" {
 **Creating Your Resource**
 
 ```hcl
-resource "turbot_resource" "punisher_aaa" {
+resource "turbot_resource" "my_resource" {
   parent   = "tmod:@turbot/turbot#/"
   type     = "tmod:@turbot/aws#/resource/types/account"
   akas     = ["arn:aws:::123456789012"]
