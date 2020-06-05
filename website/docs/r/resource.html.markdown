@@ -19,7 +19,6 @@ The `turbot_resource` defines a resource in Turbot. Typically it is used to defi
 resource "turbot_resource" "my_resource" {
   parent   = "tmod:@turbot/turbot#/"
   type     = "tmod:@turbot/aws#/resource/types/account"
-  akas     = ["arn:aws:::123456789012"]
   data     = <<EOT
 {
   "Id": "123456789012",
