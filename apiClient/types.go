@@ -74,6 +74,24 @@ type ValidationResponse struct {
 	}
 }
 
+// Read
+
+type ReadControlResponse struct {
+	Control Control
+}
+
+type Control struct {
+	State       string
+	Reason      string
+	Details     string
+	ResourceId  string
+	ResourceAka string
+	Type        struct {
+		Uri string
+	}
+	Turbot map[string]string
+}
+
 // is the validation response successful?
 func (response *ValidationResponse) isValid() bool {
 	return response.Schema.QueryType.Name == "Query"
