@@ -371,6 +371,7 @@ type TurbotResourceMetadata struct {
 	Metadata          map[string]interface{}
 	Tags              map[string]interface{}
 	Title             string
+	Description       string
 	VersionId         string
 	ActorIdentityId   string
 	ActorPersonaId    string
