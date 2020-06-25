@@ -10,7 +10,7 @@ import (
 )
 
 // test suites
-func TestAccFileResourceFolder_Basic(t *testing.T) {
+func TestAccFileResourcefile_Basic(t *testing.T) {
 	resourceName := "turbot_file.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -18,15 +18,13 @@ func TestAccFileResourceFolder_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckFileResourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFileResourceConfigFolder(folderData, metadata),
+				Config: testAccFileResourceConfigfile(fileData, filemetadata),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckFileResourceExists("turbot_file.test"),
+					testAccCheckFileResourceExists(resourceName),
 					resource.TestCheckResourceAttr(
-						"turbot_file.test", "type", folderType),
+						"turbot_file.test", "data", helpers.FormatJson(fileData)),
 					resource.TestCheckResourceAttr(
-						"turbot_file.test", "data", helpers.FormatJson(folderData)),
-					resource.TestCheckResourceAttr(
-						"turbot_file.test", "metadata", helpers.FormatJson(metadata)),
+						"turbot_file.test", "metadata", helpers.FormatJson(filemetadata)),
 				),
 			},
 			{
@@ -34,37 +32,31 @@ func TestAccFileResourceFolder_Basic(t *testing.T) {
 				ImportState:  true,
 			},
 			{
-				Config: testAccFileResourceConfigFolder(folderDataUpdatedDescription, metadata),
+				Config: testAccFileResourceConfigfile(fileDataUpdatedDescription, metadata),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckFileResourceExists("turbot_file.test"),
+					testAccCheckFileResourceExists(resourceName),
 					resource.TestCheckResourceAttr(
-						"turbot_file.test", "type", folderType),
-					resource.TestCheckResourceAttr(
-						"turbot_file.test", "data", helpers.FormatJson(folderDataUpdatedDescription)),
+						"turbot_file.test", "data", helpers.FormatJson(fileDataUpdatedDescription)),
 					resource.TestCheckResourceAttr(
 						"turbot_file.test", "metadata", helpers.FormatJson(metadata)),
 				),
 			},
 			{
-				Config: testAccFileResourceConfigFolder(folderDataUpdatedTitle, metadata),
+				Config: testAccFileResourceConfigfile(fileDataUpdatedTitle, metadata),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckFileResourceExists("turbot_file.test"),
+					testAccCheckFileResourceExists(resourceName),
 					resource.TestCheckResourceAttr(
-						"turbot_file.test", "type", folderType),
-					resource.TestCheckResourceAttr(
-						"turbot_file.test", "data", helpers.FormatJson(folderDataUpdatedTitle)),
+						"turbot_file.test", "data", helpers.FormatJson(fileDataUpdatedTitle)),
 					resource.TestCheckResourceAttr(
 						"turbot_file.test", "metadata", helpers.FormatJson(metadata)),
 				),
 			},
 			{
-				Config: testAccFileResourceConfigFolder(folderDataUpdatedTitle, metadataUpdated),
+				Config: testAccFileResourceConfigfile(fileDataUpdatedTitle, metadataUpdated),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckFileResourceExists("turbot_file.test"),
+					testAccCheckFileResourceExists(resourceName),
 					resource.TestCheckResourceAttr(
-						"turbot_file.test", "type", folderType),
-					resource.TestCheckResourceAttr(
-						"turbot_file.test", "data", helpers.FormatJson(folderDataUpdatedTitle)),
+						"turbot_file.test", "data", helpers.FormatJson(fileDataUpdatedTitle)),
 					resource.TestCheckResourceAttr(
 						"turbot_file.test", "metadata", helpers.FormatJson(metadataUpdated)),
 				),
@@ -100,11 +92,12 @@ var fileDataUpdatedDescription = `{
 `
 
 // configs
-func testAccFileResourceConfigFolder(data, metadata string) string {
+func testAccFileResourceConfigfile(data, metadata string) string {
 	config := fmt.Sprintf(`
 resource "turbot_file" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	title  = "provider_file"
+description = "test"
 	data =  <<EOF
 %sEOF
 	metadata =  <<EOF
