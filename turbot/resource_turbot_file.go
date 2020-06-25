@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 	"github.com/terraform-providers/terraform-provider-turbot/helpers"
+	"log"
 )
 
 var fileProperties = []interface{}{"parent", "tags", "akas"}
@@ -52,7 +53,7 @@ func resourceTurbotFile() *schema.Resource {
 			},
 			"data": {
 				Type:             schema.TypeString,
-				Required:         true,
+				Optional:         true,
 				DiffSuppressFunc: suppressIfDataMatches,
 			},
 			"metadata": {
@@ -90,13 +91,13 @@ func resourceTurbotFileCreate(d *schema.ResourceData, meta interface{}) error {
 	var err error
 	// build input map to pass to mutation
 	input, err := buildFileInput(d, fileProperties)
+	if err != nil {
+		return err
+	}
 	// set type property
 	input["type"] = "tmod:@turbot/turbot#/resource/types/file"
 	// data should be object - strict
 	// if data( object must ), override the title
-	if err != nil {
-		return err
-	}
 
 	turbotMetadata, err := client.CreateResource(input)
 	if err != nil {
@@ -127,6 +128,7 @@ func resourceTurbotFileRead(d *schema.ResourceData, meta interface{}) error {
 	// properties is a map of property name -> property path
 
 	var properties map[string]string = nil
+	var metadataConfigProperties map[string]string
 
 	if _, ok := d.GetOk("data"); ok {
 		var err error = nil
@@ -136,6 +138,14 @@ func resourceTurbotFileRead(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	if _, ok := d.GetOk("metadata"); ok {
+		var err error = nil
+		metadataConfigProperties, err = helpers.PropertyMapFromJson(d.Get("metadata").(string))
+		if err != nil {
+			return fmt.Errorf("error retrieving properties from resource metadata: %s", err.Error())
+		}
+	}
+	// pass nil
 	resource, err := client.ReadResource(id, properties)
 	if err != nil {
 		if apiClient.NotFoundError(err) {
@@ -150,19 +160,41 @@ func resourceTurbotFileRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return fmt.Errorf("error building resource data: %s", err.Error())
 	}
-
-	// assign results back into ResourceData
-
+	//metaDataMap is from read operation
+	var metaDataMap = make(map[string]interface{})
+	metaDataMap = resource.Turbot.Custom
+	for _, value := range metadataProperties {
+		// values is an array = ["title","description"]
+		metadataProperty := value.(string)
+		if v, found := metaDataMap[metadataProperty]; found {
+			// set all properties from metadata to toplevel if present at top level
+			if _, ok := d.GetOk(metadataProperty); ok {
+				d.Set(metadataProperty, v)
+			}
+			// remove properties from metadataMap that are not in config
+			if _, ok := metadataConfigProperties[metadataProperty]; !ok {
+				delete(metaDataMap, metadataProperty)
+			}
+		} else {
+			if configValue, ok := d.GetOk(metadataProperty); ok {
+				d.Set(metadataProperty, configValue)
+			}
+		}
+	}
+	// rebuild metadata from the resource
+	metadata, err := helpers.MapToJsonString(metaDataMap)
+	if err != nil {
+		return fmt.Errorf("error building resource metadata: %s", err.Error())
+	}
+	log.Print("painc-->", metadata)
 	// set parent_akas property by loading resource and fetching the akas
 	if err := storeAkas(resource.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
-
+	// assign results back into ResourceData
 	d.Set("parent", resource.Turbot.ParentId)
-	d.Set("title", resource.Turbot.Title)
-	d.Set("description", resource.Turbot.Description)
-	d.Set("type", resource.Type.Uri)
 	d.Set("data", data)
+	d.Set("metadata", metadata)
 	return nil
 }
 
@@ -178,6 +210,7 @@ func resourceTurbotFileUpdate(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
+	log.Println("*****input****", input)
 	input["data"], _ = buildDataUpdateProperties(d, excludedPropertiesInUpdate)
 	input["id"] = d.Id()
 
@@ -190,8 +223,12 @@ func resourceTurbotFileUpdate(d *schema.ResourceData, meta interface{}) error {
 	if metadata, ok := d.GetOk("metadata"); ok {
 		d.Set("metadata", helpers.FormatJson(metadata.(string)))
 	}
-	d.Set("title", turbotMetadata.Title)
-	d.Set("description", turbotMetadata.Description)
+
+	metadataMap := turbotMetadata.Custom
+	if v, ok := metadataMap["description"]; ok {
+		d.Set("description", v)
+	}
+	d.Set("title", metadataMap["title"])
 	// set parent_akas property by loading resource and fetching the akas
 	return storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta)
 }
@@ -219,7 +256,8 @@ func resourceTurbotFileImport(d *schema.ResourceData, meta interface{}) ([]*sche
 
 func buildFileInput(d *schema.ResourceData, properties []interface{}) (map[string]interface{}, error) {
 	var err error
-	input := mapFromResourceData(d, properties)
+	var input = make(map[string]interface{})
+	input = mapFromResourceData(d, properties)
 	// convert data from json string to map
 	dataString := d.Get("data").(string)
 	if input["data"], err = helpers.JsonStringToMap(dataString); err != nil {
@@ -229,18 +267,20 @@ func buildFileInput(d *schema.ResourceData, properties []interface{}) (map[strin
 	// insert top level `title` and `description` property inside metadata
 	if metadata, ok := d.GetOk("metadata"); ok {
 		metadataString := metadata.(string)
-		if input["metadata"], err = helpers.JsonStringToMap(metadataString); err != nil {
+		var metadataMap = make(map[string]interface{})
+		if metadataMap, err = helpers.JsonStringToMap(metadataString); err != nil {
 			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal metadata: \n%s\nerror: %s", metadataString, err.Error())
 		}
-		metadataMap := input["metadata"].(map[string]interface{})
 		for _, element := range metadataProperties {
 			metadataProperty := element.(string)
+			// check for top level
 			topLevelValue, propertySet := d.GetOk(metadataProperty)
 			// if property is set, map it
 			if propertySet {
 				if value, ok := metadataMap[metadataProperty]; ok {
 					if value != topLevelValue {
-						return nil, fmt.Errorf("error title mismatch, failed to pass different title as top level: %s and metadata title:%s ", topLevelValue, value)
+						//error
+						return nil, fmt.Errorf("error data mismatch, failed to pass different %s as top level: %s and metadata title:%s ", metadataProperty, topLevelValue, value)
 					}
 				} else {
 					metadataMap[metadataProperty] = topLevelValue
