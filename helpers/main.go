@@ -143,3 +143,14 @@ func GetNullProperties(propertyMap map[string]interface{}) []string {
 	}
 	return result
 }
+
+//
+func GetOldMapProperties(old, new map[string]interface{}) []interface{} {
+	var result []interface{}
+	for k, _ := range old {
+		if _, ok := new[k]; !ok {
+			result = append(result, k)
+		}
+	}
+	return result
+}
