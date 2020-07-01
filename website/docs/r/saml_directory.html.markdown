@@ -30,6 +30,7 @@ resource "turbot_saml_directory" "my_saml_directory" {
 The following arguments are supported:
 
 - `parent` - (Required) The `id` or `aka` of the level at which the SAML directory will be created.
+- `title` - (Required) Short descriptive name for the saml directory. This appears as the saml directory name in the Turbot Console. 
 - `description` - (Required) Brief description of the purpose and details of the directory.
 - `entry_point` - (Required) Defines the identity provider single sign-on URL.
 - `certificate` - (Required) The public key certificate ([base64-encoded](https://tools.ietf.org/html/rfc4648#section-4) ) which provides SAML entry point access
@@ -43,7 +44,7 @@ The following arguments are supported:
 - `pool_id` - (Optional) Pool id associated with SAML directory.
 - `allow_group_syncing` -  (Optional) Boolean value to indicate whether groups will be synchronized for SAML users. Defaults to `false`.
 - `profile_groups_attribute` - (Optional) Attribute returning list of groups that a SAML user is a part of.
--  `group_filter` -  (Optional) Regular expression to filter out groups that are to be synced from SAML.
+- `group_filter` -  (Optional) Regular expression to filter out groups that are to be synced from SAML.
 - `tags` - (Optional) User defined label for grouping resources.
 
 ## Attributes Reference
