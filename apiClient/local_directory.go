@@ -13,22 +13,6 @@ var localDirectoryProperties = []interface{}{
 	"profileIdTemplate",
 }
 
-func (client *Client) CreateLocalDirectoryLegacy(input map[string]interface{}) (*LocalDirectory, error) {
-	query := createResourceMutation(localDirectoryProperties)
-	responseData := &LocalDirectoryResponse{}
-	// set type in input data
-	input["type"] = "tmod:@turbot/turbot-iam#/resource/types/localDirectory"
-	variables := map[string]interface{}{
-		"input": input,
-	}
-
-	// execute api call
-	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating local directory: %s", err.Error())
-	}
-	return &responseData.Resource, nil
-}
-
 func (client *Client) ReadLocalDirectory(id string) (*LocalDirectory, error) {
 	// create a map of the properties we want the graphql query to return
 	query := readResourceQuery(id, localDirectoryProperties)
@@ -37,20 +21,6 @@ func (client *Client) ReadLocalDirectory(id string) (*LocalDirectory, error) {
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
 		return nil, fmt.Errorf("error reading local directory: %s", err.Error())
-	}
-	return &responseData.Resource, nil
-}
-
-func (client *Client) UpdateLocalDirectoryLegacy(input map[string]interface{}) (*LocalDirectory, error) {
-	query := updateResourceMutation(localDirectoryProperties)
-	responseData := &LocalDirectoryResponse{}
-	variables := map[string]interface{}{
-		"input": input,
-	}
-
-	// execute api call
-	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error updating local directory: %s", err.Error())
 	}
 	return &responseData.Resource, nil
 }

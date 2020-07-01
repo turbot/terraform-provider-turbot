@@ -558,19 +558,3 @@ func (client *Client) GetTurbotWorkspaceVersion() (*semver.Version, error) {
 	}
 	return version, nil
 }
-
-// For turbot workspace version >= 5.10.0 we use different mutations in create/update call
-func (client *Client) UseLegacyDirectoryMutations() (bool, error) {
-	newMutationVersion, _ := semver.New("5.10.0")
-	turbotWorkspaceVersion, err := client.GetTurbotWorkspaceVersion()
-	if err != nil {
-		return false, err
-	}
-	// Compare compares this version to another one. It returns -1, 0, or 1 if
-	// the version smaller, equal, or larger than the other version.
-	compareVersion := turbotWorkspaceVersion.Compare(*newMutationVersion)
-	if compareVersion == -1 {
-		return true, nil
-	}
-	return false, nil
-}
