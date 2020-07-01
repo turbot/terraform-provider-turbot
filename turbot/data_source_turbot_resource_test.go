@@ -29,6 +29,9 @@ resource "turbot_folder" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	title = "provider_test"
 	description = "test folder for turbot terraform provider"
+	tags = {
+			Name = "terraform-test"
+		}
 }
 
 data "turbot_resource" "test_resource" {

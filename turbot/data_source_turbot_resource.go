@@ -3,6 +3,7 @@ package turbot
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
+	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 )
 
 func dataSourceTurbotResource() *schema.Resource {
@@ -21,10 +22,7 @@ func dataSourceTurbotResource() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": {
-				Type:     schema.TypeMap,
-				Computed: true,
-			},
+			"tags": helpers.TagsSchema(),
 			"akas": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -54,11 +52,10 @@ func dataSourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) erro
 		}
 		return err
 	}
-
 	d.SetId(resource.Turbot["id"])
 	d.Set("data", resource.Data)
 	d.Set("metadata", resource.Metadata)
-	d.Set("tags", resource.Tags)
+	d.Set("tags", helpers.TagsFromMap(resource.Tags))
 	d.Set("akas", resource.Akas)
 	d.Set("turbot", resource.Turbot)
 	return nil
