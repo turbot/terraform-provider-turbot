@@ -222,6 +222,7 @@ func resourceTurbotSamlDirectoryRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("allow_group_syncing", samlDirectory.AllowGroupSyncing)
 	d.Set("profile_groups_attribute", samlDirectory.ProfileGroupsAttribute)
 	d.Set("group_filter", samlDirectory.GroupFilter)
+	d.Set("tags", helpers.TagsFromMap(samlDirectory.Turbot.Tags))
 	return nil
 }
 

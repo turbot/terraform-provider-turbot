@@ -3,6 +3,7 @@ package turbot
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
+	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 )
 
 // properties which must be passed to a create/update call
@@ -119,6 +120,7 @@ func resourceTurbotLocalDirectoryUserCreate(d *schema.ResourceData, meta interfa
 	d.Set("middle_name", localDirectoryUser.MiddleName)
 	d.Set("family_name", localDirectoryUser.FamilyName)
 	d.Set("picture", localDirectoryUser.Picture)
+	d.Set("tags", helpers.TagsFromMap(localDirectoryUser.Turbot.Tags))
 	// set the calculated properties
 	d.Set("status", data["status"])
 	return nil

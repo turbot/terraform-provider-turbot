@@ -3,6 +3,7 @@ package turbot
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
+	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 )
 
 // properties which must be passed to a create/update call
@@ -124,6 +125,7 @@ func resourceTurbotFolderRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("parent", folder.Parent)
 	d.Set("title", folder.Title)
 	d.Set("description", folder.Description)
+	d.Set("tags", helpers.TagsFromMap(folder.Turbot.Tags))
 	// set parent_akas property by loading resource and fetching the akas
 	return storeAkas(folder.Turbot.ParentId, "parent_akas", d, meta)
 }

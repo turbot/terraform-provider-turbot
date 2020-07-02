@@ -6,7 +6,7 @@ import (
 
 // create a map of the properties we want the graphql query to return
 var samlDirectoryProperties = []interface{}{
-	map[string]string{"parent": "turbot.parentId"},
+	map[string]string{"parent": "turbot.parentId", "tags": "turbot.tags"},
 	"title",
 	"description",
 	"status",
@@ -23,7 +23,6 @@ var samlDirectoryProperties = []interface{}{
 	"allowGroupSyncing",
 	"profileGroupsAttribute",
 	"groupFilter",
-	"tags",
 }
 
 func (client *Client) CreateSamlDirectoryLegacy(input map[string]interface{}) (*SamlDirectory, error) {

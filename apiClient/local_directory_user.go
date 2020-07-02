@@ -6,7 +6,7 @@ import (
 
 // create a map of the properties we want the graphql query to return
 var localDirectoryUserProperties = []interface{}{
-	map[string]string{"parent": "turbot.parentId"},
+	map[string]string{"parent": "turbot.parentId", "tags": "turbot.tags"},
 	"title",
 	"email",
 	"status",

@@ -5,14 +5,13 @@ import (
 )
 
 var turbotDirectoryProperties = []interface{}{
-	map[string]string{"parent": "turbot.parentId"},
+	map[string]string{"parent": "turbot.parentId", "tags": "turbot.tags"},
 	"title",
 	"description",
 	"status",
 	"directoryType",
 	"profileIdTemplate",
 	"server",
-	"tags",
 }
 
 func (client *Client) CreateTurbotDirectory(input map[string]interface{}) (*TurbotDirectory, error) {

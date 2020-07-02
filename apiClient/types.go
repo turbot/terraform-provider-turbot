@@ -325,7 +325,6 @@ type SamlDirectory struct {
 	ProfileGroupsAttribute string
 	AllowGroupSyncing      bool
 	GroupFilter            string
-	Tags                   map[string]string
 }
 
 // Google directory

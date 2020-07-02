@@ -156,6 +156,7 @@ func resourceTurbotLocalDirectoryRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("status", localDirectory.Status)
 	d.Set("profile_id_template", localDirectory.ProfileIdTemplate)
 	d.Set("directory_type", localDirectory.DirectoryType)
+	d.Set("tags", helpers.TagsFromMap(localDirectory.Turbot.Tags))
 	// set parent_akas property by loading resource and fetching the akas
 	return storeAkas(localDirectory.Turbot.ParentId, "parent_akas", d, meta)
 }
