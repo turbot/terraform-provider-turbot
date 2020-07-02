@@ -67,10 +67,6 @@ func testAccTurbotDirectoryConfig() string {
   	description = "test directory"
   	profile_id_template = "{{profile.email}}"
   	server = "test"
-    tags = {
-     Name = "terraform-test",
-     dev = "iota"
-  }
 }
 `
 }

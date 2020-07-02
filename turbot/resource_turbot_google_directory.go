@@ -205,7 +205,6 @@ func resourceTurbotGoogleDirectoryRead(d *schema.ResourceData, meta interface{})
 	d.Set("group_id_template", googleDirectory.GroupIdTemplate)
 	d.Set("login_name_template", googleDirectory.LoginNameTemplate)
 	d.Set("hosted_name", googleDirectory.HostedName)
-	d.Set("tags", googleDirectory.Turbot.Tags)
 	// set parent_akas property by loading parent resource and fetching the akas
 	return storeAkas(googleDirectory.Turbot.ParentId, "parent_akas", d, meta)
 }
