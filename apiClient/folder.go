@@ -8,7 +8,6 @@ var folderProperties = []interface{}{
 	//explicit mapping
 	map[string]string{
 		"parent": "turbot.parentId",
-		"tags":   "turbot.tags",
 	},
 	// implicit mapping
 	"title",

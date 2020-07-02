@@ -5,7 +5,7 @@ import (
 )
 
 var turbotDirectoryProperties = []interface{}{
-	map[string]string{"parent": "turbot.parentId", "tags": "turbot.tags"},
+	map[string]string{"parent": "turbot.parentId"},
 	"title",
 	"description",
 	"status",

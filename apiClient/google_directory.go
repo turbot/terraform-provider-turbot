@@ -7,7 +7,7 @@ import (
 // legacy google directory resource properties
 var googleDirectoryPropertiesLegacy = []interface{}{
 	// explicit mapping
-	map[string]string{"client_id": "clientID", "tags": "turbot.tags"},
+	map[string]string{"client_id": "clientID"},
 	// implicit mappings
 	"title", "poolId", "profileIdTemplate", "groupIdTemplate", "loginNameTemplate", "clientSecret", "hostedName", "description"}
 

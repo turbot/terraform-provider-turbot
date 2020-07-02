@@ -6,7 +6,7 @@ import (
 
 // create a map of the properties we want the graphql query to return
 var samlDirectoryProperties = []interface{}{
-	map[string]string{"parent": "turbot.parentId", "tags": "turbot.tags"},
+	map[string]string{"parent": "turbot.parentId"},
 	"title",
 	"description",
 	"status",

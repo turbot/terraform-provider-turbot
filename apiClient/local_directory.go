@@ -5,7 +5,7 @@ import (
 )
 
 var localDirectoryProperties = []interface{}{
-	map[string]string{"parent": "turbot.parentId", "tags": "turbot.tags"},
+	map[string]string{"parent": "turbot.parentId"},
 	"title",
 	"description",
 	"status",
