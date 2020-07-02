@@ -91,7 +91,6 @@ func resourceTurbotModCustomizeDiff(d *schema.ResourceDiff, meta interface{}) er
 		if err != nil {
 			return err
 		}
-
 	} else {
 		// otherwise if version has not changed, use the saved value of version_latest
 		versionLatest = d.Get("version_latest").(string)
@@ -287,7 +286,8 @@ func getLatestCompatibleVersion(org, modName, version string, meta interface{}) 
 	// now get latest version
 	var latestVersion *semver.Version
 	for _, modVersion := range modVersions {
-		if strings.ToLower(modVersion.Status) == "available" {
+		modStatus := strings.ToLower(modVersion.Status)
+		if modStatus == "available" || modStatus == "recommended" {
 			// create semver version from this version
 			v, err := semver.NewVersion(modVersion.Version)
 			if err != nil {

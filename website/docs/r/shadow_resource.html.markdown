@@ -11,8 +11,8 @@ nav:
 
 Shadow resources allow management of the Turbot representation (a shadow) of
 the actual resource. A shadow resource provides two important capabilities:
-* The shadow will wait until Turbot has discovered the actual resource before being created.
-* The shadow will be deleted before the actual resource, allowing a chance for Turbot managed changes to be cleaned up.
+  * The shadow will wait until Turbot has discovered the actual resource before being created.
+  * The shadow will be deleted before the actual resource, allowing a chance for Turbot managed changes to be cleaned up.
 
 
 ## Example Usage
