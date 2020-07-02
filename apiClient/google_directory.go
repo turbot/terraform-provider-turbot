@@ -12,8 +12,6 @@ var googleDirectoryPropertiesLegacy = []interface{}{
 	"title", "poolId", "profileIdTemplate", "groupIdTemplate", "loginNameTemplate", "clientSecret", "hostedName", "description"}
 
 var googleDirectoryProperties = []interface{}{
-	// explicit mapping
-	map[string]string{"tags": "turbot.tags"},
 	// implicit mappings
 	"title", "poolId", "profileIdTemplate", "groupIdTemplate", "loginNameTemplate", "clientSecret", "hostedDomain", "description", "clientId"}
 

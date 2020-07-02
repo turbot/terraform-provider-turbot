@@ -20,22 +20,6 @@ func TagsSchema() *schema.Schema {
 	}
 }
 
-func TagsSchemaComputed() *schema.Schema {
-	return &schema.Schema{
-		Type:     schema.TypeMap,
-		Optional: true,
-		Computed: true,
-	}
-}
-
-func TagsSchemaForceNew() *schema.Schema {
-	return &schema.Schema{
-		Type:     schema.TypeMap,
-		Optional: true,
-		ForceNew: true,
-	}
-}
-
 // tagsFromMap returns the tags for the given map of data.
 func TagsFromMap(m map[string]string) []*Tag {
 	result := make([]*Tag, 0, len(m))

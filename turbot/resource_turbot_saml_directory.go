@@ -117,13 +117,7 @@ func resourceTurbotSamlDirectory() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"tags": {
-				Type:     schema.TypeMap,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
+			"tags": helpers.TagsSchema(),
 		},
 	}
 }
