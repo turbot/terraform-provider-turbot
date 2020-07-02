@@ -118,12 +118,14 @@ func resourceTurbotTurbotDirectoryRead(d *schema.ResourceData, meta interface{})
 		return err
 	}
 	// assign results back into ResourceData
-	d.Set("status", strings.ToUpper(turbotDirectory.Status))
+
+	d.Set("title", turbotDirectory.Title)
 	d.Set("description", turbotDirectory.Description)
+	d.Set("status", strings.ToUpper(turbotDirectory.Status))
+	d.Set("parent", turbotDirectory.Turbot.ParentId)
 	d.Set("profile_id_template", turbotDirectory.ProfileIdTemplate)
 	d.Set("server", turbotDirectory.Server)
-	d.Set("parent", turbotDirectory.Turbot.ParentId)
-	d.Set("title", turbotDirectory.Title)
+	d.Set("tags", turbotDirectory.Turbot.Tags)
 	// set parent_akas property by loading resource and fetching the akas
 	return storeAkas(turbotDirectory.Turbot.ParentId, "parent_akas", d, meta)
 }

@@ -12,7 +12,6 @@ var turbotDirectoryProperties = []interface{}{
 	"directoryType",
 	"profileIdTemplate",
 	"server",
-	"tags",
 }
 
 func (client *Client) CreateTurbotDirectory(input map[string]interface{}) (*TurbotDirectory, error) {

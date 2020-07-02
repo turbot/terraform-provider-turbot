@@ -124,6 +124,7 @@ func resourceTurbotFolderRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("parent", folder.Parent)
 	d.Set("title", folder.Title)
 	d.Set("description", folder.Description)
+	d.Set("tags", folder.Turbot.Tags)
 	// set parent_akas property by loading resource and fetching the akas
 	return storeAkas(folder.Turbot.ParentId, "parent_akas", d, meta)
 }

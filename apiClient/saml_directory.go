@@ -23,7 +23,6 @@ var samlDirectoryProperties = []interface{}{
 	"allowGroupSyncing",
 	"profileGroupsAttribute",
 	"groupFilter",
-	"tags",
 }
 
 func (client *Client) CreateSamlDirectoryLegacy(input map[string]interface{}) (*SamlDirectory, error) {

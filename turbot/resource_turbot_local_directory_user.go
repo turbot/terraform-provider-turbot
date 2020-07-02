@@ -175,6 +175,7 @@ func resourceTurbotLocalDirectoryUserRead(d *schema.ResourceData, meta interface
 	d.Set("middle_name", localDirectoryUser.MiddleName)
 	d.Set("family_name", localDirectoryUser.FamilyName)
 	d.Set("picture", localDirectoryUser.Picture)
+	d.Set("tags", localDirectoryUser.Turbot.Tags)
 	return nil
 }
 

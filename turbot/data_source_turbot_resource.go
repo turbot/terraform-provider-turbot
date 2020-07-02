@@ -21,10 +21,6 @@ func dataSourceTurbotResource() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": {
-				Type:     schema.TypeMap,
-				Computed: true,
-			},
 			"akas": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -35,6 +31,13 @@ func dataSourceTurbotResource() *schema.Resource {
 			"turbot": {
 				Type:     schema.TypeMap,
 				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"tags": {
+				Type:     schema.TypeMap,
+				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -54,7 +57,6 @@ func dataSourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) erro
 		}
 		return err
 	}
-
 	d.SetId(resource.Turbot["id"])
 	d.Set("data", resource.Data)
 	d.Set("metadata", resource.Metadata)

@@ -152,6 +152,7 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 
 	d.Set("parent", resource.Turbot.ParentId)
 	d.Set("type", resource.Type.Uri)
+	d.Set("tags", resource.Turbot.Tags)
 	d.Set("data", data)
 	return nil
 }
