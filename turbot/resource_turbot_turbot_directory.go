@@ -125,7 +125,6 @@ func resourceTurbotTurbotDirectoryRead(d *schema.ResourceData, meta interface{})
 	d.Set("parent", turbotDirectory.Turbot.ParentId)
 	d.Set("profile_id_template", turbotDirectory.ProfileIdTemplate)
 	d.Set("server", turbotDirectory.Server)
-	d.Set("tags", turbotDirectory.Turbot.Tags)
 	// set parent_akas property by loading resource and fetching the akas
 	return storeAkas(turbotDirectory.Turbot.ParentId, "parent_akas", d, meta)
 }
