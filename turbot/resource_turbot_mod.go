@@ -91,7 +91,6 @@ func resourceTurbotModCustomizeDiff(d *schema.ResourceDiff, meta interface{}) er
 		if err != nil {
 			return err
 		}
-
 	} else {
 		// otherwise if version has not changed, use the saved value of version_latest
 		versionLatest = d.Get("version_latest").(string)
@@ -179,6 +178,7 @@ func resourceTurbotModRead(d *schema.ResourceData, meta interface{}) error {
 		org := d.Get("org").(string)
 		modName := d.Get("mod").(string)
 		targetVersion, err = getLatestCompatibleVersion(org, modName, version, meta)
+
 		log.Printf("resourceTurbotModRead config version %s installed version %s latest version%s", version, mod.Version, targetVersion)
 		if err != nil {
 			return err
@@ -287,8 +287,11 @@ func getLatestCompatibleVersion(org, modName, version string, meta interface{}) 
 	// now get latest version
 	var latestVersion *semver.Version
 	for _, modVersion := range modVersions {
-		if strings.ToLower(modVersion.Status) == "available" {
+		modStatus := strings.ToLower(modVersion.Status)
+		if modStatus == "available" || modStatus == "recommended" {
 			// create semver version from this version
+			log.Println("mod-version", modVersion)
+			log.Println("mod-version-latest", latestVersion)
 			v, err := semver.NewVersion(modVersion.Version)
 			if err != nil {
 				return "", err
@@ -296,10 +299,14 @@ func getLatestCompatibleVersion(org, modName, version string, meta interface{}) 
 			// does this version meet the requirement
 			if c.Check(v) && (latestVersion == nil || v.GreaterThan(latestVersion)) {
 				latestVersion = v
+				log.Println("check passed", latestVersion)
+			} else {
+				log.Printf("check failed %s, %s, %s", latestVersion, c.Check(v), v)
 			}
 		}
 	}
 	latestVersionString := ""
+	log.Println("mod-version-latest", latestVersion)
 	if latestVersion != nil {
 		latestVersionString = latestVersion.String()
 	}
