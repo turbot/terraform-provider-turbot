@@ -61,7 +61,13 @@ func resourceTurbotTurbotDirectory() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": helpers.TagsSchema(),
+			"tags": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 	}
 }
@@ -112,13 +118,14 @@ func resourceTurbotTurbotDirectoryRead(d *schema.ResourceData, meta interface{})
 		return err
 	}
 	// assign results back into ResourceData
+
 	d.Set("title", turbotDirectory.Title)
 	d.Set("description", turbotDirectory.Description)
 	d.Set("status", strings.ToUpper(turbotDirectory.Status))
 	d.Set("parent", turbotDirectory.Turbot.ParentId)
 	d.Set("profile_id_template", turbotDirectory.ProfileIdTemplate)
 	d.Set("server", turbotDirectory.Server)
-	d.Set("tags", helpers.TagsFromMap(turbotDirectory.Turbot.Tags))
+	d.Set("tags", turbotDirectory.Turbot.Tags)
 	// set parent_akas property by loading resource and fetching the akas
 	return storeAkas(turbotDirectory.Turbot.ParentId, "parent_akas", d, meta)
 }

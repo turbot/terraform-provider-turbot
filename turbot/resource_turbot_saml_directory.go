@@ -117,7 +117,13 @@ func resourceTurbotSamlDirectory() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"tags": helpers.TagsSchema(),
+			"tags": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 	}
 }
@@ -216,7 +222,7 @@ func resourceTurbotSamlDirectoryRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("allow_group_syncing", samlDirectory.AllowGroupSyncing)
 	d.Set("profile_groups_attribute", samlDirectory.ProfileGroupsAttribute)
 	d.Set("group_filter", samlDirectory.GroupFilter)
-	d.Set("tags", helpers.TagsFromMap(samlDirectory.Turbot.Tags))
+	d.Set("tags", samlDirectory.Turbot.Tags)
 	return nil
 }
 
