@@ -28,15 +28,21 @@ resource "turbot_smart_folder" "smart_folder" {
 
 ```hcl
 resource "turbot_resource" "my_resource" {
-  parent      = "tmod:@turbot/turbot#/"
-  type        = "tmod:@turbot/aws#/resource/types/account"
-
-  payload =  <<EOF
-  {
-    "Id": "123456789000",
-    "turbot": {}
+  parent   = "tmod:@turbot/turbot#/"
+  type     = "tmod:@turbot/aws#/resource/types/account"
+  data     = <<EOT
+{
+  "Id": "123456789012",
+}
+EOT
+  metadata = <<EOT
+{
+  "aws": {
+    "accountId": "123456789012",
+    "partition": "aws"
   }
-  EOF
+}
+EOT
 }
 ```
 
