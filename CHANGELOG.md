@@ -1,4 +1,7 @@
-## 1.4.0 (Unreleased)
+## 1.3.1 (Unreleased)
+BUG FIXES 
+* `resource/resource_turbot_mod`: After creation of resource, when running `terraform plan`, `version_current` attribute gives a `diff` .([#38](https://github.com/terraform-providers/terraform-provider-turbot/issues/38))
+
 ## 1.3.0 (May 29, 2020)
 ENHANCEMENTS:
 * `resource/resource_turbot_policy_setting`: `template_input` attribute now supports either a string or an array of strings in `YAML` format. ([#11](https://github.com/terraform-providers/terraform-provider-turbot/issues/11))
