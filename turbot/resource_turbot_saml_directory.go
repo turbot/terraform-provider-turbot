@@ -105,6 +105,16 @@ func resourceTurbotSamlDirectory() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"group_id_template": {
+				Type:       schema.TypeString,
+				Optional:   true,
+				Deprecated: "use '' argument instead",
+			},
+			"pool_id": {
+				Type:       schema.TypeString,
+				Optional:   true,
+				Deprecated: "use '' argument instead",
+			},
 			"tags": {
 				Type:     schema.TypeMap,
 				Optional: true,
@@ -169,7 +179,8 @@ func resourceTurbotSamlDirectoryRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("title", samlDirectory.Title)
 	d.Set("description", samlDirectory.Description)
 	d.Set("status", strings.ToUpper(samlDirectory.Status))
-	d.Set("profile_id_template", strings.ToUpper(samlDirectory.ProfileIdTemplate))
+	d.Set("name_id_format", strings.ToUpper(samlDirectory.NameIdFormat))
+	d.Set("profile_id_template", samlDirectory.ProfileIdTemplate)
 	d.Set("entry_point", samlDirectory.EntryPoint)
 	d.Set("certificate", samlDirectory.Certificate)
 	d.Set("sign_requests", samlDirectory.SignRequests)
