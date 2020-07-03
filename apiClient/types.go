@@ -369,7 +369,7 @@ type TurbotResourceMetadata struct {
 	Akas              []string
 	Custom            map[string]interface{}
 	Metadata          map[string]interface{}
-	Tags              map[string]string
+	Tags              map[string]interface{}
 	Title             string
 	VersionId         string
 	ActorIdentityId   string
