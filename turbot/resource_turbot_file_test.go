@@ -18,13 +18,11 @@ func TestAccFileResourcefile_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckFileResourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFileResourceConfigfile(fileData, filemetadata),
+				Config: testAccFileResourceConfigfile(fileData),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFileResourceExists(resourceName),
 					resource.TestCheckResourceAttr(
-						"turbot_file.test", "data", helpers.FormatJson(fileData)),
-					resource.TestCheckResourceAttr(
-						"turbot_file.test", "metadata", helpers.FormatJson(filemetadata)),
+						"turbot_file.test", "content", helpers.FormatJson(fileData)),
 				),
 			},
 			{
@@ -32,33 +30,27 @@ func TestAccFileResourcefile_Basic(t *testing.T) {
 				ImportState:  true,
 			},
 			{
-				Config: testAccFileResourceConfigfile(fileDataUpdatedDescription, metadata),
+				Config: testAccFileResourceConfigfile(fileDataUpdatedDescription),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFileResourceExists(resourceName),
 					resource.TestCheckResourceAttr(
-						"turbot_file.test", "data", helpers.FormatJson(fileDataUpdatedDescription)),
-					resource.TestCheckResourceAttr(
-						"turbot_file.test", "metadata", helpers.FormatJson(metadata)),
+						"turbot_file.test", "content", helpers.FormatJson(fileDataUpdatedDescription)),
 				),
 			},
 			{
-				Config: testAccFileResourceConfigfile(fileDataUpdatedTitle, metadata),
+				Config: testAccFileResourceConfigfile(fileDataUpdatedTitle),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFileResourceExists(resourceName),
 					resource.TestCheckResourceAttr(
-						"turbot_file.test", "data", helpers.FormatJson(fileDataUpdatedTitle)),
-					resource.TestCheckResourceAttr(
-						"turbot_file.test", "metadata", helpers.FormatJson(metadata)),
+						"turbot_file.test", "content", helpers.FormatJson(fileDataUpdatedTitle)),
 				),
 			},
 			{
-				Config: testAccFileResourceConfigfile(fileDataUpdatedTitle, metadataUpdated),
+				Config: testAccFileResourceConfigfile(fileDataUpdatedTitle),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFileResourceExists(resourceName),
 					resource.TestCheckResourceAttr(
-						"turbot_file.test", "data", helpers.FormatJson(fileDataUpdatedTitle)),
-					resource.TestCheckResourceAttr(
-						"turbot_file.test", "metadata", helpers.FormatJson(metadataUpdated)),
+						"turbot_file.test", "content", helpers.FormatJson(fileDataUpdatedTitle)),
 				),
 			},
 		},
@@ -68,16 +60,6 @@ func TestAccFileResourcefile_Basic(t *testing.T) {
 var fileData = `{
  "title": "provider_test",
  "description": "test resource"
-}
-`
-var filemetadata = `{
- "c1": "custom1",
- "c2": "custom2"
-}
-`
-var filemetadataUpdated = `{
- "c1": "custom1",
- "c2": "custom3"
 }
 `
 var fileDataUpdatedTitle = `{
@@ -92,18 +74,16 @@ var fileDataUpdatedDescription = `{
 `
 
 // configs
-func testAccFileResourceConfigfile(data, metadata string) string {
+func testAccFileResourceConfigfile(data string) string {
 	config := fmt.Sprintf(`
 resource "turbot_file" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	title  = "provider_file"
-description = "test"
-	data =  <<EOF
-%sEOF
-	metadata =  <<EOF
+    description = "test"
+	content =  <<EOF
 %sEOF
 }
-`, data, metadata)
+`, data)
 	return config
 }
 
@@ -129,7 +109,7 @@ func testAccCheckFileResourceExists(resource string) resource.TestCheckFunc {
 func testAccCheckFileResourceDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*apiClient.Client)
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type == "turbot_resource" {
+		if rs.Type == "turbot_file" {
 			_, err := client.ReadResource(rs.Primary.ID, nil)
 			if err == nil {
 				return fmt.Errorf("Alert still exists")

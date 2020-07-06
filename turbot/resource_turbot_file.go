@@ -5,7 +5,6 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 	"github.com/terraform-providers/terraform-provider-turbot/helpers"
-	"log"
 )
 
 var fileProperties = []interface{}{"parent", "tags", "akas"}
@@ -51,12 +50,7 @@ func resourceTurbotFile() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"data": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				DiffSuppressFunc: suppressIfDataMatches,
-			},
-			"metadata": {
+			"content": {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressIfDataMatches,
@@ -87,6 +81,7 @@ func resourceTurbotFileExists(d *schema.ResourceData, meta interface{}) (b bool,
 
 func resourceTurbotFileCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
+	title := d.Get("title")
 	description := d.Get("description")
 	var err error
 	// build input map to pass to mutation
@@ -96,8 +91,6 @@ func resourceTurbotFileCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 	// set type property
 	input["type"] = "tmod:@turbot/turbot#/resource/types/file"
-	// data should be object - strict
-	// if data( object must ), override the title
 
 	turbotMetadata, err := client.CreateResource(input)
 	if err != nil {
@@ -111,11 +104,8 @@ func resourceTurbotFileCreate(d *schema.ResourceData, meta interface{}) error {
 	// assign the id
 	d.SetId(turbotMetadata.Id)
 	// save the formatted data: this is to ensure the acceptance tests behave in a consistent way regardless of the ordering of the json data
-	d.Set("data", helpers.FormatJson(d.Get("data").(string)))
-	if metadata, ok := d.GetOk("metadata"); ok {
-		d.Set("metadata", helpers.FormatJson(metadata.(string)))
-	}
-	d.Set("title", d.Get("title"))
+	d.Set("content", helpers.FormatJson(d.Get("content").(string)))
+	d.Set("title", title)
 	d.Set("description", description)
 	return nil
 }
@@ -124,24 +114,16 @@ func resourceTurbotFileRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
 	id := d.Id()
 
-	// build required properties from data.
+	// build required properties from content.
 	// properties is a map of property name -> property path
 
 	var properties map[string]string = nil
 
-	if _, ok := d.GetOk("data"); ok {
+	if _, ok := d.GetOk("content"); ok {
 		var err error = nil
-		properties, err = helpers.PropertyMapFromJson(d.Get("data").(string))
+		properties, err = helpers.PropertyMapFromJson(d.Get("content").(string))
 		if err != nil {
 			return fmt.Errorf("error retrieving properties from resource data: %s", err.Error())
-		}
-	}
-
-	if _, ok := d.GetOk("metadata"); ok {
-		var err error = nil
-		_, err = helpers.PropertyMapFromJson(d.Get("metadata").(string))
-		if err != nil {
-			return fmt.Errorf("error retrieving properties from resource metadata: %s", err.Error())
 		}
 	}
 	// pass nil
@@ -155,40 +137,22 @@ func resourceTurbotFileRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// rebuild data from the resource
-	data, err := helpers.MapToJsonString(resource.Data)
+	content, err := helpers.MapToJsonString(resource.Data)
 	if err != nil {
-		return fmt.Errorf("error building resource data: %s", err.Error())
+		return fmt.Errorf("error building resource content: %s", err.Error())
 	}
-	var customMetadata = make(map[string]interface{})
-	customMetadata = resource.Turbot.Custom
-	// set top level properties from the metadata i.e. ["title","description"]
-	for _, value := range topLevelProperties {
-		topLevelProperty := value.(string) // title, description
-		if v, found := customMetadata[topLevelProperty]; found {
-			// if this property is set in config ,update it from customMetadata
-			if _, ok := d.GetOk(topLevelProperty); ok {
-				d.Set(topLevelProperty, v)
-			}
-		} else {
-			if _, ok := d.GetOk(topLevelProperty); ok {
-				d.Set(topLevelProperty, nil)
-			}
-		}
-	}
-	// rebuild metadata from the resource
-	metadata, err := helpers.MapToJsonString(customMetadata)
-	if err != nil {
-		return fmt.Errorf("error building resource metadata: %s", err.Error())
-	}
-	//log.Print("painc-->", metadata)
+
+	customMetadata := resource.Turbot.Custom
+
 	// set parent_akas property by loading resource and fetching the akas
 	if err := storeAkas(resource.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
 	// assign results back into ResourceData
 	d.Set("parent", resource.Turbot.ParentId)
-	d.Set("data", data)
-	d.Set("metadata", metadata)
+	d.Set("title", customMetadata["title"])
+	d.Set("description", customMetadata["description"])
+	d.Set("content", content)
 	return nil
 }
 
@@ -202,29 +166,12 @@ func resourceTurbotFileUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 	input["id"] = id
 
-	if old, new := d.GetChange("description"); old != nil {
-		log.Println("old--->>", old)
-		log.Println("new--->>", new)
-		var oldMetadata, newMetadata map[string]interface{}
-		if oldMetadata, err = helpers.JsonStringToMap(old.(string)); err != nil {
-			return fmt.Errorf("error build resource mutation input, failed to unmarshal metadata: \n%s\nerror: %s", old.(string), err.Error())
-		}
-		if newMetadata, err = helpers.JsonStringToMap(new.(string)); err != nil {
-			return fmt.Errorf("error build resource mutation input, failed to unmarshal metadata: \n%s\nerror: %s", new.(string), err.Error())
-		}
-		includeMetadataProperties := helpers.GetOldMapProperties(oldMetadata, newMetadata)
-		input["metadata"], _ = buildMetadataUpdateProperties(d, includeMetadataProperties)
-	}
-
 	turbotMetadata, err := client.UpdateResource(input)
 	if err != nil {
 		return err
 	}
 	// save the formatted data: this is to ensure the acceptance tests behave in a consistent way regardless of the ordering of the json data
-	d.Set("data", helpers.FormatJson(d.Get("data").(string)))
-	if metadata, ok := d.GetOk("metadata"); ok {
-		d.Set("metadata", helpers.FormatJson(metadata.(string)))
-	}
+	d.Set("content", helpers.FormatJson(d.Get("content").(string)))
 
 	metadataMap := turbotMetadata.Custom
 	if v, ok := metadataMap["description"]; ok {
@@ -259,58 +206,25 @@ func resourceTurbotFileImport(d *schema.ResourceData, meta interface{}) ([]*sche
 func buildFileInput(d *schema.ResourceData, properties []interface{}) (map[string]interface{}, error) {
 	var err error
 	var input = make(map[string]interface{})
+	var metadataMap = make(map[string]interface{})
+
 	input = mapFromResourceData(d, properties)
 	// convert data from json string to map
-	dataString := d.Get("data").(string)
+	dataString := d.Get("content").(string)
 	if input["data"], err = helpers.JsonStringToMap(dataString); err != nil {
 		return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal data: \n%s\nerror: %s", dataString, err.Error())
 	}
-	// convert metadata from json string to map (if present)
-	// insert top level `title` and `description` property inside metadata
-	if metadata, ok := d.GetOk("metadata"); ok {
-		metadataString := metadata.(string)
-		var metadataMap = make(map[string]interface{})
-		if metadataMap, err = helpers.JsonStringToMap(metadataString); err != nil {
-			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal metadata: \n%s\nerror: %s", metadataString, err.Error())
-		}
-		for _, element := range topLevelProperties {
-			metadataProperty := element.(string)
-			// check for top level
-			topLevelValue, propertySet := d.GetOk(metadataProperty)
-			// if property is set, map it
-			if propertySet {
-				if value, ok := metadataMap[metadataProperty]; ok {
-					if value != topLevelValue {
-						//error
-						return nil, fmt.Errorf("error data mismatch, failed to pass different %s as top level: %s and metadata:%s ", metadataProperty, topLevelValue, value)
-					} else {
-						//warning
-					}
-				} else {
-					metadataMap[metadataProperty] = topLevelValue
-				}
-			}
-			// if not set pass nil to the value
-		}
-		input["metadata"] = metadataMap
-	}
-	return input, nil
-}
 
-// add deleted properties to mutation
-func buildMetadataUpdateProperties(d *schema.ResourceData, properties []interface{}) (map[string]interface{}, error) {
-	var err error
-	// convert data from json string to map
-	var dataMap map[string]interface{}
-	dataString := d.Get("metadata").(string)
-	if dataMap, err = helpers.JsonStringToMap(dataString); err != nil {
-		return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal data: \n%s\nerror: %s", dataString, err.Error())
+	title := d.Get("title")
+	metadataMap["title"] = title
+
+	old, new := d.GetChange("description")
+
+	if old != "" && new == "" {
+		metadataMap["description"] = nil
+	} else {
+		metadataMap["description"] = new
 	}
-	//
-	for _, element := range properties {
-		if _, ok := d.GetOk(element.(string)); !ok {
-			dataMap[element.(string)] = nil
-		}
-	}
-	return dataMap, nil
+	input["metadata"] = metadataMap
+	return input, nil
 }
