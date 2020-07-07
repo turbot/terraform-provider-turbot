@@ -143,6 +143,8 @@ func resourceTurbotFileRead(d *schema.ResourceData, meta interface{}) error {
 
 func resourceTurbotFileUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
+	contentString := d.Get("content").(string)
+	var content = make(map[string]interface{})
 	// build input map to pass to mutation
 	id := d.Id()
 
@@ -152,6 +154,25 @@ func resourceTurbotFileUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 	input["id"] = id
 
+	if content, err = helpers.JsonStringToMap(contentString); err != nil {
+		return fmt.Errorf("error build resource mutation input, failed to unmarshal content: \n%s\nerror: %s", contentString, err.Error())
+	}
+	// set old properties of content to NULL in update operation
+	if old, new := d.GetChange("content"); old != nil {
+		var oldContent, newContent map[string]interface{}
+		if oldContent, err = helpers.JsonStringToMap(old.(string)); err != nil {
+			return fmt.Errorf("error build resource mutation input, failed to unmarshal content: \n%s\nerror: %s", old.(string), err.Error())
+		}
+		if newContent, err = helpers.JsonStringToMap(new.(string)); err != nil {
+			return fmt.Errorf("error build resource mutation input, failed to unmarshal content: \n%s\nerror: %s", new.(string), err.Error())
+		}
+		excludeContentProperties := helpers.GetOldMapProperties(oldContent, newContent)
+		for _, key := range excludeContentProperties {
+			if _, ok := content[key.(string)]; ok {
+				content[key.(string)] = nil
+			}
+		}
+	}
 	turbotMetadata, err := client.UpdateResource(input)
 	if err != nil {
 		return err
@@ -192,30 +213,13 @@ func resourceTurbotFileImport(d *schema.ResourceData, meta interface{}) ([]*sche
 func buildFileInput(d *schema.ResourceData, properties []interface{}) (map[string]interface{}, error) {
 	var err error
 	var input = make(map[string]interface{})
-	var content = make(map[string]interface{})
+
 	input = mapFromResourceData(d, properties)
 	// convert data from json string to map
 	contentString := d.Get("content").(string)
-	if content, err = helpers.JsonStringToMap(contentString); err != nil {
+	if input["data"], err = helpers.JsonStringToMap(contentString); err != nil {
 		return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal content: \n%s\nerror: %s", contentString, err.Error())
 	}
-	// set old properties of content to NULL in update operation
-	if old, new := d.GetChange("content"); old != nil {
-		var oldContent, newContent map[string]interface{}
-		if oldContent, err = helpers.JsonStringToMap(old.(string)); err != nil {
-			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal content: \n%s\nerror: %s", old.(string), err.Error())
-		}
-		if newContent, err = helpers.JsonStringToMap(new.(string)); err != nil {
-			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal content: \n%s\nerror: %s", new.(string), err.Error())
-		}
-		excludeContentProperties := helpers.GetOldMapProperties(oldContent, newContent)
-		for _, key := range excludeContentProperties {
-			if _, ok := content[key.(string)]; ok {
-				content[key.(string)] = nil
-			}
-		}
-	}
-
 	input["metadata"] = buildInputMetadataMap(d)
 
 	return input, nil
