@@ -107,7 +107,6 @@ func resourceTurbotFileCreate(d *schema.ResourceData, meta interface{}) error {
 func resourceTurbotFileRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
 	id := d.Id()
-	// pass nil
 	resource, err := client.ReadFullResource(id)
 	if err != nil {
 		if apiClient.NotFoundError(err) {
