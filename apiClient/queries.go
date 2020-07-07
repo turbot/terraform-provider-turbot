@@ -369,7 +369,7 @@ func readResourceListQuery(filter string, properties map[string]string) string {
 func readFullResourceQuery(aka string) string {
 	return fmt.Sprintf(`{
   resource(id:"%s") {
-    object
+    data
     turbot: get(path:"turbot")
   }
 }`, aka)

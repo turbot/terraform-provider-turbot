@@ -190,11 +190,6 @@ func (client *Client) AssignResourceResults(responseData interface{}, properties
 	if err := mapstructure.Decode(responseData.(map[string]interface{})["object"], &resource.Data); err != nil {
 		return nil, err
 	}
-	// exclude turbot data from object
-	_, ok := resource.Data["turbot"]
-	if ok {
-		delete(resource.Data, "turbot")
-	}
 	// write properties into a map
 	if properties != nil {
 		for p := range properties {
