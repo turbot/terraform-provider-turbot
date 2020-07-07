@@ -31,7 +31,7 @@ resource "turbot_resource" "my_resource" {
   parent      = "tmod:@turbot/turbot#/"
   type        = "tmod:@turbot/aws#/resource/types/account"
 
-  payload =  <<EOF
+  payload     =  <<EOF
   {
     "Id": "123456789000",
     "turbot": {}
