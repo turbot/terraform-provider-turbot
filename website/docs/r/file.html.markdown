@@ -9,7 +9,7 @@ nav:
 
 # turbot_file
 
-The `Turbot file` resource adds support for files. Turbot files define a top level hierarchy to arrange resources and their policies.
+The `Turbot file` resource allows storage of custom data within Turbo. Turbot files define a top level hierarchy to arrange resources and their policies.
 
 ## Example Usage
 
@@ -43,7 +43,7 @@ resource "turbot_file" "data_file" {
 The following arguments are supported:
 
 - `content` - (Optional) Data of a file resource.
-- `description` - (Required) Brief description of the purpose and details of the file.
+- `description` - (Optional) Brief description of the purpose and details of the file.
 - `parent` - (Required) ID or `aka` of the parent resource.
 - `title` - (Required) Short descriptive name for the file. This appears as the file name in the Turbot Console.
 - `tags` - (Optional) Labels that can be used to manage, group, categorize, search, and save metadata for this file.
