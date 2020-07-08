@@ -1,6 +1,6 @@
 ## 1.4.0 (Unreleased)
 FEATURES:
-* **New Resource:** Use `turbot_file` to manage custom data within turbot ([#34](https://github.com/terraform-providers/terraform-provider-turbot/issues/34))
+* **New Resource:** `turbot_file` ([#34](https://github.com/terraform-providers/terraform-provider-turbot/issues/34))
 
 ## 1.3.1 (July 02, 2020)
 BUG FIXES 
