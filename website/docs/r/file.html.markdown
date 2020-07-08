@@ -9,7 +9,7 @@ nav:
 
 # turbot_file
 
-The `Turbot file` resource allows storage of custom data within Turbo. Turbot files define a top level hierarchy to arrange resources and their policies.
+The `Turbot file` resource allows storage of custom data within Turbot.
 
 ## Example Usage
 
