@@ -187,7 +187,7 @@ func (client *Client) AssignResourceResults(responseData interface{}, properties
 		return nil, err
 	}
 	// convert object property to structure
-	if err := mapstructure.Decode(responseData.(map[string]interface{})["object"], &resource.Data); err != nil {
+	if err := mapstructure.Decode(responseData.(map[string]interface{})["data"], &resource.Data); err != nil {
 		return nil, err
 	}
 	// write properties into a map
