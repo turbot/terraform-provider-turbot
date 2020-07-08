@@ -225,7 +225,8 @@ func buildInputMetadataMap(d *schema.ResourceData) map[string]interface{} {
 	return metadataMap
 }
 
-// build input data from content attribute
+// build the data field of the mutation input from content attribute
+// any property which should be removed must be explicitly set to null in the mutation input
 func buildInputDataMap(d *schema.ResourceData) (map[string]interface{}, error) {
 	var oldContent, newContent map[string]interface{}
 	var err error
