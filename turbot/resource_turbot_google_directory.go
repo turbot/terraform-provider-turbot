@@ -75,20 +75,18 @@ func resourceGoogleDirectory() *schema.Resource {
 				DiffSuppressFunc: suppressIfClientSecretPresent,
 			},
 			"pgp_key": {
-				Type:       schema.TypeString,
-				ForceNew:   true,
-				Optional:   true,
-				Deprecated: "use '' argument instead",
+				Type:     schema.TypeString,
+				ForceNew: true,
+				Optional: true,
 			},
 			"key_fingerprint": {
-				Type:       schema.TypeString,
-				Computed:   true,
-				Deprecated: "use '' argument instead",
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"pool_id": {
 				Type:       schema.TypeString,
 				Optional:   true,
-				Deprecated: "use '' argument instead",
+				Deprecated: "pool_id has been deprecated",
 			},
 			"hosted_name": {
 				Type:     schema.TypeString,
@@ -97,12 +95,12 @@ func resourceGoogleDirectory() *schema.Resource {
 			"group_id_template": {
 				Type:       schema.TypeString,
 				Optional:   true,
-				Deprecated: "use '' argument instead",
+				Deprecated: "group_id_template has been deprecated",
 			},
 			"login_name_template": {
 				Type:       schema.TypeString,
 				Optional:   true,
-				Deprecated: "use '' argument instead",
+				Deprecated: "login_name_template has been deprecated",
 			},
 			"tags": {
 				Type:     schema.TypeMap,

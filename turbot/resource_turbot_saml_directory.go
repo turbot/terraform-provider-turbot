@@ -108,12 +108,12 @@ func resourceTurbotSamlDirectory() *schema.Resource {
 			"group_id_template": {
 				Type:       schema.TypeString,
 				Optional:   true,
-				Deprecated: "use '' argument instead",
+				Deprecated: "group_id_template has been deprecated",
 			},
 			"pool_id": {
 				Type:       schema.TypeString,
 				Optional:   true,
-				Deprecated: "use '' argument instead",
+				Deprecated: "pool_id has been deprecated",
 			},
 			"tags": {
 				Type:     schema.TypeMap,
