@@ -1,4 +1,7 @@
 ## 1.4.0 (Unreleased)
+FEATURES:
+* **New Resource:** `turbot_file` ([#34](https://github.com/terraform-providers/terraform-provider-turbot/issues/34))
+
 ## 1.3.1 (July 02, 2020)
 BUG FIXES 
 * `resource/resource_turbot_mod`: After creation of resource, when running `terraform plan`, `version_current` attribute gives a `diff` .([#38](https://github.com/terraform-providers/terraform-provider-turbot/issues/38))

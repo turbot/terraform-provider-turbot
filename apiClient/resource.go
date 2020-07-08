@@ -39,6 +39,23 @@ func (client *Client) ReadResource(resourceAka string, properties map[string]str
 	return resource, nil
 }
 
+func (client *Client) ReadFullResource(resourceAka string) (*Resource, error) {
+	query := readFullResourceQuery(resourceAka)
+	var responseData = &ReadResourceResponse{}
+
+	// execute api call
+	if err := client.doRequest(query, nil, responseData); err != nil {
+		return nil, fmt.Errorf("error reading resource: %s", err.Error())
+	}
+
+	resource, err := client.AssignResourceResults(responseData.Resource, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return resource, nil
+}
+
 // read a resource including all properties, then convert into a 'serializable' resource, consisting of simple types and string maps
 func (client *Client) ReadSerializableResource(resourceAka string) (*SerializableResource, error) {
 	// read the resource, passing an empty string as the property path in the properties map to force a full read
@@ -167,6 +184,10 @@ func (client *Client) AssignResourceResults(responseData interface{}, properties
 	}
 	// convert type property
 	if err := mapstructure.Decode(responseData.(map[string]interface{})["type"], &resource.Type); err != nil {
+		return nil, err
+	}
+	// convert object property to structure
+	if err := mapstructure.Decode(responseData.(map[string]interface{})["data"], &resource.Data); err != nil {
 		return nil, err
 	}
 	// write properties into a map

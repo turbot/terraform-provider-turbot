@@ -27,9 +27,9 @@ resource "turbot_folder" "test" {
 
 ```hcl
 resource "turbot_folder" "parent" {
-  parent      = "tmod:@turbot/turbot#/"
-  title       = "Parent Folder"
-  description = "This is my parent folder."
+  parent          = "tmod:@turbot/turbot#/"
+  title           = "Parent Folder"
+  description     = "This is my parent folder."
   tags = {
     "Name"        = "Provider Test"
     "Environment" = "foo"
