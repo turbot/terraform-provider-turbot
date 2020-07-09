@@ -3,8 +3,8 @@ FEATURES:
 * **New Resource:** `turbot_file` ([#34](https://github.com/terraform-providers/terraform-provider-turbot/issues/34))
 
 BUG FIXES:
-* `resource/resource_turbot_saml_directory`: Deprecated `group_id_template` and `pool_id` arguments, as turbot API doesn't support. ([#37](https://github.com/terraform-providers/terraform-provider-turbot/issues/37))
-* `resource/resource_turbot_local_directory`: Deprecated `group_id_template`, `login_name_template` and `pool_id` arguments, as turbot API doesn't support. ([#37](https://github.com/terraform-providers/terraform-provider-turbot/issues/37))
+* `resource/resource_turbot_saml_directory`: Deprecate `group_id_template` and `pool_id` arguments, as these are no longer required or supported by the Turbot API. If passed, these parameters will be ignored. ([#37](https://github.com/terraform-providers/terraform-provider-turbot/issues/37))
+* `resource/resource_turbot_local_directory`: Deprecate `group_id_template`, `login_name_template` and `pool_id` arguments, as these are no longer required or supported by the Turbot API. If passed, these parameters will be ignored. ([#37](https://github.com/terraform-providers/terraform-provider-turbot/issues/37))
 ## 1.3.1 (July 02, 2020)
 BUG FIXES 
 * `resource/resource_turbot_mod`: After creation of resource, when running `terraform plan`, `version_current` attribute gives a `diff` .([#38](https://github.com/terraform-providers/terraform-provider-turbot/issues/38))
