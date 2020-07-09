@@ -11,7 +11,7 @@ func TestAccControlDataSource_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPolicyValueConfig(),
+				Config: testAccControlConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.turbot_control.test", "state", "alarm"),
@@ -24,7 +24,7 @@ func TestAccControlDataSource_Basic(t *testing.T) {
 func testAccControlConfig() string {
 	return `
 data "turbot_control" "test" {
-  id = "188831076538606"
+  id = "190510284171348"
 }
 `
 }
