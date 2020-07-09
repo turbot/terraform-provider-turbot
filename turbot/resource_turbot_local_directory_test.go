@@ -47,24 +47,34 @@ func TestAccLocalDirectory_Basic(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccLocalDirectory_tags(t *testing.T) {
+	resourceName := "turbot_local_directory.test"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLocalDirectoryDestroy,
+		Steps: []resource.TestStep{
+			{
 				Config: testAccDirectoryTagsConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLocalDirectoryExists("turbot_local_directory.test"),
-					resource.TestCheckResourceAttr(
-						"turbot_local_directory.test", "title", "provider_test_refactor"),
-					resource.TestCheckResourceAttr(
-						"turbot_local_directory.test", "description", "test directory"),
-					resource.TestCheckResourceAttr(
-						"turbot_local_directory.test", "tags.Name", "tags test"),
-					resource.TestCheckResourceAttr(
-						"turbot_local_directory.test", "tags.Environment", "foo"),
+					testAccCheckLocalDirectoryExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "tags.%", "2"),
+					resource.TestCheckResourceAttr(resourceName, "tags.tag1", "tag1value"),
+					resource.TestCheckResourceAttr(resourceName, "tags.tag2", "tag2value"),
 				),
 			},
 			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"tags"},
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -112,8 +122,8 @@ resource "turbot_local_directory" "test" {
 	description = "test directory"
 	profile_id_template = "{{profile.email}}"
 	tags = {
-		  "Name" = "tags test"
-		  "Environment" = "foo"
+		  tag1 = "tag1value"
+		  tag2 = "tag2value"
 	}
 }
 `

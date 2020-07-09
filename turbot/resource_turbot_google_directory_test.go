@@ -71,19 +71,32 @@ func TestAccGoogleDirectory_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_google_directory.test", "description", "test directory for turbot terraform provider"),
 				),
-			}, {
+			},
+		},
+	})
+}
+
+func TestAccGoogleDirectory_tags(t *testing.T) {
+	resourceName := "turbot_google_directory.test"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckGoogleDirectoryDestroy,
+		Steps: []resource.TestStep{
+			{
 				Config: testAccGoogleDirectoryTagsConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckGoogleDirectoryExists("turbot_google_directory.test"),
-					resource.TestCheckResourceAttr(
-						"turbot_google_directory.test", "title", "google_directory_test_provider"),
-					resource.TestCheckResourceAttr(
-						"turbot_google_directory.test", "description", "test directory for turbot terraform provider"),
-					resource.TestCheckResourceAttr(
-						"turbot_google_directory.test", "tags.Name", "tags test"),
-					resource.TestCheckResourceAttr(
-						"turbot_google_directory.test", "tags.Environment", "foo"),
+					testAccCheckGoogleDirectoryExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "tags.%", "2"),
+					resource.TestCheckResourceAttr(resourceName, "tags.tag1", "tag1value"),
+					resource.TestCheckResourceAttr(resourceName, "tags.tag2", "tag2value"),
 				),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"client_secret"},
 			},
 		},
 	})
@@ -152,11 +165,10 @@ resource "turbot_google_directory" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	description = "test directory for turbot terraform provider"
 	tags = {
-		  "Name" = "tags test"
-		  "Environment" = "foo"
+		tag1 = "tag1value"
+		tag2 = "tag2value"
 	}
-}
-`
+}`
 }
 
 // helper functions
