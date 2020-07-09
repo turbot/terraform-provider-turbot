@@ -1,4 +1,4 @@
-## 1.4.0 (Unreleased)
+## 1.4.0 (July 09, 2020)
 FEATURES:
 * **New Resource:** `turbot_file` ([#34](https://github.com/terraform-providers/terraform-provider-turbot/issues/34))
 
