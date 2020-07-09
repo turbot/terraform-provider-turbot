@@ -12,7 +12,7 @@ func dataSourceTurbotControl() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 			"uri": {
 				Type:     schema.TypeString,
