@@ -35,13 +35,13 @@ The following arguments are supported:
 - `profile_id_template` - (Required) A template to generate profile id for users authenticated through a google directory. For example, email id of the user.
 - `client_id` - (Required) Client ID provided by Google.
 - `client_secret` - (Required) Client Secret provided by Google.
-- `group_id_template` - (Optional) In case of a group profile, this template generates profile id for users authenticated through this directory. For example, email id of the group.
-- `login_name_template` - (Optional) A template used to render login name for the users of this directory.
+- `group_id_template` -  **DEPRECATED** (Optional) In case of a group profile, this template generates profile id for users authenticated through this directory. For example, email id of the group.
+- `login_name_template` -  **DEPRECATED** (Optional) A template used to render login name for the users of this directory.
 - `description` - (Optional) Brief description of the purpose and details of the directory.
 - `hosted_name` - (Optional) Domain name of the organization.
 - `tags` - (Optional) Labels that can be used to manage, group, categorize, search, and save metadata for this directory.
 - `pgp_key` - (Optional) A base-64 encoded PGP public key, applies on resource creation. If specified, the resource is encrypted in the state file with the key specified.
-- `pool_id` - (Optional) Pool id associated with Google directory.
+- `pool_id` -  **DEPRECATED** (Optional) Pool id associated with Google directory.
 
 ## Attributes Reference
 
