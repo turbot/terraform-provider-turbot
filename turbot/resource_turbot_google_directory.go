@@ -10,13 +10,6 @@ import (
 // these are the properties which must be passed to a create/update call
 // each element in the array is either a map, defining an explicit mapping, or a string, which is the terraform property name
 // this is automatically mapped to the turbot property name by converting snake -> camel case
-var googleDirectoryDataPropertiesLegacy = []interface{}{
-	// explicit mapping
-	map[string]string{"client_id": "clientID"},
-	// implicit mappings
-	"title", "pool_id", "profile_id_template", "group_id_template", "login_name_template", "client_secret", "hosted_name", "description"}
-
-var googleDirectoryInputPropertiesLegacy = []interface{}{"parent", "tags"}
 
 var googleDirectoryInputProperties = []interface{}{
 	// explicit mapping
@@ -72,10 +65,6 @@ func resourceGoogleDirectory() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"directory_type": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"client_id": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -95,20 +84,23 @@ func resourceGoogleDirectory() *schema.Resource {
 				Computed: true,
 			},
 			"pool_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"group_id_template": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"login_name_template": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:       schema.TypeString,
+				Optional:   true,
+				Deprecated: "pool_id has been deprecated and is not used.",
 			},
 			"hosted_name": {
 				Type:     schema.TypeString,
 				Optional: true,
+			},
+			"group_id_template": {
+				Type:       schema.TypeString,
+				Optional:   true,
+				Deprecated: "group_id_template has been deprecated and is not used",
+			},
+			"login_name_template": {
+				Type:       schema.TypeString,
+				Optional:   true,
+				Deprecated: "login_name_template has been deprecated and is not used",
 			},
 			"tags": {
 				Type:     schema.TypeMap,
@@ -127,53 +119,24 @@ func resourceTurbotGoogleDirectoryExists(d *schema.ResourceData, meta interface{
 func resourceTurbotGoogleDirectoryCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
 	// build mutation input
-	var turbotMetadata *apiClient.TurbotResourceMetadata
-
-	useLegacyMutations, err := client.UseLegacyDirectoryMutations()
+	input := mapFromResourceData(d, googleDirectoryInputProperties)
+	input["status"] = "ACTIVE"
+	turbotMetadata, err := client.CreateGoogleDirectory(input)
 	if err != nil {
 		return err
-	}
-
-	if useLegacyMutations {
-		input := mapFromResourceData(d, googleDirectoryInputPropertiesLegacy)
-		data := mapFromResourceData(d, googleDirectoryDataPropertiesLegacy)
-		// set computed properties
-		data["status"] = "Active"
-		data["directoryType"] = "google"
-		input["data"] = data
-
-		turbotMetadata, err = client.CreateGoogleDirectoryLegacy(input)
-		if err != nil {
-			return err
-		}
-		// store client secret, encrypting if a pgp key was provided
-		if err = storeClientSecret(d, data["clientSecret"].(string)); err != nil {
-			return err
-		}
 		// assign computed properties
-		d.Set("status", data["status"])
-		d.Set("directory_type", data["directoryType"])
-	} else {
-		input := mapFromResourceData(d, googleDirectoryInputProperties)
-		input["status"] = "ACTIVE"
-		turbotMetadata, err = client.CreateGoogleDirectory(input)
-		if err != nil {
-			return err
-		}
 		if err = storeClientSecret(d, input["clientSecret"].(string)); err != nil {
 			return err
 		}
-		// assign computed properties
-		d.Set("status", input["status"])
-		d.Set("directory_type", input["directoryType"])
 	}
-
 	// set parent_akas property by loading parent resource and fetching the akas
 	if err := storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
 	// assign the id
 	d.SetId(turbotMetadata.Id)
+	d.Set("status", input["status"])
+	d.Set("directory_type", input["directoryType"])
 	return nil
 }
 
@@ -210,35 +173,15 @@ func resourceTurbotGoogleDirectoryRead(d *schema.ResourceData, meta interface{})
 func resourceTurbotGoogleDirectoryUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
 
-	useLegacyMutations, err := client.UseLegacyDirectoryMutations()
+	// build mutation payload
+	input := mapFromResourceData(d, getGoogleDirectoryUpdateProperties())
+	input["id"] = d.Id()
+	// do update
+	turbotMetadata, err := client.UpdateGoogleDirectory(input)
 	if err != nil {
 		return err
 	}
-	// build mutation payload
-	var turbotMetadata *apiClient.TurbotResourceMetadata
-	var clientSecret string
-
-	if useLegacyMutations {
-		input := mapFromResourceData(d, googleDirectoryInputPropertiesLegacy)
-		data := mapFromResourceData(d, googleDirectoryDataPropertiesLegacy)
-		input["data"] = data
-		input["id"] = d.Id()
-
-		turbotMetadata, err = client.UpdateGoogleDirectoryLegacy(input)
-		if err != nil {
-			return err
-		}
-		clientSecret = data["clientSecret"].(string)
-	} else {
-		input := mapFromResourceData(d, getGoogleDirectoryUpdateProperties())
-		input["id"] = d.Id()
-		// do update
-		turbotMetadata, err = client.UpdateGoogleDirectory(input)
-		if err != nil {
-			return err
-		}
-		clientSecret = input["clientSecret"].(string)
-	}
+	clientSecret := input["clientSecret"].(string)
 	// set parent_akas property by loading parent resource and fetching the akas
 	if err := storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
 		return err

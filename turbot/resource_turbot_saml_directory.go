@@ -7,16 +7,12 @@ import (
 	"strings"
 )
 
-// these are the properties which must be passed to a legacy create/update call
-var samlDirectoryDataPropertiesLegacy = []interface{}{"description", "title", "status", "entry_point", "issuer", "certificate", "profile_id_template", "group_id_template", "name_id_format", "sign_requests", "signature_private_key", "signature_algorithm", "pool_id"}
-var samlDirectoryInputPropertiesLegacy = []interface{}{"parent", "tags"}
-
 // input properties which must be passed to a create/update call
-var samlDirectoryInputProperties = []interface{}{"title", "description", "status", "entry_point", "issuer", "certificate", "profile_id_template", "group_id_template", "name_id_format", "sign_requests", "allow_group_syncing", "profile_groups_attribute", "group_filter", "signature_private_key", "signature_algorithm", "pool_id", "parent", "tags"}
+var samlDirectoryInputProperties = []interface{}{"title", "description", "status", "entry_point", "issuer", "certificate", "profile_id_template", "name_id_format", "sign_requests", "allow_group_syncing", "profile_groups_attribute", "group_filter", "signature_private_key", "signature_algorithm", "pool_id", "parent", "tags"}
 
 // exclude properties from input map to make a create call
 func getSamlDirectoryProperties() []interface{} {
-	excludedProperties := []string{"group_id_template", "tags", "pool_id", "profile_id_template"}
+	excludedProperties := []string{"group_id_template", "tags", "profile_id_template"}
 	return helpers.RemoveProperties(localDirectoryInputProperties, excludedProperties)
 }
 
@@ -53,7 +49,7 @@ func resourceTurbotSamlDirectory() *schema.Resource {
 			},
 			"description": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 			"directory_type": {
 				Type:     schema.TypeString,
@@ -79,10 +75,6 @@ func resourceTurbotSamlDirectory() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"group_id_template": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
 			"name_id_format": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -100,10 +92,6 @@ func resourceTurbotSamlDirectory() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"pool_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
 			"allow_group_syncing": {
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -116,6 +104,16 @@ func resourceTurbotSamlDirectory() *schema.Resource {
 			"group_filter": {
 				Type:     schema.TypeString,
 				Optional: true,
+			},
+			"group_id_template": {
+				Type:       schema.TypeString,
+				Optional:   true,
+				Deprecated: "group_id_template has been deprecated and is not used.",
+			},
+			"pool_id": {
+				Type:       schema.TypeString,
+				Optional:   true,
+				Deprecated: "pool_id has been deprecated and is not used.",
 			},
 			"tags": {
 				Type:     schema.TypeMap,
@@ -134,36 +132,12 @@ func resourceTurbotSamlDirectoryExists(d *schema.ResourceData, meta interface{})
 func resourceTurbotSamlDirectoryCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
 
-	useLegacyMutations, err := client.UseLegacyDirectoryMutations()
+	input := mapFromResourceData(d, samlDirectoryInputProperties)
+	// set computed properties
+	input["status"] = "ACTIVE"
+	samlDirectory, err := client.CreateSamlDirectory(input)
 	if err != nil {
 		return err
-	}
-	// build mutation payload
-	var samlDirectory *apiClient.SamlDirectory
-
-	if useLegacyMutations {
-		input := mapFromResourceData(d, samlDirectoryInputPropertiesLegacy)
-		data := mapFromResourceData(d, samlDirectoryDataPropertiesLegacy)
-
-		// set computed properties
-		data["status"] = "Active"
-		data["directoryType"] = "saml"
-		input["data"] = data
-
-		samlDirectory, err = client.CreateSamlDirectoryLegacy(input)
-		if err != nil {
-			return err
-		}
-		d.Set("directoryType", data["directoryType"])
-	} else {
-		input := mapFromResourceData(d, samlDirectoryInputProperties)
-		// set computed properties
-		input["status"] = "ACTIVE"
-
-		samlDirectory, err = client.CreateSamlDirectory(input)
-		if err != nil {
-			return err
-		}
 	}
 
 	// set parent_akas property by loading parent resource and fetching the akas
@@ -197,25 +171,18 @@ func resourceTurbotSamlDirectoryRead(d *schema.ResourceData, meta interface{}) e
 	if err := storeAkas(samlDirectory.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
-	//TODO remove directory status check, after graphQL API supports new enum values - [UNSPECIFIED, EMAIL]
-	if samlDirectory.NameIdFormat == "unspecified" {
-		d.Set("name_id_format", "UNSPECIFIED")
-	} else {
-		d.Set("name_id_format", "EMAIL")
-	}
 	// assign results back into ResourceData
 	d.Set("parent", samlDirectory.Parent)
 	d.Set("title", samlDirectory.Title)
 	d.Set("description", samlDirectory.Description)
 	d.Set("status", strings.ToUpper(samlDirectory.Status))
+	d.Set("name_id_format", strings.ToUpper(samlDirectory.NameIdFormat))
 	d.Set("profile_id_template", samlDirectory.ProfileIdTemplate)
 	d.Set("entry_point", samlDirectory.EntryPoint)
 	d.Set("certificate", samlDirectory.Certificate)
-	d.Set("group_id_template", samlDirectory.GroupIdTemplate)
 	d.Set("sign_requests", samlDirectory.SignRequests)
 	d.Set("signature_private_key", samlDirectory.SignaturePrivateKey)
 	d.Set("signature_algorithm", samlDirectory.SignatureAlgorithm)
-	d.Set("pool_id", samlDirectory.PoolId)
 	d.Set("allow_group_syncing", samlDirectory.AllowGroupSyncing)
 	d.Set("profile_groups_attribute", samlDirectory.ProfileGroupsAttribute)
 	d.Set("group_filter", samlDirectory.GroupFilter)
@@ -226,33 +193,13 @@ func resourceTurbotSamlDirectoryRead(d *schema.ResourceData, meta interface{}) e
 func resourceTurbotSamlDirectoryUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
 
-	useLegacyMutations, err := client.UseLegacyDirectoryMutations()
+	input := mapFromResourceData(d, getSamlDirectoryProperties())
+	input["id"] = d.Id()
+
+	// update saml directory returns saml directory
+	samlDirectory, err := client.UpdateSamlDirectory(input)
 	if err != nil {
 		return err
-	}
-
-	// build mutation payload
-	var samlDirectory *apiClient.SamlDirectory
-
-	if useLegacyMutations {
-		input := mapFromResourceData(d, samlDirectoryInputPropertiesLegacy)
-		input["data"] = mapFromResourceData(d, samlDirectoryDataPropertiesLegacy)
-		input["id"] = d.Id()
-
-		// update saml directory returns saml directory
-		samlDirectory, err = client.UpdateSamlDirectoryLegacy(input)
-		if err != nil {
-			return err
-		}
-	} else {
-		input := mapFromResourceData(d, getSamlDirectoryProperties())
-		input["id"] = d.Id()
-
-		// update saml directory returns saml directory
-		samlDirectory, err = client.UpdateSamlDirectory(input)
-		if err != nil {
-			return err
-		}
 	}
 
 	// assign Read query properties

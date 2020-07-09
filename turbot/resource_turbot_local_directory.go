@@ -4,11 +4,8 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 	"github.com/terraform-providers/terraform-provider-turbot/helpers"
+	"strings"
 )
-
-// these are the properties which must be passed to legacy create/update call
-var localDirectoryDataPropertiesLegacy = []interface{}{"title", "profile_id_template", "description"}
-var localDirectoryInputPropertiesLegacy = []interface{}{"parent", "tags"}
 
 // input properties which must be passed to a create/update call
 var localDirectoryInputProperties = []interface{}{"title", "profile_id_template", "parent", "description", "tags"}
@@ -83,41 +80,14 @@ func resourceTurbotLocalDirectoryExists(d *schema.ResourceData, meta interface{}
 func resourceTurbotLocalDirectoryCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
 
-	useLegacyMutations, err := client.UseLegacyDirectoryMutations()
+	// build mutation input
+
+	input := mapFromResourceData(d, localDirectoryInputProperties)
+	input["status"] = "ACTIVE"
+
+	localDirectory, err := client.CreateLocalDirectory(input)
 	if err != nil {
 		return err
-	}
-	// build mutation input
-	var localDirectory *apiClient.LocalDirectory
-
-	if useLegacyMutations {
-		// legacy input properties
-		input := mapFromResourceData(d, localDirectoryInputPropertiesLegacy)
-		data := mapFromResourceData(d, localDirectoryDataPropertiesLegacy)
-
-		// set computed properties
-		data["status"] = "Active"
-		data["directoryType"] = "local"
-		input["data"] = data
-
-		// do create
-		localDirectory, err = client.CreateLocalDirectoryLegacy(input)
-		if err != nil {
-			return err
-		}
-		d.Set("status", data["status"])
-		d.Set("directory_type", data["directoryType"])
-	} else {
-		input := mapFromResourceData(d, localDirectoryInputProperties)
-		input["status"] = "ACTIVE"
-
-		localDirectory, err = client.CreateLocalDirectory(input)
-		if err != nil {
-			return err
-		}
-
-		d.Set("status", input["status"])
-		d.Set("directory_type", input["directoryType"])
 	}
 
 	// set parent_akas property by loading resource and fetching the akas
@@ -129,6 +99,8 @@ func resourceTurbotLocalDirectoryCreate(d *schema.ResourceData, meta interface{}
 	// assign properties coming back from create graphQl API
 	d.Set("parent", localDirectory.Parent)
 	d.Set("title", localDirectory.Title)
+	d.Set("status", strings.ToUpper(localDirectory.Status))
+	d.Set("directory_type", localDirectory.DirectoryType)
 	// Set the values from Resource Data
 	return nil
 }
@@ -150,7 +122,7 @@ func resourceTurbotLocalDirectoryRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("parent", localDirectory.Parent)
 	d.Set("title", localDirectory.Title)
 	d.Set("description", localDirectory.Description)
-	d.Set("status", localDirectory.Status)
+	d.Set("status", strings.ToUpper(localDirectory.Status))
 	d.Set("profile_id_template", localDirectory.ProfileIdTemplate)
 	d.Set("directory_type", localDirectory.DirectoryType)
 	d.Set("tags", localDirectory.Turbot.Tags)
@@ -161,38 +133,19 @@ func resourceTurbotLocalDirectoryRead(d *schema.ResourceData, meta interface{}) 
 func resourceTurbotLocalDirectoryUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
 
-	useLegacyMutations, err := client.UseLegacyDirectoryMutations()
+	// build mutation payload
+	input := mapFromResourceData(d, getLocalDirectoryUpdateProperties())
+	input["id"] = d.Id()
+	// do update
+	localDirectory, err := client.UpdateLocalDirectory(input)
 	if err != nil {
 		return err
-	}
-	// build mutation payload
-	var localDirectory *apiClient.LocalDirectory
-
-	if useLegacyMutations {
-		input := mapFromResourceData(d, localDirectoryInputPropertiesLegacy)
-		input["data"] = mapFromResourceData(d, localDirectoryDataPropertiesLegacy)
-		input["id"] = d.Id()
-
-		// do update
-		localDirectory, err = client.UpdateLocalDirectoryLegacy(input)
-		if err != nil {
-			return err
-		}
-	} else {
-		input := mapFromResourceData(d, getLocalDirectoryUpdateProperties())
-		input["id"] = d.Id()
-
-		// do update
-		localDirectory, err = client.UpdateLocalDirectory(input)
-		if err != nil {
-			return err
-		}
 	}
 
 	// assign properties coming back from update graphQl API
 	d.Set("parent", localDirectory.Parent)
 	d.Set("title", localDirectory.Title)
-	d.Set("status", localDirectory.Status)
+	d.Set("status", strings.ToUpper(localDirectory.Status))
 	d.Set("directory_type", localDirectory.DirectoryType)
 	// set parent_akas property by loading resource and fetching the akas
 	return storeAkas(localDirectory.Turbot.ParentId, "parent_akas", d, meta)
