@@ -15,7 +15,7 @@ func TestAccShadowResource_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccShadowResourceConfig(providerResource),
+				Config: testAccShadowResourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckShadowResourceExists("turbot_shadow_resource.shadow_resource"),
 					resource.TestCheckResourceAttr("turbot_shadow_resource.shadow_resource", "resource", "arn:aws:logs:us-east-2:713469427990:log-group:provider-test-hashicorp"),
@@ -25,17 +25,15 @@ func TestAccShadowResource_Basic(t *testing.T) {
 	})
 }
 
-var providerResource = "provider-test-hashicorp"
-
 // configs
-func testAccShadowResourceConfig(resource string) string {
+func testAccShadowResourceConfig() string {
 	return fmt.Sprintf(`
 resource "turbot_policy_setting" "region_stack_source" {
   resource = "arn:aws::us-east-2:713469427990"
  type = "tmod:@turbot/aws#/policy/types/regionStackSource"
   value = <<EOF
 resource "aws_cloudwatch_log_group" "provider" {
-  name = %s
+  name = "provider-test-hashicorp"
   tags = {
     Environment = "production"
     Application = "serviceA"
@@ -49,7 +47,7 @@ resource "turbot_shadow_resource" "shadow_resource" {
   timeouts    {
     create = "5m"
 }
-}`, resource)
+}`)
 }
 
 // helper functions

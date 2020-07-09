@@ -21,7 +21,7 @@ var googleDirectoryInputPropertiesLegacy = []interface{}{"parent", "tags"}
 var googleDirectoryInputProperties = []interface{}{
 	// explicit mapping
 	map[string]string{"hosted_name": "hostedDomain"},
-	"title", "parent", "client_id", "description", "client_secret", "profile_id_template"}
+	"title", "parent", "client_id", "description", "client_secret", "profile_id_template", "tags"}
 
 // exclude properties from input map to make a update call
 func getGoogleDirectoryUpdateProperties() []interface{} {
