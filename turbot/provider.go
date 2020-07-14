@@ -77,7 +77,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	}
 	log.Println("[INFO] Turbot API client initialized, now validating...", client)
 	if err = client.Validate(); err != nil {
-		return nil, fmt.Errorf("failed to validate client: %s", err.Error())
+		return nil, err
 	}
 	return client, nil
 }
