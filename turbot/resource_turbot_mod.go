@@ -164,9 +164,6 @@ func modInstall(d *schema.ResourceData, meta interface{}) error {
 		if err == nil {
 			return resource.RetryableError(err)
 		}
-		if err != nil {
-			return resource.NonRetryableError(err)
-		}
 		return resource.NonRetryableError(err)
 	})
 	if err != nil {
