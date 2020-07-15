@@ -31,10 +31,17 @@ func BuildHttpErrorMessage(err string) error {
 	errCodeString := strings.TrimSpace(strings.Split(err, ":")[2])
 	errCode, _ := strconv.ParseUint(errCodeString, 10, 32)
 
+	// check to see if we fetch correct error code or not
+	// return Turbot graphql client error string
+	if http.StatusText(int(errCode)) == "" {
+		return errors.New(err)
+	}
+	// retryable error codes - [502, 503, 504]
 	if int(errCode) == 502 || int(errCode) == 503 || int(errCode) == 504 {
 		err = fmt.Sprintf("The server returned a %s error (%s). Please wait a few minutes and try again.", http.StatusText(int(errCode)), errCodeString)
 		return errors.New(err)
 	}
+	// non-retryable errors
 	err = fmt.Sprintf("The server returned a %s error (%s). Please contact Turbot support.", http.StatusText(int(errCode)), errCodeString)
 	return errors.New(err)
 }
