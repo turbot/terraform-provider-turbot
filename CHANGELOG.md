@@ -1,4 +1,7 @@
-## 1.5.0 (Unreleased)
+## 1.4.1 (Unreleased)
+ENHANCEMENTS:
+* Show a friendly error message when receiving a 5xx error from the server. ([#54](https://github.com/terraform-providers/terraform-provider-turbot/issues/54))
+
 ## 1.4.0 (July 09, 2020)
 FEATURES:
 * **New Resource:** `turbot_file` ([#34](https://github.com/terraform-providers/terraform-provider-turbot/issues/34))
