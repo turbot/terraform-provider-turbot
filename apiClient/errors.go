@@ -21,27 +21,25 @@ func FailedValidationError(err error) bool {
 	return expectedErr.Match([]byte(err.Error()))
 }
 
-func BuildHttpErrorMessage(err string) error {
+func BuildHttpErrorMessage(err error) error {
 	// if it's a Not Found error, we return the actual graphql error.
-	if NotFoundError(errors.New(err)) {
-		// if the error is not a 'not found' error, the mod is already installed
-		return errors.New(err)
+	if NotFoundError(err) {
+		return err
 	}
-	// err = ["graphql", "server returned a non-200 status code", "Code"]
-	errCodeString := strings.TrimSpace(strings.Split(err, ":")[2])
+	errCodeString := strings.TrimSpace(strings.Split(err.Error(), ":")[2])
 	errCode, _ := strconv.ParseUint(errCodeString, 10, 32)
 
-	// check to see if we fetch correct error code or not
-	// return Turbot graphql client error string
+	// if we fail to decode the error code, just return the error directly
 	if http.StatusText(int(errCode)) == "" {
-		return errors.New(err)
+		return err
 	}
-	// retryable error codes - [502, 503, 504]
+	var errString string
 	if int(errCode) == 502 || int(errCode) == 503 || int(errCode) == 504 {
-		err = fmt.Sprintf("The server returned a %s error (%s). Please wait a few minutes and try again.", http.StatusText(int(errCode)), errCodeString)
-		return errors.New(err)
+		// retryable error codes - [502, 503, 504]
+		errString = fmt.Sprintf("The server returned a %s error (%s). Please wait a few minutes and try again.", http.StatusText(int(errCode)), errCodeString)
+	} else {
+		// non-retryable errors
+		errString = fmt.Sprintf("The server returned a %s error (%s). Please contact Turbot support.", http.StatusText(int(errCode)), errCodeString)
 	}
-	// non-retryable errors
-	err = fmt.Sprintf("The server returned a %s error (%s). Please contact Turbot support.", http.StatusText(int(errCode)), errCodeString)
-	return errors.New(err)
+	return errors.New(errString)
 }
