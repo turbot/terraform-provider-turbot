@@ -14,9 +14,9 @@ func BuildHttpErrorMessage(err string) error {
 	errCode, _ := strconv.ParseUint(errCodeString, 10, 32)
 
 	if int(errCode) == 502 || int(errCode) == 503 || int(errCode) == 504 {
-		err = fmt.Sprintf("The server returned a %s (%s). Please wait a few minutes and try again.", http.StatusText(int(errCode)), errCodeString)
+		err = fmt.Sprintf("The server returned a %s error (%s). Please wait a few minutes and try again.", http.StatusText(int(errCode)), errCodeString)
 		return errors.New(err)
 	}
-	err = fmt.Sprintf("The server returned a %s (%s). Please contact Turbot support.", http.StatusText(int(errCode)), errCodeString)
+	err = fmt.Sprintf("The server returned a %s error (%s). Please contact Turbot support.", http.StatusText(int(errCode)), errCodeString)
 	return errors.New(err)
 }
