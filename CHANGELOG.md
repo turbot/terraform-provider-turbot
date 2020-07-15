@@ -1,4 +1,4 @@
-## 1.5.0 (Unreleased)
+## 1.5.0 (July 15, 2020)
 ENHANCEMENTS:
 * Internal errors (5xx) received from the Turbot server will now show a friendly error message. We hope you never see them, but if you do, they should be easier to understand. ([#54](https://github.com/terraform-providers/terraform-provider-turbot/issues/54))
 
