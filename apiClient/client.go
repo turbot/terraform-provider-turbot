@@ -244,6 +244,7 @@ func (client *Client) doRequest(query string, vars map[string]interface{}, respo
 
 	// run it and capture the response
 	if err := client.Graphql.Run(ctx, req, &responseData); err != nil {
+		err = helpers.BuildHttpErrorMessage(err.Error())
 		return err
 	}
 	return nil
