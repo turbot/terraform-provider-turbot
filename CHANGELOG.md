@@ -1,6 +1,6 @@
-## 1.4.1 (Unreleased)
+## 1.5.0 (Unreleased)
 ENHANCEMENTS:
-* Show a friendly error message when receiving a 5xx error from the server. ([#54](https://github.com/terraform-providers/terraform-provider-turbot/issues/54))
+* Internal errors (5xx) received from the Turbot server will now show a friendly error message. We hope you never see them, but if you do, they should be easier to understand. ([#54](https://github.com/terraform-providers/terraform-provider-turbot/issues/54))
 
 ## 1.4.0 (July 09, 2020)
 FEATURES:
