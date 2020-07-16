@@ -34,13 +34,6 @@ func dataSourceTurbotControl() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"turbot": {
-				Type:     schema.TypeMap,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
 		},
 	}
 }
@@ -83,6 +76,5 @@ func dataSourceTurbotControlRead(d *schema.ResourceData, meta interface{}) error
 	d.Set("state", control.State)
 	d.Set("reason", control.Reason)
 	d.Set("details", control.Details)
-	d.Set("turbot", control.Turbot)
 	return nil
 }
