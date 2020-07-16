@@ -1,6 +1,7 @@
 package turbot
 
 import (
+	"errors"
 	"fmt"
 	"github.com/Masterminds/semver"
 	"github.com/hashicorp/terraform/helper/resource"
@@ -162,6 +163,7 @@ func modInstall(d *schema.ResourceData, meta interface{}) error {
 			return nil
 		}
 		if err == nil {
+			err = errors.New("mod is not installed")
 			return resource.RetryableError(err)
 		}
 		return resource.NonRetryableError(err)
