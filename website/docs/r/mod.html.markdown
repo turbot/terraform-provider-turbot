@@ -45,6 +45,13 @@ In addition to all the arguments above, the following attributes are exported:
 - `parent_akas` - A list of all `akas` for this mods's parent resource.
 - `uri` - An unique identifier of the mod.
 
+## Timeouts
+
+`turbot_mod` provides the following [Timeouts](/docs/configuration/resources.html#timeouts)
+configuration options:
+
+- `create` - (Default `15m`) How long to wait for a resource to be created.
+
 ## Import
 
 Mods can be imported using the `id`. For example,

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Masterminds/semver"
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 	"log"
@@ -22,6 +23,9 @@ func resourceTurbotMod() *schema.Resource {
 		Exists: resourceTurbotModExists,
 		Importer: &schema.ResourceImporter{
 			State: resourceTurbotModImport,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(15 * time.Minute),
 		},
 		Schema: map[string]*schema.Schema{
 			// aka of the parent resource
@@ -148,9 +152,22 @@ func modInstall(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	modId := mod.Turbot.Id
-
 	// now poll the mod resource to wait for the correct version
-	_, err = waitForInstallation(modId, mod.Build, client)
+	targetBuild := mod.Build
+	log.Printf("Wait for mod installation, targetBuild: %s", targetBuild)
+	err = resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		installedVersion, installedBuild, err := getInstalledModVersion(modId, client)
+		if installedBuild == targetBuild {
+			log.Printf("installed version: %s, installed build: %s, target build: %s, mod is installed!", installedVersion, installedBuild, targetBuild)
+			// success
+			return nil
+		}
+		if err == nil {
+			err = errors.New("Turbot mod installation timed out")
+			return resource.RetryableError(err)
+		}
+		return resource.NonRetryableError(err)
+	})
 	if err != nil {
 		return err
 	}
@@ -224,30 +241,6 @@ func resourceTurbotModImport(d *schema.ResourceData, meta interface{}) ([]*schem
 
 func buildModAka(org, mod string) string {
 	return fmt.Sprintf("tmod:@%s/%s", org, mod)
-}
-
-func waitForInstallation(modId, targetBuild string, client *apiClient.Client) (string, error) {
-	retryCount := 0
-	// retry for 15 minutes
-	maxRetries := 40
-	sleep := 20 * time.Second
-	log.Printf("Wait for mod installation, targetBuild: %s", targetBuild)
-
-	for retryCount < maxRetries {
-		installedVersion, installedBuild, err := getInstalledModVersion(modId, client)
-		if err != nil {
-			return "", err
-		}
-		if installedBuild == targetBuild {
-			log.Printf("installed build: %s, target build: %s, mod is installed!", installedBuild, targetBuild)
-			// success
-			return installedVersion, nil
-		}
-		log.Printf("installed build: %s, target build: %s, retrying!", installedBuild, targetBuild)
-		time.Sleep(sleep)
-		retryCount++
-	}
-	return "", errors.New("Turbot mod installation timed out")
 }
 
 func getInstalledModVersion(modId string, client *apiClient.Client) (version, build string, err error) {
