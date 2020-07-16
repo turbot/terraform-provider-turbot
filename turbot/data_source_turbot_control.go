@@ -40,21 +40,21 @@ func dataSourceTurbotControl() *schema.Resource {
 
 func dataSourceTurbotControlRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
-	controlId := d.Get("id").(string)
-	controlUri, controlOk := d.GetOk("uri")
-	resourceId, resourceOk := d.GetOk("resource")
+	controlId, controlIdSet := d.GetOk("id")
+	controlUri, controlUriSet := d.GetOk("uri")
+	resourceId, resourceIdSet := d.GetOk("resource")
 	var args string
 
-	if controlOk || resourceOk {
-		if controlOk && resourceOk {
-			args = fmt.Sprintf(`uri: %s, resourceId: %s`, controlUri, resourceId)
+	if controlIdSet {
+		if controlUriSet || resourceIdSet {
+			return fmt.Errorf("if controlId is set, controlUri and resourceId must not be set")
 		}
-		if !resourceOk {
-			return fmt.Errorf("if controlUri is given, resourceId is required")
+		args = fmt.Sprintf(`id: "%s"`, controlId)
+	} else {
+		if !controlUriSet || !resourceIdSet {
+			return fmt.Errorf("either controlId or controlUri AND resourceId must not be set")
 		}
-		if !controlOk {
-			return fmt.Errorf("if resourceId is given, controlUri is required")
-		}
+		args = fmt.Sprintf(`uri: %s, resourceId: %s`, controlUri, resourceId)
 	}
 
 	if args == "" {

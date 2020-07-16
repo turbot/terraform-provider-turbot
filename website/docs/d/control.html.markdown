@@ -43,10 +43,10 @@ output "json" {
 * `uri` - (Optional) The unique identifier of the control for which the value needs to be extracted.
 * `resource` - (Optional) The unique ID of the resource at the level of which the information needs to be fetched.
 
+-> **Note:** It's recommended to either specify id of the control or uri and resource both.
 ## Attributes Reference
 
-* `state` - The final state of the set control.
-* `reason` - Message explaining the state of the set control.
-* `details` - Additional information regarding the set control.
-* `tags` - User defined way of logically grouping resources.
-* `turbot` - JSON representation of turbot data of the resource.
+* `state` - The state of the control.
+* `reason` - Message explaining the state of the control.
+* `details` - Additional information regarding the control state.
+* `tags` - Tags set on the control.
