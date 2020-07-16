@@ -41,6 +41,7 @@ The following arguments are supported:
 - `signature_private_key` - (Optional) Private key used to sign authentication requests, in multiline PEM format starting with -----BEGIN PRIVATE KEY-----.
 - `signature_algorithm` - (Optional) If a private key has been provided, it determines the signature algorithm for signing requests. If not specified defaults to *SHA-1*.
 - `allow_group_syncing` -  (Optional) Boolean value to indicate whether groups will be synchronized for SAML users. Defaults to `false`.
+- `allow_idp_initiated_sso` -  (Optional) Boolean value to indicate whether directory allows IDP-initiated SSO. Defaults to `false`.
 - `profile_groups_attribute` - (Optional) Attribute returning list of groups that a SAML user is a part of.
 - `group_filter` -  (Optional) Regular expression to filter out groups that are to be synced from SAML.
 - `tags` - (Optional) User defined label for grouping resources.
