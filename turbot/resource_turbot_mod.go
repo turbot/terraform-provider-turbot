@@ -163,7 +163,7 @@ func modInstall(d *schema.ResourceData, meta interface{}) error {
 			return nil
 		}
 		if err == nil {
-			err = errors.New("turbot mod installation timed out")
+			err = errors.New("Turbot mod installation timed out")
 			return resource.RetryableError(err)
 		}
 		return resource.NonRetryableError(err)
