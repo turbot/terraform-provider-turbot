@@ -8,7 +8,7 @@ import (
 )
 
 // input properties which must be passed to a create/update call
-var samlDirectoryInputProperties = []interface{}{"title", "description", "status", "entry_point", "issuer", "certificate", "profile_id_template", "name_id_format", "sign_requests", "allow_group_syncing", "profile_groups_attribute", "group_filter", "signature_private_key", "signature_algorithm", "pool_id", "parent", "tags"}
+var samlDirectoryInputProperties = []interface{}{"title", "description", "status", "entry_point", "issuer", "certificate", "profile_id_template", "name_id_format", "sign_requests", "allow_idp_initiated_sso", "allow_group_syncing", "profile_groups_attribute", "group_filter", "signature_private_key", "signature_algorithm", "pool_id", "parent", "tags"}
 
 // exclude properties from input map to make a create call
 func getSamlDirectoryProperties() []interface{} {
@@ -93,6 +93,11 @@ func resourceTurbotSamlDirectory() *schema.Resource {
 				Optional: true,
 			},
 			"allow_group_syncing": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
+			"allow_idp_initiated_sso": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  false,
@@ -184,6 +189,7 @@ func resourceTurbotSamlDirectoryRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("signature_private_key", samlDirectory.SignaturePrivateKey)
 	d.Set("signature_algorithm", samlDirectory.SignatureAlgorithm)
 	d.Set("allow_group_syncing", samlDirectory.AllowGroupSyncing)
+	d.Set("allow_idp_initiated_sso", samlDirectory.AllowIdpInitiatedSso)
 	d.Set("profile_groups_attribute", samlDirectory.ProfileGroupsAttribute)
 	d.Set("group_filter", samlDirectory.GroupFilter)
 	d.Set("tags", samlDirectory.Turbot.Tags)

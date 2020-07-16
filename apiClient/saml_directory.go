@@ -20,6 +20,7 @@ var samlDirectoryProperties = []interface{}{
 	"signaturePrivateKey",
 	"signatureAlgorithm",
 	"poolId",
+	"allowIdpInitiatedSso",
 	"allowGroupSyncing",
 	"profileGroupsAttribute",
 	"groupFilter",
