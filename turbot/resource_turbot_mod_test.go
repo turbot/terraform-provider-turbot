@@ -130,40 +130,7 @@ func TestAccMod_Basic(t *testing.T) {
 	})
 }
 
-func TestAccMod_Timeout(t *testing.T) {
-	resourceName := "turbot_mod.test"
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccModDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccMod_aws_ec2_Config(),
-				Check: resource.ComposeTestCheckFunc(
-					testAccModExists("turbot_mod.test"),
-					resource.TestCheckResourceAttr(
-						resourceName, "org", "turbot"),
-					resource.TestCheckResourceAttr(
-						resourceName, "mod", "aws-ec2"),
-					resource.TestCheckResourceAttr(
-						resourceName, "version", "*"),
-				),
-			},
-		},
-	})
-}
-
 // configs
-func testAccMod_aws_ec2_Config() string {
-	return `
-resource "turbot_mod" "test" {
-	parent = "tmod:@turbot/turbot#/"
-	org = "turbot"
-	mod = "aws-ec2"
-	version = "*"
-}
-`
-}
 func testAccMod_v5_0_0_Config() string {
 	return `
 resource "turbot_mod" "test" {
