@@ -324,6 +324,7 @@ type SamlDirectory struct {
 	PoolId                 string
 	ProfileGroupsAttribute string
 	AllowGroupSyncing      bool
+	AllowIdpInitiatedSso   bool
 	GroupFilter            string
 }
 
