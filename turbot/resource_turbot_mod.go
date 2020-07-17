@@ -275,9 +275,9 @@ func getLatestCompatibleVersion(org, modName, version string, meta interface{}) 
 	if err != nil {
 		return "", err
 	}
-	latestVersion, err = getVersionWithStatus(potentialVersions, "RECOMMENDED")
+	latestVersion, err = getVersionWithStatus(potentialVersions, "recommended")
 	if latestVersion == "" {
-		latestVersion, err = getVersionWithStatus(potentialVersions, "AVAILABLE")
+		latestVersion, err = getVersionWithStatus(potentialVersions, "available")
 	}
 	return latestVersion, nil
 }
@@ -301,7 +301,7 @@ func getPotentialVersions(modVersions []apiClient.ModRegistryVersion, version st
 		}
 		// does this version meet the requirement
 		if c.Check(v) && (latestVersion == nil || v.GreaterThan(latestVersion)) {
-			versions = append(versions, apiClient.ModRegistryVersion{Status: modVersion.Version, Version: modStatus})
+			versions = append(versions, apiClient.ModRegistryVersion{Status: modStatus, Version: modVersion.Version})
 		}
 	}
 	return versions, nil
