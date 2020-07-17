@@ -24,7 +24,7 @@ output "json" {
   value = "${data.turbot_control.test}".status
 }
 ```
-Here is another example wherein, we can fetch control data using uri and resource.
+Here is another example wherein, we can fetch control data using the control type uri and resource id.
 
 ```hcl
 data "turbot_control_value" "example" {
