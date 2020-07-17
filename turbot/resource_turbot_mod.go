@@ -270,32 +270,21 @@ func getLatestCompatibleVersion(org, modName, version string, meta interface{}) 
 		return "", err
 	}
 
-	availableModVersions := buildModVersionListByStatus(modVersions, "available")
-	recommendedModVersions := buildModVersionListByStatus(modVersions, "recommended")
-
-	latestVersion := ""
-	if recommendedModVersions != nil {
-		latestVersion, err = getCompatibleVersionByStatus(recommendedModVersions, version)
-		if err != nil {
-			return "", err
-		}
-		if latestVersion != "" {
-			return latestVersion, nil
-		}
+	var latestVersion = ""
+	latestVersion, err = getVersionWithStatus(modVersions, version, "recommended")
+	if err != nil {
+		return "", err
 	}
-	if availableModVersions != nil {
-		latestVersion, err = getCompatibleVersionByStatus(availableModVersions, version)
+	if latestVersion == "" {
+		latestVersion, err = getVersionWithStatus(modVersions, version, "available")
 		if err != nil {
 			return "", err
-		}
-		if latestVersion != "" {
-			return latestVersion, nil
 		}
 	}
 	return latestVersion, nil
 }
 
-func getCompatibleVersionByStatus(modVersions []string, version string) (string, error) {
+func getVersionWithStatus(modVersions []apiClient.ModRegistryVersion, version, status string) (string, error) {
 	// create semver constraint from required version range
 	c, err := semver.NewConstraint(version)
 	if err != nil {
@@ -305,14 +294,17 @@ func getCompatibleVersionByStatus(modVersions []string, version string) (string,
 	// now get latest version
 	var latestVersion *semver.Version
 	for _, modVersion := range modVersions {
-		// create semver version from this version
-		v, err := semver.NewVersion(modVersion)
-		if err != nil {
-			return "", err
-		}
-		// does this version meet the requirement
-		if c.Check(v) && (latestVersion == nil || v.GreaterThan(latestVersion)) {
-			latestVersion = v
+		modStatus := strings.ToLower(modVersion.Status)
+		if modStatus == status {
+			// create semver version from this version
+			v, err := semver.NewVersion(modVersion.Version)
+			if err != nil {
+				return "", err
+			}
+			// does this version meet the requirement
+			if c.Check(v) && (latestVersion == nil || v.GreaterThan(latestVersion)) {
+				latestVersion = v
+			}
 		}
 	}
 
@@ -321,15 +313,4 @@ func getCompatibleVersionByStatus(modVersions []string, version string) (string,
 		latestVersionString = latestVersion.String()
 	}
 	return latestVersionString, nil
-}
-
-func buildModVersionListByStatus(modVersions []apiClient.ModRegistryVersion, status string) []string {
-	var versionList []string = nil
-	for _, modVersion := range modVersions {
-		modStatus := strings.ToLower(modVersion.Status)
-		if modStatus == status {
-			versionList = append(versionList, modVersion.Version)
-		}
-	}
-	return versionList
 }
