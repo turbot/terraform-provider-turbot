@@ -271,46 +271,59 @@ func getLatestCompatibleVersion(org, modName, version string, meta interface{}) 
 	}
 
 	var latestVersion = ""
-	latestVersion, err = getVersionWithStatus(modVersions, version, "recommended")
+	potentialVersions, err := getPotentialVersions(modVersions, version)
 	if err != nil {
 		return "", err
 	}
+	latestVersion, err = getVersionWithStatus(potentialVersions, "RECOMMENDED")
 	if latestVersion == "" {
-		latestVersion, err = getVersionWithStatus(modVersions, version, "available")
-		if err != nil {
-			return "", err
-		}
+		latestVersion, err = getVersionWithStatus(potentialVersions, "AVAILABLE")
 	}
 	return latestVersion, nil
 }
 
-func getVersionWithStatus(modVersions []apiClient.ModRegistryVersion, version, status string) (string, error) {
+func getPotentialVersions(modVersions []apiClient.ModRegistryVersion, version string) ([]apiClient.ModRegistryVersion, error) {
 	// create semver constraint from required version range
 	c, err := semver.NewConstraint(version)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// now get latest version
 	var latestVersion *semver.Version
+	var versions []apiClient.ModRegistryVersion
+	for _, modVersion := range modVersions {
+		modStatus := strings.ToLower(modVersion.Status)
+		// create semver version from this version
+		v, err := semver.NewVersion(modVersion.Version)
+		if err != nil {
+			return nil, err
+		}
+		// does this version meet the requirement
+		if c.Check(v) && (latestVersion == nil || v.GreaterThan(latestVersion)) {
+			versions = append(versions, apiClient.ModRegistryVersion{Status: modVersion.Version, Version: modStatus})
+		}
+	}
+	return versions, nil
+}
+
+func getVersionWithStatus(modVersions []apiClient.ModRegistryVersion, status string) (string, error) {
+	var maxVersion *semver.Version
 	for _, modVersion := range modVersions {
 		modStatus := strings.ToLower(modVersion.Status)
 		if modStatus == status {
-			// create semver version from this version
 			v, err := semver.NewVersion(modVersion.Version)
 			if err != nil {
 				return "", err
 			}
-			// does this version meet the requirement
-			if c.Check(v) && (latestVersion == nil || v.GreaterThan(latestVersion)) {
-				latestVersion = v
+			if v.GreaterThan(maxVersion) {
+				maxVersion = v
 			}
 		}
 	}
-
 	latestVersionString := ""
-	if latestVersion != nil {
-		latestVersionString = latestVersion.String()
+	if maxVersion != nil {
+		latestVersionString = maxVersion.String()
 	}
 	return latestVersionString, nil
 }
