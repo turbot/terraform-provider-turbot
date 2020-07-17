@@ -39,11 +39,11 @@ output "json" {
 
 ## Argument Reference
 
-* `id` - (Optional) The unique identifier of the control for which the value needs to be extracted.
-* `uri` - (Optional) The unique identifier of the control for which the value needs to be extracted.
-* `resource` - (Optional) The unique ID of the resource at the level of which the information needs to be fetched.
+* `id` - (Optional) The id of the control.
+* `uri` - (Optional) The type of the control.
+* `resource` - (Optional) The unique identifier of the resource which the control is targeting.
 
--> **Note:** It's recommended to either specify id of the control or uri and resource both.
+**Note:** You must specify either the control id or the control type uri AND the resource.
 ## Attributes Reference
 
 * `state` - The state of the control.
