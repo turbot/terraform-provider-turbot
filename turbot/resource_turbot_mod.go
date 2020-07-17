@@ -270,6 +270,32 @@ func getLatestCompatibleVersion(org, modName, version string, meta interface{}) 
 		return "", err
 	}
 
+	availableModVersions := buildModVersionListByStatus(modVersions, "available")
+	recommendedModVersions := buildModVersionListByStatus(modVersions, "recommended")
+
+	latestVersion := ""
+	if recommendedModVersions != nil {
+		latestVersion, err = getCompatibleVersionByStatus(recommendedModVersions, version)
+		if err != nil {
+			return "", err
+		}
+		if latestVersion != "" {
+			return latestVersion, nil
+		}
+	}
+	if availableModVersions != nil {
+		latestVersion, err = getCompatibleVersionByStatus(availableModVersions, version)
+		if err != nil {
+			return "", err
+		}
+		if latestVersion != "" {
+			return latestVersion, nil
+		}
+	}
+	return latestVersion, nil
+}
+
+func getCompatibleVersionByStatus(modVersions []string, version string) (string, error) {
 	// create semver constraint from required version range
 	c, err := semver.NewConstraint(version)
 	if err != nil {
@@ -279,23 +305,31 @@ func getLatestCompatibleVersion(org, modName, version string, meta interface{}) 
 	// now get latest version
 	var latestVersion *semver.Version
 	for _, modVersion := range modVersions {
-		modStatus := strings.ToLower(modVersion.Status)
-		if modStatus == "available" || modStatus == "recommended" {
-			// create semver version from this version
-			v, err := semver.NewVersion(modVersion.Version)
-			if err != nil {
-				return "", err
-			}
-			// does this version meet the requirement
-			if c.Check(v) && (latestVersion == nil || v.GreaterThan(latestVersion)) {
-				latestVersion = v
-			}
+		// create semver version from this version
+		v, err := semver.NewVersion(modVersion)
+		if err != nil {
+			return "", err
+		}
+		// does this version meet the requirement
+		if c.Check(v) && (latestVersion == nil || v.GreaterThan(latestVersion)) {
+			latestVersion = v
 		}
 	}
+
 	latestVersionString := ""
 	if latestVersion != nil {
 		latestVersionString = latestVersion.String()
 	}
 	return latestVersionString, nil
+}
 
+func buildModVersionListByStatus(modVersions []apiClient.ModRegistryVersion, status string) []string {
+	var versionList []string = nil
+	for _, modVersion := range modVersions {
+		modStatus := strings.ToLower(modVersion.Status)
+		if modStatus == status {
+			versionList = append(versionList, modVersion.Version)
+		}
+	}
+	return versionList
 }
