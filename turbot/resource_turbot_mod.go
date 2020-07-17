@@ -308,7 +308,7 @@ func getPotentialVersions(modVersions []apiClient.ModRegistryVersion, version st
 }
 
 func getVersionWithStatus(modVersions []apiClient.ModRegistryVersion, status string) (string, error) {
-	var maxVersion *semver.Version
+	var maxVersion, _ = semver.NewVersion("0.0.0")
 	for _, modVersion := range modVersions {
 		modStatus := strings.ToLower(modVersion.Status)
 		if modStatus == status {
@@ -322,7 +322,7 @@ func getVersionWithStatus(modVersions []apiClient.ModRegistryVersion, status str
 		}
 	}
 	latestVersionString := ""
-	if maxVersion != nil {
+	if maxVersion != nil && !(maxVersion.String() == "0.0.0") {
 		latestVersionString = maxVersion.String()
 	}
 	return latestVersionString, nil
