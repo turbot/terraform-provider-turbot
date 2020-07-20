@@ -553,6 +553,7 @@ func readControlQuery(args string) string {
     	details
     	turbot {
      	 	id
+			resourceId
     	}
   	}
 }`, args)
