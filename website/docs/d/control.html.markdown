@@ -28,7 +28,7 @@ Here is another example wherein, we can fetch control data using the control typ
 
 ```hcl
 data "turbot_control_value" "example" {
-  uri      = "tmod:@turbot/aws-ec2#/control/types/instanceDiscovery"
+  type      = "tmod:@turbot/aws-ec2#/control/types/instanceDiscovery"
   resource  = 'arn:aws::ap-northeast-1:112233445566'
 }
 
