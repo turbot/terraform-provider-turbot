@@ -1,4 +1,10 @@
 ## 1.6.0 (Unreleased)
+FEATURES:
+* **New Data Source:** `turbot_control` ([#32](https://github.com/terraform-providers/terraform-provider-turbot/issues/32))
+
+ENHANCEMENTS:
+* `resource/resource_turbot_saml_directory`:  Add argument `allow_idp_initiated_sso`to provide support for Allow IdP-initiated SSO. ([#39](https://github.com/terraform-providers/terraform-provider-turbot/issues/39))
+* `resource/resource_turbot_mod`: Add `timeout` block to support `create` timeout. This is the length of time  provider waits for mod installation to complete. Default value is 15min ([#53](https://github.com/terraform-providers/terraform-provider-turbot/issues/53))
 ## 1.5.0 (July 15, 2020)
 ENHANCEMENTS:
 * Internal errors (5xx) received from the Turbot server will now show a friendly error message. We hope you never see them, but if you do, they should be easier to understand. ([#54](https://github.com/terraform-providers/terraform-provider-turbot/issues/54))
