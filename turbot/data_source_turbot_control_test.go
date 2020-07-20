@@ -14,7 +14,7 @@ func TestAccControlDataSource_Basic(t *testing.T) {
 				Config: testAccControlConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.turbot_control.test", "state", "alarm"),
+						"data.turbot_control.test", "type", "tmod:@turbot/turbot#/control/types/controlInstalled"),
 				),
 			},
 		},
@@ -24,7 +24,7 @@ func TestAccControlDataSource_Basic(t *testing.T) {
 func testAccControlConfig() string {
 	return `
 data "turbot_control" "test" {
-  id = "190510284171348"
+  id = "178806515688264"
 }
 `
 }
