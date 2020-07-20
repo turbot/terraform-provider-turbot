@@ -546,14 +546,14 @@ func readControlQuery(args string) string {
 	return fmt.Sprintf(`{
   	control(%s){
    	 	type{
-      		uri
+          uri
 		}
     	state
     	reason
     	details
     	turbot {
-     	 	id
-			resourceId
+	      id
+	      resourceId
     	}
   	}
 }`, args)
