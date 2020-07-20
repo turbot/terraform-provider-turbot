@@ -40,7 +40,7 @@ output "json" {
 ## Argument Reference
 
 * `id` - (Optional) The id of the control.
-* `uri` - (Optional) The type of the control.
+* `type` - (Optional) The type of the control.
 * `resource` - (Optional) The unique identifier of the resource which the control is targeting.
 
 **Note:** You must specify either the control id or the control type uri AND the resource.
