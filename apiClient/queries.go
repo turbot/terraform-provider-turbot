@@ -541,6 +541,24 @@ func updateSamlDirectoryMutation(properties []interface{}) string {
 }`, buildResourceProperties(properties))
 }
 
+//control
+func readControlQuery(args string) string {
+	return fmt.Sprintf(`{
+control(%s){
+	type{
+		uri
+	}
+	state
+	reason
+	details
+	turbot {
+		id
+		resourceId
+	}
+}
+}`, args)
+}
+
 // get turbot workspace version
 func (client *Client) GetTurbotWorkspaceVersion() (*semver.Version, error) {
 	query := readPolicyValueQuery("tmod:@turbot/turbot#/policy/types/workspaceVersion", "tmod:@turbot/turbot#/")
