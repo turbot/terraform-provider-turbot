@@ -544,18 +544,18 @@ func updateSamlDirectoryMutation(properties []interface{}) string {
 //control
 func readControlQuery(args string) string {
 	return fmt.Sprintf(`{
-  	control(%s){
-   	 	type{
-          uri
-		}
-    	state
-    	reason
-    	details
-    	turbot {
-	      id
-	      resourceId
-    	}
-  	}
+control(%s){
+	type{
+		uri
+	}
+	state
+	reason
+	details
+	turbot {
+		id
+		resourceId
+	}
+}
 }`, args)
 }
 
