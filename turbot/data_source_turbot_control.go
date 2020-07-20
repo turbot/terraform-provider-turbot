@@ -52,7 +52,7 @@ func dataSourceTurbotControlRead(d *schema.ResourceData, meta interface{}) error
 		args = fmt.Sprintf(`id: "%s"`, controlId)
 	} else {
 		if !controlTypeSet || !resourceIdSet {
-			return fmt.Errorf("either 'id' or 'type' AND 'resource' must not be set")
+			return fmt.Errorf("either 'id' or 'type' AND 'resource' must be set")
 		}
 		args = fmt.Sprintf(`uri: "%s", resourceId: "%s"`, controlType, resourceId)
 	}
