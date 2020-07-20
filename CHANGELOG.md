@@ -1,4 +1,4 @@
-## 1.6.0 (Unreleased)
+## 1.6.0 (July 20, 2020)
 FEATURES:
 * **New Data Source:** `turbot_control` ([#32](https://github.com/terraform-providers/terraform-provider-turbot/issues/32))
 
