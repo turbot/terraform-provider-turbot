@@ -47,14 +47,14 @@ func dataSourceTurbotControlRead(d *schema.ResourceData, meta interface{}) error
 
 	if controlIdSet {
 		if controlTypeSet || resourceIdSet {
-			return fmt.Errorf("if controlId is set, controlType and resourceId must not be set")
+			return fmt.Errorf("if id is set, type and resourceId must not be set")
 		}
 		args = fmt.Sprintf(`id: "%s"`, controlId)
 	} else {
 		if !controlTypeSet || !resourceIdSet {
-			return fmt.Errorf("either controlId or controlType AND resourceId must not be set")
+			return fmt.Errorf("either id or type AND resourceId must not be set")
 		}
-		args = fmt.Sprintf(`uri: %s, resourceId: %s`, controlType, resourceId)
+		args = fmt.Sprintf(`uri: "%s", resourceId: "%s"`, controlType, resourceId)
 	}
 
 	control, err := client.ReadControl(args)
