@@ -11,7 +11,7 @@ func (client *Client) ReadControl(args string) (*Control, error) {
 	// execute api call
 	err := client.doRequest(query, nil, responseData)
 	if err != nil {
-		return nil, fmt.Errorf("error reading resource: %s", err.Error())
+		return nil, fmt.Errorf("error reading control: %s", err.Error())
 	}
 	control := responseData.Control
 
