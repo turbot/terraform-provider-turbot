@@ -559,6 +559,33 @@ control(%s){
 }`, args)
 }
 
+// group profile
+func createGroupProfileMutation(properties []interface{}) string {
+	return fmt.Sprintf(`mutation createGroupProfile($input: CreateGroupProfileInput!) {
+  		resource: createGroupProfile(input: $input){
+%s
+    	turbot:get(path:"turbot")
+  }
+}`, buildResourceProperties(properties))
+}
+
+func updateGroupProfileMutation(properties []interface{}) string {
+	return fmt.Sprintf(`mutation updateGroupProfile($input: UpdateGroupProfileInput!) {
+  		resource: updateGroupProfile(input: $input){
+%s
+    	turbot:get(path:"turbot")
+  }
+}`, buildResourceProperties(properties))
+}
+
+func deleteGroupProfileMutation() string {
+	return fmt.Sprintf(`mutation deleteGroupProfile($input: DeleteGroupProfileInput!) {
+  		resource: deleteGroupProfile(input: $input){
+    	turbot:get(path:"turbot")
+  }
+}`)
+}
+
 // get turbot workspace version
 func (client *Client) GetTurbotWorkspaceVersion() (*semver.Version, error) {
 	query := readPolicyValueQuery("tmod:@turbot/turbot#/policy/types/workspaceVersion", "tmod:@turbot/turbot#/")
