@@ -41,8 +41,10 @@ The following arguments are supported:
 
 - `parent` - (Required) The `id` or `aka` of the level at which the Turbot resource will be created.
 - `type` - (Required) Defines the type of the resource to be created.
-- `data` - (Required) JSON representation of the details of the resource. When parsed, it must be valid for the `type` schema.
+- `data` - (Required) JSON representation of the details of the resource, managed on merge basis. When parsed, it must be valid for the `type` schema.
 - `metadata` - (Optional) A set of data that describes and gives information about the data of the resource.
+- `full_data` - (Optional) A complete and manageable JSON representation of the details of the resource. When parsed, it must be valid for the `type` schema.
+- `full_metadata` - (Optional) A complete set of data that describes and gives information about the resource.
 - `akas` - (Optional) Unique identifier of the resource.
 - `tags` - (Optional) User defined label for grouping resources.
 
