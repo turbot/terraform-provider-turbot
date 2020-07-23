@@ -13,7 +13,7 @@ The `turbot_resource` defines a resource in Turbot. Typically it is used to defi
 
 ## Example Usage
 
-**Creating Your First Resource**
+###Creating Your First Resource
 
 ```hcl
 resource "turbot_resource" "my_resource" {
@@ -30,6 +30,36 @@ EOT
     "accountId": "123456789012",
     "partition": "aws"
   }
+}
+EOT
+}
+```
+
+###Using full_data
+
+```hcl
+resource "turbot_resource" "my_resource" {
+  parent   = "tmod:@turbot/turbot#/"
+  type     = "tmod:@turbot/aws#/resource/types/account"
+  full_data     = <<EOT
+{
+  "foo": "bar",
+  "title": "turbot account resource"
+}
+EOT
+}
+```
+
+###Using full_metadata
+
+```hcl
+resource "turbot_resource" "my_resource" {
+  parent   = "tmod:@turbot/turbot#/"
+  type     = "tmod:@turbot/aws#/resource/types/account"
+  full_metadata    = <<EOT
+{
+  "resource_version": "1.0.0"
+  "replication": "true"
 }
 EOT
 }
