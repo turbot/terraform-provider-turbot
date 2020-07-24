@@ -43,7 +43,7 @@ resource "turbot_resource" "my_resource" {
   type     = "tmod:@turbot/aws#/resource/types/account"
   full_data     = <<EOT
 {
-  "foo": "bar",
+  "type": "aws",
   "title": "turbot account resource"
 }
 EOT
@@ -69,14 +69,16 @@ EOT
 
 The following arguments are supported:
 
-- `parent` - (Required) The `id` or `aka` of the level at which the Turbot resource will be created.
+- `parent` - (Required) The identifier of the parent resource under which this resource will be created.
 - `type` - (Required) Defines the type of the resource to be created.
-- `data` - (Required) JSON representation of the details of the resource, managed on merge basis. When parsed, it must be valid for the `type` schema.
-- `metadata` - (Optional) A set of data that describes and gives information about the data of the resource.
-- `full_data` - (Optional) A complete and manageable JSON representation of the details of the resource. When parsed, it must be valid for the `type` schema.
-- `full_metadata` - (Optional) A complete set of data that describes and gives information about the resource.
+- `data` - (Optional) JSON representation of resource properties to be managed by Terraform. These must be valid for the type schema. NOTE: If additional properties are set on the resource by other means, they are ignored by Terraform.
+- `metadata` - (Optional) JSON representation of resource metadata properties to be managed by Terraform. NOTE: If additional metadata properties are set on the resource by other means, they are ignored by Terraform.
+- `full_data` - (Optional) JSON representation of all resource properties to be set on the resource. These must be valid for the type schema. NOTE: If additional properties are set on the resource by other means, they are removed.
+- `full_metadata` - (Optional) JSON representation of all resource metadata properties to be set on the resource. NOTE: If additional metadata properties are set on the resource by other means, they are removed.
 - `akas` - (Optional) Unique identifier of the resource.
 - `tags` - (Optional) User defined label for grouping resources.
+ 
+**NOTE**: You must not specify `data` and `full_data` OR `metadata` and `full_metadata` arguments together.
 
 ## Attributes Reference
 
