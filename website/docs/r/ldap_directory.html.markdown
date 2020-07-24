@@ -13,7 +13,7 @@ The `Turbot LDAP Directory` resource adds support for ldap directories. It is us
 
 ## Example Usage
 
-**Creating Your First LDAP Directory**
+###Creating Your First LDAP Directory
 
 ```hcl
 resource "turbot_ldap_directory" "test" {
@@ -40,7 +40,7 @@ The following arguments are supported:
 - `group_profile_id_template` - (Optional) A template to generate the URN of the profile for groups retrieved from this directory.
 **Note**: The profile MUST be unique across all group profiles in Turbot. However, it is possible to have multiple directories map its group to the same Group-Profile.
 - `group_search_filter` - (Optional) The provided filter is Nunjucks rendered with `groupname` provided as a data parameter.
-- `group_sync_filter` - (Optional) 
+- `group_sync_filter` - (Optional) Used to filter out groups of a user which Turbot should sync. If not specified, Turbot will create GroupProfiles for all groups of a user.
 - `parent` - (Required) ID or `aka` of the parent resource.
 - `profile_id_template` - (Required) A template to generate profile id for users authenticated through a ldap directory. For example, email id of the user.
 - `password` - (Required) The password of the user specified in directory server.
@@ -50,7 +50,7 @@ The following arguments are supported:
 - `user_object_filter` - (Optional) The filter string that lists all users in the LDAP server.
 - `user_match_filter` - (Optional) This is overlaid on the `user_object_filter` to query for a specific user from the directory.
 - `user_search_filter` - (Optional) This is overlaid on the `user_object_filter` to query for a sublist of all users in the directory.
-- `user_search_attributes` - (Optional) 
+- `user_search_attributes` - (Optional) This is a list of properties that will be requested from the LDAP server when requesting for a LDAP user object.
 - `user_canonical_name_attribute` - (Optional) The attribute in the LDAP user object which contains the Canonical Name of the user.
 - `user_email_attribute` - (Optional) The attribute in the LDAP user object which contains the user's email address.
 - `user_display_name_attribute` - (Optional) The attribute in the LDAP user object which contains the user's name which will be displayed in Turbot.
@@ -61,7 +61,7 @@ The following arguments are supported:
 - `group_member_of_attribute` - (Optional) The name of the attribute which the LDAP server uses to record group memberships of an object. This is essentially the inverse of `group_membership_attribute`.
 - `group_membership_attribute` - (Optional) The name of the attribute which the LDAP server uses to record membership against a group object.    
 - `connectivity_test_filter` - (Optional) A filter string which will be used to test communication status with the LDAP server. 
-- `reject_unauthorized` - (Optional)  
+- `reject_unauthorized` - (Optional) When TLS connection is set up, if this is set to `true`, turbot will not verify the TLS certificate that it receives from the server.
 - `disabled_group_filter` - (Optional) A filter string that when queried in the context of `group_object_filter` returns disabled groups.
 - `tags` - (Optional) Labels that can be used to manage, group, categorize, search, and save metadata for the directory.
 
