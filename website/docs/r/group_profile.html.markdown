@@ -17,9 +17,9 @@ The `Turbot group profile` resource adds support for creating group profile unde
 
 ```hcl
 resource "turbot_group_profile" "directory_group" {
-  title             = "terraform test group profile"
-  directory         = "112233445566"
-  group_profile_name  = "test"
+  title          = "terraform test group profile"
+  directory      = "112233445566"
+  group_profile  = "test"
 }
 ```
 
@@ -28,7 +28,7 @@ resource "turbot_group_profile" "directory_group" {
 The following arguments are supported:
 
 - `directory` - (Required) The parent directory of the group profile, either as an id, or an AKA.
-- `group_profile_name` - (Required)  The unique identifier of the group profile. For new group profiles this must be unique for the parent directory.
+- `group_profile` - (Required)  The unique identifier of the group profile. For new group profiles this must be unique for the parent directory.
 - `title` - (Required)  The title of the group profile.
 
 ## Attributes Reference
