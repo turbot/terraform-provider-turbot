@@ -69,7 +69,7 @@ The following arguments are supported:
 In addition to all the arguments above, the following attributes are exported:
 
 - `parent_akas` - A list of all `akas` for this directory's parent resource.
-- `status` - Status of the ldap directory, which defaults to `Active`. Probable options are `Active`, `Inactive` and `New`.
+- `status` - Status of the ldap directory, which defaults to `ACTIVE`. Valid options are `ACTIVE`, `INACTIVE` and `NEW`.
 - `id` - Unique identifier of the ldap directory.
 
 ## Import
