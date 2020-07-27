@@ -389,7 +389,7 @@ func readGoogleDirectoryQuery(aka string) string {
 		poolId:            	get(path:"poolId")
 		groupIdTemplate:   	get(path:"groupIdTemplate")
 		loginNameTemplate: 	get(path:"loginNameTemplate")
-		hostedName:        	get(path:"hostedName")
+		hostedDomain:       get(path:"hostedDomain")
 		turbot: 			get(path:"turbot")
 	}
 }`, aka)

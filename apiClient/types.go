@@ -364,7 +364,7 @@ type GoogleDirectory struct {
 	PoolId            string
 	GroupIdTemplate   string
 	LoginNameTemplate string
-	HostedName        string
+	HostedDomain      string
 }
 
 // Turbot directory

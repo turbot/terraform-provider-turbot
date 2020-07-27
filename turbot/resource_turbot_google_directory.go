@@ -57,14 +57,6 @@ func resourceGoogleDirectory() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"status": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"client_id": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -74,10 +66,22 @@ func resourceGoogleDirectory() *schema.Resource {
 				Required:         true,
 				DiffSuppressFunc: suppressIfClientSecretPresent,
 			},
+			"description": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"pgp_key": {
 				Type:     schema.TypeString,
 				ForceNew: true,
 				Optional: true,
+			},
+			"directory_type": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"status": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"key_fingerprint": {
 				Type:     schema.TypeString,
@@ -124,10 +128,10 @@ func resourceTurbotGoogleDirectoryCreate(d *schema.ResourceData, meta interface{
 	turbotMetadata, err := client.CreateGoogleDirectory(input)
 	if err != nil {
 		return err
-		// assign computed properties
-		if err = storeClientSecret(d, input["clientSecret"].(string)); err != nil {
-			return err
-		}
+	}
+	// assign computed properties
+	if err = storeClientSecret(d, input["clientSecret"].(string)); err != nil {
+		return err
 	}
 	// set parent_akas property by loading parent resource and fetching the akas
 	if err := storeAkas(turbotMetadata.ParentId, "parent_akas", d, meta); err != nil {
@@ -164,7 +168,7 @@ func resourceTurbotGoogleDirectoryRead(d *schema.ResourceData, meta interface{})
 	d.Set("pool_id", googleDirectory.PoolId)
 	d.Set("group_id_template", googleDirectory.GroupIdTemplate)
 	d.Set("login_name_template", googleDirectory.LoginNameTemplate)
-	d.Set("hosted_name", googleDirectory.HostedName)
+	d.Set("hosted_name", googleDirectory.HostedDomain)
 	d.Set("tags", googleDirectory.Turbot.Tags)
 	// set parent_akas property by loading parent resource and fetching the akas
 	return storeAkas(googleDirectory.Turbot.ParentId, "parent_akas", d, meta)
