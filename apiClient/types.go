@@ -239,20 +239,16 @@ type ProfileResponse struct {
 }
 
 type Profile struct {
-	Turbot             TurbotResourceMetadata
-	Title              string
-	Parent             string
-	Status             string
-	Email              string
-	GivenName          string
-	DisplayName        string
-	FamilyName         string
-	MiddleName         string
-	DirectoryPoolId    string
-	ProfileId          string
-	Picture            string
-	ExternalId         string
-	LastLoginTimestamp string
+	Turbot          TurbotResourceMetadata
+	Title           string
+	Parent          string
+	Status          string
+	Email           string
+	GivenName       string
+	DisplayName     string
+	FamilyName      string
+	DirectoryPoolId string
+	ProfileId       string
 }
 
 // Smart folder

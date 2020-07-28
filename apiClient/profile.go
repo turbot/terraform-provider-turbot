@@ -13,11 +13,6 @@ var profileProperties = []interface{}{
 	"givenName",
 	"familyName",
 	"directoryPoolId",
-	"profileId",
-	"middleName",
-	"picture",
-	"externalId",
-	"lastLoginTimestamp",
 }
 
 func (client *Client) CreateProfile(input map[string]interface{}) (*Profile, error) {
