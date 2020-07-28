@@ -12,8 +12,6 @@ require (
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/pkg/errors v0.0.0-20170505043639-c605e284fe17
 	github.com/stretchr/testify v1.3.0
-	gopkg.in/ini.v1 v1.48.0 // indirect
-	gopkg.in/oleiade/reflections.v1 v1.0.0
 )
 
 go 1.13
