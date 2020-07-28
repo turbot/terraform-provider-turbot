@@ -8,7 +8,7 @@ import (
 
 // properties which must be passed to a create/update call
 var profileInputProperties = []interface{}{"parent"}
-var profileDataProperties = []interface{}{"title", "status", "display_name", "given_name", "family_name", "email", "directory_pool_id", "profile_id", "middle_name", "picture", "external_id", "last_login_timestamp"}
+var profileDataProperties = []interface{}{"title", "status", "display_name", "given_name", "family_name", "email", "directory_pool_id", "profile_id"}
 
 func getProfileUpdateProperties() []interface{} {
 	excludedProperties := []string{"profile_id"}
@@ -61,13 +61,13 @@ func resourceTurbotProfile() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"email": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
 			"directory_pool_id": {
 				Type:     schema.TypeString,
 				Optional: true,
+			},
+			"email": {
+				Type:     schema.TypeString,
+				Required: true,
 			},
 			"external_id": {
 				Type:     schema.TypeString,
@@ -123,10 +123,9 @@ func resourceTurbotProfileCreate(d *schema.ResourceData, meta interface{}) error
 	d.Set("title", profile.Title)
 	d.Set("status", profile.Status)
 	d.Set("email", profile.Email)
-	d.Set("profile_id", profile.ProfileId)
-	d.Set("display_name", profile.DisplayName)
 	d.Set("given_name", profile.GivenName)
 	d.Set("family_name", profile.FamilyName)
+	d.Set("directory_pool_id", profile.DirectoryPoolId)
 	return nil
 }
 
@@ -148,15 +147,9 @@ func resourceTurbotProfileRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("title", profile.Title)
 	d.Set("status", profile.Status)
 	d.Set("email", profile.Email)
-	d.Set("profile_id", profile.ProfileId)
-	d.Set("display_name", profile.DisplayName)
 	d.Set("given_name", profile.GivenName)
 	d.Set("family_name", profile.FamilyName)
-	d.Set("picture", profile.Picture)
-	d.Set("external_id", profile.ExternalId)
-	d.Set("middle_name", profile.MiddleName)
-	d.Set("family_name", profile.FamilyName)
-	d.Set("last_login_timestamp", profile.LastLoginTimestamp)
+	d.Set("directory_pool_id", profile.DirectoryPoolId)
 	/// set parent_akas property by loading resource and fetching the akas
 	return storeAkas(profile.Turbot.ParentId, "parent_akas", d, meta)
 }
