@@ -10,7 +10,6 @@ import (
 
 // test suites
 func TestAccProfile_Basic(t *testing.T) {
-	resourceName := "turbot_profile.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -19,23 +18,30 @@ func TestAccProfile_Basic(t *testing.T) {
 			{
 				Config: testAccProfileConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckProfileExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "title", "Snape"),
-					resource.TestCheckResourceAttr(resourceName, "status", "Active"),
-					resource.TestCheckResourceAttr(resourceName, "display_name", "Severus Snape"),
-					resource.TestCheckResourceAttr(resourceName, "given_name", "Severus Snape"),
-					resource.TestCheckResourceAttr(resourceName, "email", "severus.slytherin@hogwards.com"),
-					resource.TestCheckResourceAttr(resourceName, "family_name", "Snape"),
-					resource.TestCheckResourceAttr(resourceName, "profile_id", "170759063660234"),
-					resource.TestCheckResourceAttr(resourceName, "directory_pool_id", "snapeseverus"),
-					resource.TestCheckResourceAttr(resourceName, "picture", "https://lh3.googleusercontent.com/a-/AOh14Gh2rSScXBQAWCauydm0ATSoeHueEfSFv5wK8SR3"),
+					testAccCheckProfileExists("turbot_profile.test"),
+					resource.TestCheckResourceAttr("turbot_profile.test", "title", "Snape"),
+					resource.TestCheckResourceAttr("turbot_profile.test", "status", "Active"),
+					resource.TestCheckResourceAttr("turbot_profile.test", "display_name", "Severus Snape"),
+					resource.TestCheckResourceAttr("turbot_profile.test", "given_name", "Severus Snape"),
+					resource.TestCheckResourceAttr("turbot_profile.test", "email", "severus.slytherin@hogwards.com"),
+					resource.TestCheckResourceAttr("turbot_profile.test", "family_name", "Snape"),
+					resource.TestCheckResourceAttr("turbot_profile.test", "profile_id", "170759063660234"),
+					resource.TestCheckResourceAttr("turbot_profile.test", "directory_pool_id", "snapeseverus"),
 				),
 			},
 			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"directory_pool_id"},
+				Config: testAccProfileUpdateDispNameConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckProfileExists("turbot_profile.test"),
+					resource.TestCheckResourceAttr("turbot_profile.test", "title", "Snape"),
+					resource.TestCheckResourceAttr("turbot_profile.test", "status", "Active"),
+					resource.TestCheckResourceAttr("turbot_profile.test", "display_name", "Severus M Snape"),
+					resource.TestCheckResourceAttr("turbot_profile.test", "given_name", "Severus Snape"),
+					resource.TestCheckResourceAttr("turbot_profile.test", "email", "severus.slytherin@hogwards.com"),
+					resource.TestCheckResourceAttr("turbot_profile.test", "family_name", "Snape"),
+					resource.TestCheckResourceAttr("turbot_profile.test", "profile_id", "170759063660234"),
+					resource.TestCheckResourceAttr("turbot_profile.test", "directory_pool_id", "snapeseverus"),
+				),
 			},
 		},
 	})
@@ -49,13 +55,44 @@ func testAccProfileConfig() string {
 		title = "Snape"
 		display_name = "Severus Snape"
 		email = "severus.slytherin@hogwards.com"
-        picture = "https://lh3.googleusercontent.com/a-/AOh14Gh2rSScXBQAWCauydm0ATSoeHueEfSFv5wK8SR3"
 		given_name = "Severus Snape"
 		family_name = "Snape"
 		directory_pool_id = "snapeseverus"
 		status = "Active"
 		profile_id = "170759063660234"
 	}
+`
+}
+
+func testAccProfileUpdateDispNameConfig() string {
+	return `
+resource "turbot_profile" "test" {
+	parent = "184298093985240"
+	title = "Snape"
+	display_name = "Severus M Snape"
+	email = "severus.slytherin@hogwards.com"
+	given_name = "Severus Snape"
+	family_name = "Snape"
+	directory_pool_id = "snapeseverus"
+	status = "Active"
+	profile_id = "170759063660234"
+}
+`
+}
+
+func testAccProfileUpdateTitleConfig() string {
+	return `
+resource "turbot_profile" "test" {
+	parent = "184298093985240"
+	title = "Snape"
+	display_name = "Severus Snape"
+	email = "severus.slytherin@hogwards.com"
+	given_name = "Severus Snape"
+	family_name = "Snape"
+	directory_pool_id = "snapeseverus"
+	status = "Active"
+	profile_id = "170759063660234"
+}
 `
 }
 
