@@ -13,10 +13,10 @@ The `Turbot Google Directory` resource adds support for google directory. It is 
 
 ## Example Usage
 
-**Creating Your First Google Directory**
+###Creating Your First Google Directory
 
 ```hcl
-resource "turbot_google_directory" "test" {
+resource "turbot_google_directory" "google_apps" {
   parent                = "tmod:@turbot/turbot#/"
   title                 = "Google @ myorg"
   profile_id_template   = "myemail@myorg.com"
@@ -55,5 +55,5 @@ In addition to all the arguments above, the following attributes are exported:
 Google Directory can be imported using the `id`. For example,
 
 ```
-terraform import turbot_google_directory.test 123456789012
+terraform import turbot_google_directory.google_apps 123456789012
 ```

@@ -22,6 +22,12 @@ func TestAccGoogleDirectory_Pgp(t *testing.T) {
 						"turbot_google_directory.test", "title", "google_directory_test_provider"),
 					resource.TestCheckResourceAttr(
 						"turbot_google_directory.test", "description", "test directory"),
+					resource.TestCheckResourceAttr(
+						"turbot_google_directory.test", "profile_id_template", "profileemail"),
+					resource.TestCheckResourceAttr(
+						"turbot_google_directory.test", "client_id", "provider-test.apps.google.com"),
+					resource.TestCheckResourceAttr(
+						"turbot_google_directory.test", "parent", "tmod:@turbot/turbot#/"),
 				),
 			},
 		},
@@ -88,6 +94,7 @@ func TestAccGoogleDirectory_tags(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckGoogleDirectoryExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "tags.%", "2"),
+					resource.TestCheckResourceAttr(resourceName, "hosted_name", "turbot.com"),
 					resource.TestCheckResourceAttr(resourceName, "tags.tag1", "tag1value"),
 					resource.TestCheckResourceAttr(resourceName, "tags.tag2", "tag2value"),
 				),
@@ -161,6 +168,7 @@ resource "turbot_google_directory" "test" {
 	title = "google_directory_test_provider"
 	profile_id_template = "profileemail"
 	client_id = "provider-test.apps.google.com"
+	hosted_name = "turbot.com"
 	client_secret = "scqXnRczuyve329"
 	parent = "tmod:@turbot/turbot#/"
 	description = "test directory for turbot terraform provider"
