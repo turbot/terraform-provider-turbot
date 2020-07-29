@@ -13,17 +13,16 @@ The `Turbot Profile` resource adds support for creating user profiles. It is use
 
 ## Example Usage
 
-**Creating Your First Profile**
+###Creating Your First Profile
 
 ```hcl
-resource "turbot_profile" "test" {
+resource "turbot_profile" "admin" {
   parent              = "tmod:@turbot/turbot#/"
-  title               = "Snape"
-  display_name        = "Severus Snape"
-  email               = "severus.slytherin@hogwards.com"
-  given_name          = "Severus Snape"
-  family_name         = "Snape"
-  directory_pool_id   = "snapeseverus"
+  title               = "Admin"
+  display_name        = "Hoax"
+  email               = "hoax@turbot.com"
+  given_name          = "Hoax benjamin"
+  family_name         = "Benjamin"
   profile_id          = "170759063660234"
 }
 ```
@@ -39,12 +38,12 @@ The following arguments are supported:
 - `parent` - (Required) The `aka` or `id` of the level at which the profile is created.
 - `profile_id` - (Required) An unique identifier of the profile.
 - `title` - (Required) Name of the profile.
-- `directory_pool_id` - (Required) Pool ID for the directory in the current resource. Allows grouping of related directories e.g. SAML for authentication and LDAP for AD searching.
+- `directory_pool_id` - (Optional) Pool ID for the directory in the current resource. Allows grouping of related directories e.g. SAML for authentication and LDAP for AD searching.
 - `external_id` - (Optional) A link between the local directory and the profile.
 - `last_login_timestamp` - (Optional) The most recent login through the profile.
 - `middle_name` - (Optional) Middle name of the user associated with the profile.
-- `picture` - (Optional) A picture associated with the profile.
-- `status` - (Optional) Status of the profile, which defaults to `active`. Probable options are `active` and `inactive`.
+- `picture` - (Optional) A valid URL which contains a picture which will be associated to the profile.
+- `status` - (Optional) Status of the profile, which defaults to `Active`. Valid options are `Active` and `Inactive`.
 
 **Note:** In case of a local directory, both the `profile_id` and `external_id` are required parameters.
 
@@ -60,5 +59,5 @@ In addition to all the arguments above, the following attributes are exported:
 Turbot profiles can be imported using the `id`. For example,
 
 ```
-terraform import turbot_folder.my_folder 123456789012
+terraform import turbot_folder.admin 123456789012
 ```
