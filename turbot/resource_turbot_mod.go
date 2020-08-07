@@ -136,7 +136,21 @@ func resourceTurbotModInstall(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceTurbotModUpdate(d *schema.ResourceData, meta interface{}) error {
-	return modInstall(d, meta)
+	version := d.Get("version").(string)
+	versionCurrent := d.Get("version_current").(string)
+	org := d.Get("org").(string)
+	modName := d.Get("mod").(string)
+
+	versionLatest, err := getLatestCompatibleVersion(org, modName, version, meta)
+	if err != nil {
+		return err
+	}
+
+	if versionCurrent != versionLatest || d.HasChange("version_current") {
+		log.Print("versoin", versionLatest, versionCurrent)
+		return modInstall(d, meta)
+	}
+	return resourceTurbotModRead(d, meta)
 }
 
 // do the actual mode installation
