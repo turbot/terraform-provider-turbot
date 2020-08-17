@@ -385,6 +385,44 @@ type TurbotDirectoryResponse struct {
 	Resource TurbotDirectory
 }
 
+// Ldap directory
+type LdapDirectory struct {
+	Turbot                      TurbotResourceMetadata
+	Title                       string
+	Description                 string
+	ProfileIdTemplate           string
+	GroupProfileIdTemplate      string
+	Url                         string
+	DistinguishedName           string
+	Password                    string
+	Base                        string
+	UserObjectFilter            string
+	DisabledUserFilter          string
+	UserMatchFilter             string
+	UserSearchFilter            string
+	UserSearchAttributes        string
+	GroupObjectFilter           string
+	GroupSearchFilter           string
+	GroupSyncFilter             string
+	UserCanonicalNameAttribute  string
+	UserEmailAttribute          string
+	UserDisplayNameAttribute    string
+	UserGivenNameAttribute      string
+	UserFamilyNameAttribute     string
+	GroupCanonicalNameAttribute string
+	TlsEnabled                  string
+	TlsServerCertificate        string
+	GroupMemberOfAttribute      string
+	GroupMembershipAttribute    string
+	ConnectivityTestFilter      string
+	RejectUnauthorized          string
+	DisabledGroupFilter         string
+}
+
+type LdapDirectoryResponse struct {
+	Resource LdapDirectory
+}
+
 // Group profile
 type GroupProfile struct {
 	Turbot         TurbotResourceMetadata
