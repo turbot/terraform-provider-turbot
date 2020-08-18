@@ -147,7 +147,7 @@ func resourceTurbotModUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if versionCurrent != versionLatest || d.HasChange("version_current") {
-		log.Print("versoin", versionLatest, versionCurrent)
+		log.Printf("latest compatible version - %s, current installed version - %s ", versionLatest, versionCurrent)
 		return modInstall(d, meta)
 	}
 	return resourceTurbotModRead(d, meta)
