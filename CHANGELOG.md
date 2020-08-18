@@ -1,4 +1,11 @@
-## 1.7.0 (Unreleased)
+## 1.6.2 (August 17, 2020)
+BUG FIXES:
+* `resource/resource_turbot_google_directory`: After creation of resource, `terraform plan` shows a change required for the attribute `hosted_name`. ([#75](https://github.com/turbot/terraform-provider-turbot/issues/75))
+* `resource/resource_turbot_profile`: After creation of resource, `terraform plan` shows a change required for the attribute `picture`. ([#78](https://github.com/turbot/terraform-provider-turbot/issues/78))
+
+## 1.6.1 (July 28, 2020)
+Transfer provider to Hashicorp registry. No user-facing changes.
+
 ## 1.6.0 (July 20, 2020)
 FEATURES:
 * **New Data Source:** `turbot_control` ([#32](https://github.com/terraform-providers/terraform-provider-turbot/issues/32))
