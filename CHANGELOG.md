@@ -1,7 +1,10 @@
-## 1.7.0 (August 17, 2020)
+## 1.6.2 (August 17, 2020)
 BUG FIXES:
 * `resource/resource_turbot_google_directory`: After creation of resource, when running `terraform plan`, `hosted_name` attribute gives a `diff`. ([#75](https://github.com/turbot/terraform-provider-turbot/issues/75))
 * `resource/resource_turbot_profile`: After creation of resource, when running `terraform plan`, `picture` attribute gives a `diff` ([#78](https://github.com/turbot/terraform-provider-turbot/issues/78))
+
+## 1.6.1 (July 28, 2020)
+This release doesn't contain any user-facing changes. It's done as a required part of process to finalize the transfer of the provider repository under Turbot GitHub organization: https://github.com/turbot/terraform-provider-turbot.
 
 ## 1.6.0 (July 20, 2020)
 FEATURES:
