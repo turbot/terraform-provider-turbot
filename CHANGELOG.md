@@ -4,7 +4,7 @@ BUG FIXES:
 * `resource/resource_turbot_profile`: After creation of resource, `terraform plan` shows a change required for the attribute `picture`. ([#78](https://github.com/turbot/terraform-provider-turbot/issues/78))
 
 ## 1.6.1 (July 28, 2020)
-This release doesn't contain any user-facing changes. It's done as a required part of process to finalize the transfer of the provider repository under Turbot GitHub organization: https://github.com/turbot/terraform-provider-turbot.
+Transfer provider to Hashicorp registry. No user-facing changes.
 
 ## 1.6.0 (July 20, 2020)
 FEATURES:
