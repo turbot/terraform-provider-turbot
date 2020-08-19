@@ -44,6 +44,7 @@ resource "turbot_resource" "my_resource" {
   full_data     = <<EOT
 {
   "type": "aws",
+  "Id": "123456789012",
   "title": "turbot account resource"
 }
 EOT
@@ -78,7 +79,7 @@ The following arguments are supported:
 - `akas` - (Optional) Unique identifier of the resource.
 - `tags` - (Optional) User defined label for grouping resources.
  
-**NOTE**: You must not specify `data` and `full_data` OR `metadata` and `full_metadata` arguments together.
+**NOTE**: Only one of the `data` and `full_data` must be specified. Likewise, only one of `metadata` and `full_metadata` must be set.
 
 ## Attributes Reference
 
