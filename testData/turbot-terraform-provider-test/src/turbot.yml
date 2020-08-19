@@ -1,0 +1,73 @@
+---
+$id: "tmod:@turbot/turbot-terraform-provider-test"
+
+title: "@turbot/turbot-terraform-provider-test"
+
+author: Turbot HQ, Inc
+
+version: "5.1.0"
+
+peerDependencies:
+  '@turbot/turbot': '>=5.0.0-alpha.1'
+
+policy:
+  types:
+    integerPolicy:
+      category: turbot#/control/categories/resourceApproved
+      description: Integer policy
+      icon: fal-check-double
+      parent: turbot#/resource/types/folder
+      schema:
+        type: string
+      targets: turbot#/resource/types/folder
+      title: Integer Policy
+
+    objectPolicy:
+      category: turbot#/control/categories/resourceApproved
+      description: Object policy
+      icon: fal-check-double
+      parent: turbot#/resource/types/folder
+      schema:
+        properties:
+          data:
+            items:
+              type: integer
+            type: array
+          name:
+            type: string
+        type: object
+      targets: turbot#/resource/types/folder
+      title: Object Policy
+
+    secretPolicy:
+      category: turbot#/control/categories/resourceApproved
+      description: String policy
+      icon: fal-check-double
+      parent: turbot#/resource/types/folder
+      schema:
+        type: string
+      secret: true
+      targets: turbot#/resource/types/folder
+      title: Secret Policy
+
+    stringArrayPolicy:
+      category: turbot#/control/categories/resourceApproved
+      description: String array policy
+      icon: fal-check-double
+      parent: turbot#/resource/types/folder
+      schema:
+        items:
+          type: string
+        type: array
+      targets: turbot#/resource/types/folder
+      title: String Array Policy
+
+    stringPolicy:
+      category: turbot#/control/categories/resourceApproved
+      description: String policy
+      icon: fal-check-double
+      parent: turbot#/resource/types/folder
+      schema:
+        type: string
+      targets: turbot#/resource/types/folder
+      title: String Policy
