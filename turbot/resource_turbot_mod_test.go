@@ -11,6 +11,35 @@ import (
 // test suites
 
 func TestAccMod_Basic(t *testing.T) {
+	resourceName := "turbot_mod.test"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccModDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccMod_v5_0_0_Config(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccModExists("turbot_mod.test"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "org", "turbot"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "mod", "turbot-terraform-provider-test"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "version_current", "5.0.0"),
+				),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"version"},
+			},
+		},
+	})
+}
+
+func TestAccMod_AutoPatchVersionUpgrade(t *testing.T) {
 	latestProviderTestVersion := "5.0.2"
 	resourceName := "turbot_mod.test"
 	resource.Test(t, resource.TestCase{
@@ -43,6 +72,36 @@ func TestAccMod_Basic(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"version"},
+			},
+		},
+	})
+}
+
+func TestAccMod_AutoPatchVersionDowngrade(t *testing.T) {
+	latestProviderTestVersion := "5.0.2"
+	resourceName := "turbot_mod.test"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccModDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccMod_ge_v5_0_0_Config(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccModExists("turbot_mod.test"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "org", "turbot"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "mod", "turbot-terraform-provider-test"),
+					resource.TestCheckResourceAttr(
+						"turbot_mod.test", "version_current", latestProviderTestVersion),
+				),
+			},
+			{
 				Config: testAccMod_v5_0_1_Config(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccModExists("turbot_mod.test"),
@@ -55,6 +114,24 @@ func TestAccMod_Basic(t *testing.T) {
 						"turbot_mod.test", "version_current", "5.0.1"),
 				),
 			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"version"},
+			},
+		},
+	})
+}
+
+func TestAccMod_WildCardVersion(t *testing.T) {
+	latestProviderTestVersion := "5.0.2"
+	resourceName := "turbot_mod.test"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccModDestroy,
+		Steps: []resource.TestStep{
 			{
 				Config: testAccModWildCardConfig(),
 				Check: resource.ComposeTestCheckFunc(
@@ -82,6 +159,23 @@ func TestAccMod_Basic(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"version"},
+			},
+		},
+	})
+}
+
+func TestAccMod_LowerThanVersion(t *testing.T) {
+	resourceName := "turbot_mod.test"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccModDestroy,
+		Steps: []resource.TestStep{
+			{
 				Config: testAccMod_lt_v5_0_3_Config(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccModExists("turbot_mod.test"),
@@ -95,6 +189,24 @@ func TestAccMod_Basic(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"version"},
+			},
+		},
+	})
+}
+
+func TestAccMod_NoVersion(t *testing.T) {
+	latestProviderTestVersion := "5.0.2"
+	resourceName := "turbot_mod.test"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccModDestroy,
+		Steps: []resource.TestStep{
+			{
 				Config: testAccModNoVersionConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccModExists("turbot_mod.test"),
@@ -107,6 +219,23 @@ func TestAccMod_Basic(t *testing.T) {
 						"turbot_mod.test", "version_current", latestProviderTestVersion),
 				),
 			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"version"},
+			},
+		},
+	})
+}
+
+func TestAccMod_NoParentResource(t *testing.T) {
+	resourceName := "turbot_mod.test"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccModDestroy,
+		Steps: []resource.TestStep{
 			{
 				Config: testAccModNoParentConfig(),
 				Check: resource.ComposeTestCheckFunc(
