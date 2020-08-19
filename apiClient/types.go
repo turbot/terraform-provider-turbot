@@ -385,6 +385,19 @@ type TurbotDirectoryResponse struct {
 	Resource TurbotDirectory
 }
 
+// Group profile
+type GroupProfile struct {
+	Turbot         TurbotResourceMetadata
+	Directory      string
+	Title          string
+	Status         string
+	GroupProfileId string
+}
+
+type GroupProfileResponse struct {
+	Resource GroupProfile
+}
+
 // Metadata
 type TurbotResourceMetadata struct {
 	Id                string
