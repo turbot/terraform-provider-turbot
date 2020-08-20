@@ -72,9 +72,9 @@ The following arguments are supported:
 
 - `parent` - (Required) The identifier of the parent resource under which this resource will be created.
 - `type` - (Required) Defines the type of the resource to be created.
-- `data` - (Optional) JSON representation of resource properties to be managed by Terraform. These must be valid for the type schema. NOTE: If additional properties are set on the resource by other means, they are ignored by Terraform.
+- `data` - (Optional) JSON representation of resource properties to be managed by Terraform. The data must be valid for the resource type schema. NOTE: If additional properties are set on the resource by other means, they are ignored by Terraform.
 - `metadata` - (Optional) JSON representation of resource metadata properties to be managed by Terraform. NOTE: If additional metadata properties are set on the resource by other means, they are ignored by Terraform.
-- `full_data` - (Optional) JSON representation of all resource properties to be set on the resource. These must be valid for the type schema. NOTE: If additional properties are set on the resource by other means, they are removed.
+- `full_data` - (Optional) JSON representation of all resource properties to be set on the resource. The data must be valid for the resource type schema. NOTE: If additional properties are set on the resource by other means, they are removed.
 - `full_metadata` - (Optional) JSON representation of all resource metadata properties to be set on the resource. NOTE: If additional metadata properties are set on the resource by other means, they are removed.
 - `akas` - (Optional) Unique identifier of the resource.
 - `tags` - (Optional) User defined label for grouping resources.
