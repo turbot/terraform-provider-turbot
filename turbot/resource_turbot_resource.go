@@ -48,13 +48,25 @@ func resourceTurbotResource() *schema.Resource {
 			},
 			"data": {
 				Type:             schema.TypeString,
-				Required:         true,
+				Optional:         true,
 				DiffSuppressFunc: suppressIfDataMatches,
 			},
 			"metadata": {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressIfDataMatches,
+			},
+			"full_data": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: suppressIfDataMatches,
+				ConflictsWith: []string{"data"},
+			},
+			"full_metadata": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: suppressIfDataMatches,
+				ConflictsWith: []string{"metadata"},
 			},
 			"tags": {
 				Type:     schema.TypeMap,
@@ -100,9 +112,17 @@ func resourceTurbotResourceCreate(d *schema.ResourceData, meta interface{}) erro
 	// assign the id
 	d.SetId(turbotMetadata.Id)
 	// save the formatted data: this is to ensure the acceptance tests behave in a consistent way regardless of the ordering of the json data
-	d.Set("data", helpers.FormatJson(d.Get("data").(string)))
+	if data, ok := d.GetOk("data"); ok {
+		d.Set("metadata", helpers.FormatJson(data.(string)))
+	}
 	if metadata, ok := d.GetOk("metadata"); ok {
 		d.Set("metadata", helpers.FormatJson(metadata.(string)))
+	}
+	if fullData, ok := d.GetOk("full_data"); ok {
+		d.Set("full_data", helpers.FormatJson(fullData.(string)))
+	}
+	if fullMetadata, ok := d.GetOk("full_metadata"); ok {
+		d.Set("full_metadata", helpers.FormatJson(fullMetadata.(string)))
 	}
 	d.Set("type", typeUri)
 	return nil
@@ -111,21 +131,9 @@ func resourceTurbotResourceCreate(d *schema.ResourceData, meta interface{}) erro
 func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
 	id := d.Id()
-
-	// build required properties from data.
-	// properties is a map of property name -> property path
-
-	var properties map[string]string = nil
-
-	if _, ok := d.GetOk("data"); ok {
-		var err error = nil
-		properties, err = helpers.PropertyMapFromJson(d.Get("data").(string))
-		if err != nil {
-			return fmt.Errorf("error retrieving properties from resource data: %s", err.Error())
-		}
-	}
-
-	resource, err := client.ReadResource(id, properties)
+	var err error
+	// read full resource
+	resource, err := client.ReadFullResource(id)
 	if err != nil {
 		if apiClient.NotFoundError(err) {
 			// resource was not found - clear id
@@ -133,24 +141,55 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 		}
 		return err
 	}
+	// build required properties from schema for data and metadata.
+	// properties is a map of property name -> property path
+	var dataProperties map[string]string
+	var metadataProperties map[string]string
 
-	// rebuild data from the resource
-	data, err := helpers.MapToJsonString(resource.Data)
-	if err != nil {
-		return fmt.Errorf("error building resource data: %s", err.Error())
+	// rebuild data, metadata from resource,
+	// include the properties that are in resource schema
+	if _, ok := d.GetOk("data"); ok {
+		dataProperties, err  = getAttributePropertiesFromResourceSchema(d,"data")
+		if err != nil {
+			return err
+		}
+		data := buildResourceMapFromProperties(resource.Data,dataProperties)
+		dataString, err := helpers.MapToJsonString(data)
+		if err != nil {
+			return fmt.Errorf("error building resource data: %s", err.Error())
+		}
+		d.Set("data", dataString)
+	}
+	if _, ok := d.GetOk("metadata"); ok {
+		metadataProperties, err  = getAttributePropertiesFromResourceSchema(d,"metadata")
+		if err != nil {
+			return err
+		}
+		metadata :=  buildResourceMapFromProperties(resource.Turbot.Custom,metadataProperties)
+		metadataString, err := helpers.MapToJsonString(metadata)
+		if err != nil {
+			return fmt.Errorf("error building resource data: %s", err.Error())
+		}
+		d.Set("metadata", metadataString)
 	}
 
-	// assign results back into ResourceData
+	//full_data and full_metadata attributes are directly read from readFullResource response
+	//we don't exclude any keys from the read response.
+	if _, ok := d.GetOk("full_metadata"); ok {
+		d.Set("full_metadata", interface{}(helpers.MapToJsonString(resource.Turbot.Custom)))
+	}
+	if _, ok := d.GetOk("full_data"); ok {
+		d.Set("full_data", interface{}(helpers.MapToJsonString(resource.Data)))
+	}
 
 	// set parent_akas property by loading resource and fetching the akas
 	if err := storeAkas(resource.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
-
+	// assign results back into ResourceData
 	d.Set("parent", resource.Turbot.ParentId)
 	d.Set("type", resource.Type.Uri)
 	d.Set("tags", resource.Turbot.Tags)
-	d.Set("data", data)
 	return nil
 }
 
@@ -168,7 +207,7 @@ func resourceTurbotResourceUpdate(d *schema.ResourceData, meta interface{}) erro
 	}
 	input["data"], _ = buildDataUpdateProperties(d, excludedPropertiesInUpdate)
 	input["id"] = d.Id()
-
+	// exclusions
 	turbotMetadata, err := client.UpdateResource(input)
 	if err != nil {
 		return err
@@ -207,7 +246,7 @@ func buildDataUpdateProperties(d *schema.ResourceData, properties []interface{})
 	var err error
 	// convert data from json string to map
 	var dataMap map[string]interface{}
-	dataString := d.Get("data").(string)
+	dataString := d.Get("data").(string)// getok
 	if dataMap, err = helpers.JsonStringToMap(dataString); err != nil {
 		return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal data: \n%s\nerror: %s", dataString, err.Error())
 	}
@@ -224,15 +263,25 @@ func buildResourceInput(d *schema.ResourceData, properties []interface{}) (map[s
 	var err error
 	input := mapFromResourceData(d, properties)
 	// convert data from json string to map
-	dataString := d.Get("data").(string)
-	if input["data"], err = helpers.JsonStringToMap(dataString); err != nil {
-		return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal data: \n%s\nerror: %s", dataString, err.Error())
+	if dataString, ok := d.GetOk("data"); ok {
+		if input["data"], err = helpers.JsonStringToMap(dataString.(string)); err != nil {
+			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal data: \n%s\nerror: %s", dataString, err.Error())
+		}
+	}
+	if dataString, ok := d.GetOk("full_data"); ok {
+		if input["data"], err = helpers.JsonStringToMap(dataString.(string)); err != nil {
+			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal data: \n%s\nerror: %s", dataString, err.Error())
+		}
 	}
 	// convert metadata from json string to map (if present)
 	if metadata, ok := d.GetOk("metadata"); ok {
-		metadataString := metadata.(string)
-		if input["metadata"], err = helpers.JsonStringToMap(metadataString); err != nil {
-			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal metadata: \n%s\nerror: %s", metadataString, err.Error())
+		if input["metadata"], err = helpers.JsonStringToMap(metadata.(string)); err != nil {
+			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal metadata: \n%s\nerror: %s", metadata, err.Error())
+		}
+	}
+	if metadata, ok := d.GetOk("full_metadata"); ok {
+		if input["metadata"], err = helpers.JsonStringToMap(metadata.(string)); err != nil {
+			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal metadata: \n%s\nerror: %s", metadata, err.Error())
 		}
 	}
 	return input, nil
@@ -274,4 +323,25 @@ func suppressIfDataMatches(k, old, new string, d *schema.ResourceData) bool {
 	oldFormatted := helpers.FormatJson(old)
 	newFormatted := helpers.FormatJson(new)
 	return oldFormatted == newFormatted
+}
+
+func getAttributePropertiesFromResourceSchema(d *schema.ResourceData, key string) (map[string]string, error) {
+	var properties map[string]string
+	if _, ok := d.GetOk(key); ok {
+		var err error = nil
+		properties, err = helpers.PropertyMapFromJson(d.Get("data").(string))
+		if err != nil {
+			return nil,fmt.Errorf("error retrieving properties from resource data: %s", err.Error())
+		}
+	}
+	return properties, nil
+}
+
+func buildResourceMapFromProperties(input map[string]interface{}, properties map[string]string) map[string]interface{} {
+	for _, element := range properties {
+		if _, ok := input[element]; !ok {
+			delete(input, element)
+		}
+	}
+	return input
 }
