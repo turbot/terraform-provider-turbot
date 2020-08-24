@@ -27,7 +27,7 @@ func ExtractErrorCode(err error) (int, error) {
 	if strings.Contains(err.Error(),"graphql") {
 		errorStringArray := strings.Split(err.Error(),":")
 		if len(errorStringArray) == 3 {
-			errCodeString := errorStringArray[2]
+			errCodeString := strings.TrimSpace(errorStringArray[2])
 			errCode, err := strconv.ParseUint(errCodeString, 10, 32)
 			if err != nil {
 				return 0, err
