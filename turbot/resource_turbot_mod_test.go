@@ -40,7 +40,7 @@ func TestAccMod_Basic(t *testing.T) {
 }
 
 func TestAccMod_AutoPatchVersionUpgrade(t *testing.T) {
-	latestProviderTestVersion := "5.0.2"
+	latestProviderTestVersion := "5.1.0"
 	resourceName := "turbot_mod.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -82,7 +82,7 @@ func TestAccMod_AutoPatchVersionUpgrade(t *testing.T) {
 }
 
 func TestAccMod_AutoPatchVersionDowngrade(t *testing.T) {
-	latestProviderTestVersion := "5.0.2"
+	latestProviderTestVersion := "5.1.0"
 	resourceName := "turbot_mod.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -125,7 +125,7 @@ func TestAccMod_AutoPatchVersionDowngrade(t *testing.T) {
 }
 
 func TestAccMod_WildCardVersion(t *testing.T) {
-	latestProviderTestVersion := "5.0.2"
+	latestProviderTestVersion := "5.1.0"
 	resourceName := "turbot_mod.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -155,7 +155,7 @@ func TestAccMod_WildCardVersion(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_mod.test", "mod", "turbot-terraform-provider-test"),
 					resource.TestCheckResourceAttr(
-						"turbot_mod.test", "version_current", latestProviderTestVersion),
+						"turbot_mod.test", "version_current", "5.0.2"),
 				),
 			},
 			{
@@ -199,7 +199,7 @@ func TestAccMod_LowerThanVersion(t *testing.T) {
 }
 
 func TestAccMod_NoVersion(t *testing.T) {
-	latestProviderTestVersion := "5.0.2"
+	latestProviderTestVersion := "5.1.0"
 	resourceName := "turbot_mod.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
