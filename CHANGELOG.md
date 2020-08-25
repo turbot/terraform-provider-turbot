@@ -1,3 +1,8 @@
+## 1.6.3 (August 24, 2020)
+BUG FIXES:
+* `resource/resource_turbot_mod`: After successful import, an additional mod install operation is triggered when running terraform apply. ([#95](https://github.com/turbot/terraform-provider-turbot/issues/75))
+* Certain errors caused the error handling code to crash. ([#108](https://github.com/turbot/terraform-provider-turbot/issues/108))
+
 ## 1.6.2 (August 17, 2020)
 BUG FIXES:
 * `resource/resource_turbot_google_directory`: After creation of resource, `terraform plan` shows a change required for the attribute `hosted_name`. ([#75](https://github.com/turbot/terraform-provider-turbot/issues/75))
