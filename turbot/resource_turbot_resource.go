@@ -60,13 +60,13 @@ func resourceTurbotResource() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressIfDataMatches,
-				ConflictsWith: []string{"data"},
+				ConflictsWith:    []string{"data"},
 			},
 			"full_metadata": {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressIfDataMatches,
-				ConflictsWith: []string{"metadata"},
+				ConflictsWith:    []string{"metadata"},
 			},
 			"tags": {
 				Type:     schema.TypeMap,
@@ -149,11 +149,11 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 	// rebuild data, metadata from resource,
 	// include the properties that are in resource schema
 	if _, ok := d.GetOk("data"); ok {
-		dataProperties, err  = getAttributePropertiesFromResourceSchema(d,"data")
+		dataProperties, err = getAttributePropertiesFromResourceSchema(d, "data")
 		if err != nil {
 			return err
 		}
-		data := buildResourceMapFromProperties(resource.Data,dataProperties)
+		data := buildResourceMapFromProperties(resource.Data, dataProperties)
 		dataString, err := helpers.MapToJsonString(data)
 		if err != nil {
 			return fmt.Errorf("error building resource data: %s", err.Error())
@@ -161,11 +161,11 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 		d.Set("data", dataString)
 	}
 	if _, ok := d.GetOk("metadata"); ok {
-		metadataProperties, err  = getAttributePropertiesFromResourceSchema(d,"metadata")
+		metadataProperties, err = getAttributePropertiesFromResourceSchema(d, "metadata")
 		if err != nil {
 			return err
 		}
-		metadata :=  buildResourceMapFromProperties(resource.Turbot.Custom,metadataProperties)
+		metadata := buildResourceMapFromProperties(resource.Turbot.Custom, metadataProperties)
 		metadataString, err := helpers.MapToJsonString(metadata)
 		if err != nil {
 			return fmt.Errorf("error building resource data: %s", err.Error())
@@ -173,8 +173,8 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 		d.Set("metadata", metadataString)
 	}
 
-	//full_data and full_metadata attributes are directly read from readFullResource response
-	//we don't exclude any keys from the read response.
+	// full_data and full_metadata attributes are directly read from readFullResource response
+	// we don't exclude any keys from the read response.
 	if _, ok := d.GetOk("full_metadata"); ok {
 		d.Set("full_metadata", interface{}(helpers.MapToJsonString(resource.Turbot.Custom)))
 	}
@@ -205,9 +205,20 @@ func resourceTurbotResourceUpdate(d *schema.ResourceData, meta interface{}) erro
 	if err != nil {
 		return err
 	}
-	input["data"], _ = buildDataUpdateProperties(d, excludedPropertiesInUpdate)
+	input["data"], err = buildDataUpdateProperties(d, excludedPropertiesInUpdate)
+	if err != nil {
+		return err
+	}
+	//new logic
+	input["data"], err = buildResourceInputDataMap(d)
+	if err != nil {
+		return err
+	}
+	input["metadata"], err = buildResourceInputMetadataMap(d)
+	if err != nil {
+		return err
+	}
 	input["id"] = d.Id()
-	// exclusions
 	turbotMetadata, err := client.UpdateResource(input)
 	if err != nil {
 		return err
@@ -246,9 +257,15 @@ func buildDataUpdateProperties(d *schema.ResourceData, properties []interface{})
 	var err error
 	// convert data from json string to map
 	var dataMap map[string]interface{}
-	dataString := d.Get("data").(string)// getok
-	if dataMap, err = helpers.JsonStringToMap(dataString); err != nil {
-		return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal data: \n%s\nerror: %s", dataString, err.Error())
+	if dataString, ok := d.GetOk("data"); ok {
+		if dataMap, err = helpers.JsonStringToMap(dataString.(string)); err != nil {
+			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal data: \n%s\nerror: %s", dataString, err.Error())
+		}
+	}
+	if dataString, ok := d.GetOk("full_data"); ok {
+		if dataMap, err = helpers.JsonStringToMap(dataString.(string)); err != nil {
+			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal data: \n%s\nerror: %s", dataString, err.Error())
+		}
 	}
 	for _, element := range properties {
 		if _, ok := dataMap[element.(string)]; ok {
@@ -331,7 +348,7 @@ func getAttributePropertiesFromResourceSchema(d *schema.ResourceData, key string
 		var err error = nil
 		properties, err = helpers.PropertyMapFromJson(d.Get("data").(string))
 		if err != nil {
-			return nil,fmt.Errorf("error retrieving properties from resource data: %s", err.Error())
+			return nil, fmt.Errorf("error retrieving properties from resource data: %s", err.Error())
 		}
 	}
 	return properties, nil
@@ -344,4 +361,68 @@ func buildResourceMapFromProperties(input map[string]interface{}, properties map
 		}
 	}
 	return input
+}
+
+func buildResourceInputDataMap(d *schema.ResourceData) (map[string]interface{}, error) {
+	var oldContent, newContent map[string]interface{}
+	var err error
+	// fetch old(state-file) and new(config) content
+	if old, new := d.GetChange("data"); old != nil {
+		if oldContent, err = helpers.JsonStringToMap(old.(string)); err != nil {
+			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal content: \n%s\nerror: %s", old.(string), err.Error())
+		}
+		if newContent, err = helpers.JsonStringToMap(new.(string)); err != nil {
+			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal content: \n%s\nerror: %s", new.(string), err.Error())
+		}
+		// extract keys from old content not in new
+		excludeContentProperties := helpers.GetOldMapProperties(oldContent, newContent)
+		for _, key := range excludeContentProperties {
+			// set keys of old content to `nil` in new content
+			// any property which doesn't exist in config is set to nil
+			if _, ok := oldContent[key.(string)]; ok {
+				newContent[key.(string)] = nil
+			}
+		}
+	}
+	if old, new := d.GetChange("metadata"); old != nil {
+		if oldContent, err = helpers.JsonStringToMap(old.(string)); err != nil {
+			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal content: \n%s\nerror: %s", old.(string), err.Error())
+		}
+		if newContent, err = helpers.JsonStringToMap(new.(string)); err != nil {
+			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal content: \n%s\nerror: %s", new.(string), err.Error())
+		}
+		// extract keys from old content not in new
+		excludeContentProperties := helpers.GetOldMapProperties(oldContent, newContent)
+		for _, key := range excludeContentProperties {
+			// set keys of old content to `nil` in new content
+			// any property which doesn't exist in config is set to nil
+			if _, ok := oldContent[key.(string)]; ok {
+				newContent[key.(string)] = nil
+			}
+		}
+	}
+	return newContent, nil
+}
+func buildResourceInputMetadataMap(d *schema.ResourceData) (map[string]interface{}, error) {
+	var oldContent, newContent map[string]interface{}
+	var err error
+	// fetch old(state-file) and new(config) content
+	if old, new := d.GetChange("content"); old != nil {
+		if oldContent, err = helpers.JsonStringToMap(old.(string)); err != nil {
+			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal content: \n%s\nerror: %s", old.(string), err.Error())
+		}
+		if newContent, err = helpers.JsonStringToMap(new.(string)); err != nil {
+			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal content: \n%s\nerror: %s", new.(string), err.Error())
+		}
+		// extract keys from old content not in new
+		excludeContentProperties := helpers.GetOldMapProperties(oldContent, newContent)
+		for _, key := range excludeContentProperties {
+			// set keys of old content to `nil` in new content
+			// any property which doesn't exist in config is set to nil
+			if _, ok := oldContent[key.(string)]; ok {
+				newContent[key.(string)] = nil
+			}
+		}
+	}
+	return newContent, nil
 }

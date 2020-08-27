@@ -147,7 +147,6 @@ func TestAccResource_AccountResourceWithFullMetadata(t *testing.T) {
 	})
 }
 
-
 // configs
 var folderType = `tmod:@turbot/turbot#/resource/types/folder`
 var accountType = `tmod:@turbot/aws#/resource/types/account`
