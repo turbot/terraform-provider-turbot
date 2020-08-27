@@ -13,7 +13,7 @@ The `turbot_resource` defines a resource in Turbot. Typically it is used to defi
 
 ## Example Usage
 
-**Creating Your First Resource**
+###Creating Your First Resource
 
 ```hcl
 resource "turbot_resource" "my_resource" {
@@ -35,16 +35,51 @@ EOT
 }
 ```
 
+###Using full_data
+
+```hcl
+resource "turbot_resource" "my_resource" {
+  parent   = "tmod:@turbot/turbot#/"
+  type     = "tmod:@turbot/aws#/resource/types/account"
+  full_data     = <<EOT
+{
+  "type": "aws",
+  "Id": "123456789012",
+  "title": "turbot account resource"
+}
+EOT
+}
+```
+
+###Using full_metadata
+
+```hcl
+resource "turbot_resource" "my_resource" {
+  parent   = "tmod:@turbot/turbot#/"
+  type     = "tmod:@turbot/aws#/resource/types/account"
+  full_metadata    = <<EOT
+{
+  "resource_version": "1.0.0"
+  "replication": "true"
+}
+EOT
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
 
-- `parent` - (Required) The `id` or `aka` of the level at which the Turbot resource will be created.
+- `parent` - (Required) The identifier of the parent resource under which this resource will be created.
 - `type` - (Required) Defines the type of the resource to be created.
-- `data` - (Required) JSON representation of the details of the resource. When parsed, it must be valid for the `type` schema.
-- `metadata` - (Optional) A set of data that describes and gives information about the data of the resource.
+- `data` - (Optional) JSON representation of resource properties to be managed by Terraform. The data must be valid for the resource type schema. NOTE: If additional properties are set on the resource by other means, they are ignored by Terraform.
+- `metadata` - (Optional) JSON representation of resource metadata properties to be managed by Terraform. NOTE: If additional metadata properties are set on the resource by other means, they are ignored by Terraform.
+- `full_data` - (Optional) JSON representation of all resource properties to be set on the resource. The data must be valid for the resource type schema. NOTE: If additional properties are set on the resource by other means, they are removed.
+- `full_metadata` - (Optional) JSON representation of all resource metadata properties to be set on the resource. NOTE: If additional metadata properties are set on the resource by other means, they are removed.
 - `akas` - (Optional) Unique identifier of the resource.
 - `tags` - (Optional) User defined label for grouping resources.
+ 
+**NOTE**: Only one of the `data` and `full_data` must be specified. Likewise, only one of `metadata` and `full_metadata` must be set.
 
 ## Attributes Reference
 
