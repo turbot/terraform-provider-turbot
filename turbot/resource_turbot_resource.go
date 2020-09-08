@@ -5,7 +5,6 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 	"github.com/terraform-providers/terraform-provider-turbot/helpers"
-	"log"
 )
 
 var resourceProperties = []interface{}{"parent", "type", "tags", "akas"}
@@ -147,10 +146,9 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 	var dataProperties map[string]string
 	var metadataProperties map[string]string
 
-	// rebuild data, metadata from resource,
-	// include the properties that are in resource schema
+	// include the properties that are specified in the resource config
 	if _, ok := d.GetOk("data"); ok {
-		dataProperties, err = getPropertiesFromResourceSchema(d, "data")
+		dataProperties, err = getPropertiesFromConfig(d, "data")
 		if err != nil {
 			return err
 		}
@@ -162,7 +160,7 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 		d.Set("data", dataString)
 	}
 	if _, ok := d.GetOk("metadata"); ok {
-		metadataProperties, err = getPropertiesFromResourceSchema(d, "metadata")
+		metadataProperties, err = getPropertiesFromConfig(d, "metadata")
 		if err != nil {
 			return err
 		}
@@ -191,7 +189,6 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 	if err := storeAkas(resource.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
-	// assign results back into ResourceData
 	d.Set("parent", resource.Turbot.ParentId)
 	d.Set("type", resource.Type.Uri)
 	d.Set("tags", resource.Turbot.Tags)
@@ -202,10 +199,9 @@ func resourceTurbotResourceUpdate(d *schema.ResourceData, meta interface{}) erro
 	client := meta.(*apiClient.Client)
 	// build input map to pass to mutation
 	id := d.Id()
-	// build input data mutations parsing a list of top level properties permitted for update
-	// (type is excluded)
+	// build mutation input data by parsing the resource schema and
+	// excluding top level properties which must not be sent to update - `type`
 	input, err := buildResourceInput(d, getResourceUpdateProperties())
-	log.Print("input--->", input)
 	if err != nil {
 		return err
 	}
@@ -225,7 +221,7 @@ func resourceTurbotResourceUpdate(d *schema.ResourceData, meta interface{}) erro
 			return err
 		}
 	}
-	// Identify data property (metadata/full_netadata)
+	// Identify metadata property (metadata/full_netadata)
 	if _, ok := d.GetOk("metadata"); ok {
 		// remove the keys that were previously there but not in new config
 		input["metadata"], err = buildUpdatePayloadForMetadata(d, "metadata")
@@ -234,8 +230,7 @@ func resourceTurbotResourceUpdate(d *schema.ResourceData, meta interface{}) erro
 		}
 	} else if _, ok := d.GetOk("full_data"); ok {
 		// remove the keys that were previously there but not in the new config
-		// also set the keys to nil that were set externally
-		// by other means
+		// also set the keys to nil that were set externally,  by other means
 		input["metadata"], err = buildUpdatePayloadForMetadata(d, "full_metadata")
 		if err != nil {
 			return err
@@ -276,26 +271,13 @@ func resourceTurbotResourceImport(d *schema.ResourceData, meta interface{}) ([]*
 	return []*schema.ResourceData{d}, nil
 }
 
-func buildDataUpdateProperties(d *schema.ResourceData, forbiddenProperties []interface{}) (map[string]interface{}, error) {
-	var err error
-	// convert data from json string to map
-	var dataMap map[string]interface{}
-	if dataString, ok := d.GetOk("data"); ok {
-		if dataMap, err = helpers.JsonStringToMap(dataString.(string)); err != nil {
-			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal data: \n%s\nerror: %s", dataString, err.Error())
-		}
-	} else if dataString, ok := d.GetOk("full_data"); ok {
-		if dataMap, err = helpers.JsonStringToMap(dataString.(string)); err != nil {
-			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal data: \n%s\nerror: %s", dataString, err.Error())
-		}
-	}
+func buildDataUpdateProperties(data map[string]interface{}, forbiddenProperties []interface{}) map[string]interface{} {
 	for _, element := range forbiddenProperties {
-		if _, ok := dataMap[element.(string)]; ok {
-			delete(dataMap, element.(string))
+		if _, ok := data[element.(string)]; ok {
+			delete(data, element.(string))
 		}
 	}
-
-	return dataMap, nil
+	return data
 }
 
 func buildResourceInput(d *schema.ResourceData, properties []interface{}) (map[string]interface{}, error) {
@@ -364,13 +346,12 @@ func suppressIfDataMatches(k, old, new string, d *schema.ResourceData) bool {
 	return oldFormatted == newFormatted
 }
 
-func getPropertiesFromResourceSchema(d *schema.ResourceData, key string) (map[string]string, error) {
-	var properties map[string]string
-	if _, ok := d.GetOk(key); ok {
-		var err error = nil
-		properties, err = helpers.PropertyMapFromJson(d.Get("data").(string))
-		if err != nil {
-			return nil, fmt.Errorf("error retrieving properties from resource data: %s", err.Error())
+func getPropertiesFromConfig(d *schema.ResourceData, key string) (map[string]string, error) {
+	var properties map[string]string = nil
+	var err error = nil
+	if keyValue, ok := d.GetOk(key); ok {
+		if properties, err = helpers.PropertyMapFromJson(keyValue.(string)); err!= nil {
+			return nil, fmt.Errorf("error retrieving properties: %s", err.Error())
 		}
 	}
 	return properties, nil
@@ -387,58 +368,30 @@ func buildResourceMapFromProperties(input map[string]interface{}, properties map
 }
 
 // buildUpdatePayload(propertyName) -
-// - build a map from data property
-// - add `nil` for deleted properties - addNilValues()
-// - exclude forbiddenProperties (`updateSchema`) - excludeForbiddenProperties()
+// - build a map from the data or full_data property (specified by 'key' parameter)
+// - add a `nil` value for deleted properties
+// - remove any properties disallowed by the updateSchema
 func buildUpdatePayloadForData(d *schema.ResourceData, client *apiClient.Client, key string) (map[string]interface{},error) {
 	var err error
-	var data map[string]interface{}
+	dataMap, err := setOldPropertiesToNull(d,key)
+	if err != nil {
+		return nil ,err
+	}
 	excludedPropertiesInUpdate, err := client.BuildPropertiesFromUpdateSchema(d.Id(), []interface{}{"updateSchema"})
 	if err != nil {
 		return nil ,err
 	}
 	// build data object by excluding forbidden properties from either `data` and `full_data`
-	data, err = buildDataUpdateProperties(d, excludedPropertiesInUpdate)
-	if err != nil {
-		return nil ,err
-	}
-	log.Print("payload",data)
-	if key == "data" {
-		dataString := d.Get("data").(string)
-		if data, err = helpers.JsonStringToMap(dataString); err != nil {
-			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal data: \n%s\nerror: %s", dataString, err.Error())
-		}
-		data, err = setOldPropertiesToNull(d,key)
-	} else if key == "full_data" {
-		dataString := d.Get("full_data").(string)
-		if data, err = helpers.JsonStringToMap(dataString); err != nil {
-			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal data: \n%s\nerror: %s", dataString, err.Error())
-		}
-		data, err = setOldPropertiesToNull(d,key)
-		// In full_data, we need to remove external keys as well
-	}
-	log.Print("payload",data)
-	return data, nil
+	dataMap = buildDataUpdateProperties(dataMap, excludedPropertiesInUpdate)
+	return dataMap, nil
 }
 
 func buildUpdatePayloadForMetadata(d *schema.ResourceData, key string) (map[string]interface{},error)  {
-	var err error
-	var meta map[string]interface{}
-	if key == "metadata" {
-		metadata := d.Get("metadata").(string)
-		if meta, err = helpers.JsonStringToMap(metadata); err != nil {
-			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal data: \n%s\nerror: %s", metadata, err.Error())
-		}
-		meta, err = setOldPropertiesToNull(d,key)
-	} else if key == "full_metadata" {
-		metadata := d.Get("full_metadata").(string)
-		if meta, err = helpers.JsonStringToMap(metadata); err != nil {
-			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal data: \n%s\nerror: %s", metadata, err.Error())
-		}
-		meta, err = setOldPropertiesToNull(d,key)
-		// In full_data, we need to remove external keys as well
+	metaData, err := setOldPropertiesToNull(d,key)
+	if err != nil {
+		return nil ,err
 	}
-	return meta, nil
+	return metaData, nil
 }
 
 func setOldPropertiesToNull(d *schema.ResourceData, key string) (map[string]interface{}, error) {
