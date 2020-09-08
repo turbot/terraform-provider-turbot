@@ -282,27 +282,24 @@ func buildDataUpdateProperties(data map[string]interface{}, forbiddenProperties 
 
 func buildResourceInput(d *schema.ResourceData, properties []interface{}) (map[string]interface{}, error) {
 	var err error
+	var ok bool
+	var dataString, metaDataString interface{}
 	input := mapFromResourceData(d, properties)
-	// convert data from json string to map
-	if dataString, ok := d.GetOk("data"); ok {
+	if dataString, ok = d.GetOk("data"); !ok {
+		dataString, ok = d.GetOk("full_data")
+	}
+	if ok {
 		if input["data"], err = helpers.JsonStringToMap(dataString.(string)); err != nil {
-			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal data: \n%s\nerror: %s", dataString, err.Error())
-		}
-	} else
-		if dataString, ok := d.GetOk("full_data"); ok {
-			if input["data"], err = helpers.JsonStringToMap(dataString.(string)); err != nil {
 			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal data: \n%s\nerror: %s", dataString, err.Error())
 		}
 	}
 	// convert metadata from json string to map (if present)
-	if metadata, ok := d.GetOk("metadata"); ok {
-		if input["metadata"], err = helpers.JsonStringToMap(metadata.(string)); err != nil {
-			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal metadata: \n%s\nerror: %s", metadata, err.Error())
-		}
-	} else
-		if metadata, ok := d.GetOk("full_metadata"); ok {
-			if input["metadata"], err = helpers.JsonStringToMap(metadata.(string)); err != nil {
-			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal metadata: \n%s\nerror: %s", metadata, err.Error())
+	if metaDataString, ok = d.GetOk("metadata"); !ok {
+		metaDataString, ok = d.GetOk("full_metadata")
+	}
+	if ok {
+		if input["metadata"], err = helpers.JsonStringToMap(metaDataString.(string)); err != nil {
+			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal data: \n%s\nerror: %s", dataString, err.Error())
 		}
 	}
 	return input, nil
