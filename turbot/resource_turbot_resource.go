@@ -141,50 +141,32 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 		}
 		return err
 	}
-	// build required properties from schema for data and metadata.
-	// properties is a map of property name -> property path
-	var dataProperties map[string]string
-	var metadataProperties map[string]string
-
-	// include the properties that are specified in the resource config
-	if _, ok := d.GetOk("data"); ok {
-		dataProperties, err = getPropertiesFromConfig(d, "data")
+	// -`data` include the properties that are specified in the resource config
+	if _, ok := d.GetOkExists("data"); ok {
+		data, err := getStringValueForKey(d,"data",resource.Data)
 		if err != nil {
 			return err
 		}
-		data := buildResourceMapFromProperties(resource.Data, dataProperties)
-		dataString, err := helpers.MapToJsonString(data)
-		if err != nil {
-			return fmt.Errorf("error building resource data: %s", err.Error())
-		}
-		d.Set("data", dataString)
-	}
-	if _, ok := d.GetOk("metadata"); ok {
-		metadataProperties, err = getPropertiesFromConfig(d, "metadata")
-		if err != nil {
-			return err
-		}
-		metadata := buildResourceMapFromProperties(resource.Turbot.Custom, metadataProperties)
-		metadataString, err := helpers.MapToJsonString(metadata)
-		if err != nil {
-			return fmt.Errorf("error building resource data: %s", err.Error())
-		}
-		d.Set("metadata", metadataString)
-	}
-
-	// full_data and full_metadata attributes are directly read from readFullResource response
-	// we don't exclude any keys from the read response.
-	if _, ok := d.GetOk("full_metadata"); ok {
-		if metadata, err := helpers.MapToJsonString(resource.Turbot.Custom); err != nil {
-			d.Set("full_metadata", metadata)
-		}
-	}
-	if _, ok := d.GetOk("full_data"); ok {
+		d.Set("data", data)
+	} else if _, ok := d.GetOkExists("full_data"); ok {
+		// - In case of full_data read response from API is directly set
 		if data, err := helpers.MapToJsonString(resource.Data); err != nil {
 			d.Set("full_data", data)
 		}
 	}
-
+	// -`metadata` include the properties that are specified in the resource config
+	if _, ok := d.GetOkExists("metadata"); ok {
+		metadata, err := getStringValueForKey(d,"metadata",resource.Turbot.Custom)
+		if err != nil {
+			return err
+		}
+		d.Set("metadata", metadata)
+	} else if _, ok := d.GetOkExists("full_metadata"); ok {
+		// - In case of full_metadata read response from API is directly set
+		if metadata, err := helpers.MapToJsonString(resource.Turbot.Custom); err != nil {
+			d.Set("full_metadata", metadata)
+		}
+	}
 	// set parent_akas property by loading resource and fetching the akas
 	if err := storeAkas(resource.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
@@ -206,35 +188,26 @@ func resourceTurbotResourceUpdate(d *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 	// Identify data property (data/full_data)
+	var dataProperty string
 	if _, ok := d.GetOk("data"); ok {
-		// remove the keys that were previously there but not in new config
-		input["data"], err = buildUpdatePayloadForData(d, client, "data")
-		if err != nil {
-			return err
-		}
+		dataProperty = "data"
 	} else if _, ok := d.GetOk("full_data"); ok {
-		// remove the keys that were previously there but not in the new config
-		// also set the keys to nil that were set externally
-		// by other means
-		input["data"], err = buildUpdatePayloadForData(d, client, "full_data")
-		if err != nil {
-			return err
-		}
+		dataProperty = "full_data"
+	}
+	input["data"], err = buildUpdatePayloadForData(d, client, dataProperty)
+	if err != nil {
+		return err
 	}
 	// Identify metadata property (metadata/full_netadata)
+	var metaProperty string
 	if _, ok := d.GetOk("metadata"); ok {
-		// remove the keys that were previously there but not in new config
-		input["metadata"], err = buildUpdatePayloadForMetadata(d, "metadata")
-		if err != nil {
-			return err
-		}
-	} else if _, ok := d.GetOk("full_data"); ok {
-		// remove the keys that were previously there but not in the new config
-		// also set the keys to nil that were set externally,  by other means
-		input["metadata"], err = buildUpdatePayloadForMetadata(d, "full_metadata")
-		if err != nil {
-			return err
-		}
+		metaProperty = "metadata"
+	} else if _, ok := d.GetOk("full_metadata"); ok {
+		metaProperty = "full_metadata"
+	}
+	input["metadata"], err = buildUpdatePayloadForMetadata(d, metaProperty)
+	if err != nil {
+		return err
 	}
 	input["id"] = id
 	turbotMetadata, err := client.UpdateResource(input)
@@ -364,13 +337,12 @@ func buildResourceMapFromProperties(input map[string]interface{}, properties map
 	return input
 }
 
-// buildUpdatePayload(propertyName) -
 // - build a map from the data or full_data property (specified by 'key' parameter)
 // - add a `nil` value for deleted properties
 // - remove any properties disallowed by the updateSchema
 func buildUpdatePayloadForData(d *schema.ResourceData, client *apiClient.Client, key string) (map[string]interface{},error) {
 	var err error
-	dataMap, err := setOldPropertiesToNull(d,key)
+	dataMap, err := markPropertiesForDeletion(d,key)
 	if err != nil {
 		return nil ,err
 	}
@@ -384,14 +356,14 @@ func buildUpdatePayloadForData(d *schema.ResourceData, client *apiClient.Client,
 }
 
 func buildUpdatePayloadForMetadata(d *schema.ResourceData, key string) (map[string]interface{},error)  {
-	metaData, err := setOldPropertiesToNull(d,key)
+	metaData, err := markPropertiesForDeletion(d,key)
 	if err != nil {
 		return nil ,err
 	}
 	return metaData, nil
 }
 
-func setOldPropertiesToNull(d *schema.ResourceData, key string) (map[string]interface{}, error) {
+func markPropertiesForDeletion(d *schema.ResourceData, key string) (map[string]interface{}, error) {
 	var oldContent, newContent map[string]interface{}
 	var err error
 	// fetch old(state-file) and new(config) content
@@ -413,4 +385,19 @@ func setOldPropertiesToNull(d *schema.ResourceData, key string) (map[string]inte
 		}
 	}
 	return newContent, nil
+}
+// - get properties for a given key from config
+// - build a map only including the properties fetched from config
+// - convert map to string
+func getStringValueForKey(d *schema.ResourceData, key string, readResponse map[string]interface{}) (string,error) {
+	propertiesOfKey, err := getPropertiesFromConfig(d, key)
+	if err != nil {
+		return "",err
+	}
+	metadata := buildResourceMapFromProperties(readResponse, propertiesOfKey)
+	metadataString, err := helpers.MapToJsonString(metadata)
+	if err != nil {
+		return "",fmt.Errorf("error building resource data: %s", err.Error())
+	}
+	return metadataString, nil
 }
