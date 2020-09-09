@@ -199,10 +199,12 @@ func buildFileInput(d *schema.ResourceData, properties []interface{}) (map[strin
 	var input = make(map[string]interface{})
 
 	input = mapFromResourceData(d, properties)
-	// convert data from json string to map
-	contentString := d.Get("content").(string)
-	if input["data"], err = helpers.JsonStringToMap(contentString); err != nil {
-		return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal content: \n%s\nerror: %s", contentString, err.Error())
+	// empty `data` object to handle no `content` given in config
+	input["data"] =  make(map[string]string)
+	if contentString, ok := d.GetOk("content"); ok {
+		if input["data"], err = helpers.JsonStringToMap(contentString.(string)); err != nil {
+			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal content: \n%s\nerror: %s", contentString, err.Error())
+		}
 	}
 	input["metadata"] = buildInputMetadataMap(d)
 
