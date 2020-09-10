@@ -44,6 +44,16 @@ func CreateClient(config ClientConfig) (*Client, error) {
 
 func GetCredentials(config ClientConfig) (ClientCredentials, error) {
 	credentials := config.Credentials
+	if len(config.Profile) != 0 {
+		credentialsPath, err := getCredentialsPath(config)
+		if err != nil {
+			return ClientCredentials{}, err
+		}
+		credentials, err = loadProfile(credentialsPath, config.Profile)
+		if err != nil {
+			return ClientCredentials{}, err
+		}
+	}
 	if len(credentials.AccessKey) == 0 {
 		credentials.AccessKey = os.Getenv("TURBOT_ACCESS_KEY")
 	}
@@ -57,19 +67,9 @@ func GetCredentials(config ClientConfig) (ClientCredentials, error) {
 	if !CredentialsSet(credentials) {
 		// if credentials were not passed in, get from the credentials file
 		var err error
-		credentialsPath := config.CredentialsPath
-		if len(credentialsPath) == 0 {
-			credentialsPath = os.Getenv("TURBOT_SHARED_CREDENTIALS_FILE")
-		}
-
-		// if no credentials path was specified, use ~/.turbot/credentials
-		if len(credentialsPath) == 0 {
-			credentialsPath = filepath.Join(userHomeDir(), ".config", "turbot", "credentials.yml")
-		} else {
-			credentialsPath, err = homedir.Expand(credentialsPath)
-			if err != nil {
-				return ClientCredentials{}, err
-			}
+		credentialsPath, err := getCredentialsPath(config)
+		if err != nil {
+			return ClientCredentials{}, err
 		}
 		// if no profile was provided in config, use TURBOT_PROFILE env var
 		if len(config.Profile) == 0 {
@@ -91,7 +91,23 @@ func GetCredentials(config ClientConfig) (ClientCredentials, error) {
 	}
 	return credentials, nil
 }
-
+func getCredentialsPath(config ClientConfig) (string,error) {
+	var err error
+	credentialsPath := config.CredentialsPath
+	if len(credentialsPath) == 0 {
+		credentialsPath = os.Getenv("TURBOT_SHARED_CREDENTIALS_FILE")
+	}
+	// if no credentials path was specified, use ~/.turbot/credentials
+	if len(credentialsPath) == 0 {
+		credentialsPath = filepath.Join(userHomeDir(), ".config", "turbot", "credentials.yml")
+	} else {
+		credentialsPath, err = homedir.Expand(credentialsPath)
+		if err != nil {
+			return "", err
+		}
+	}
+	return credentialsPath,err
+}
 // convert workspace into a fully formed api url
 func BuildApiUrl(rawWorkspace string) (string, error) {
 
