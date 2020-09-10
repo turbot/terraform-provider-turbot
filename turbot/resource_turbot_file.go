@@ -138,7 +138,6 @@ func resourceTurbotFileRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	// assign results back into ResourceData
 	d.Set("parent", resource.Turbot.ParentId)
-
 	return nil
 }
 
@@ -195,6 +194,7 @@ func resourceTurbotFileImport(d *schema.ResourceData, meta interface{}) ([]*sche
 }
 
 func buildFileInput(d *schema.ResourceData, properties []interface{}) (map[string]interface{}, error) {
+	// initialize empty input map
 	var err error
 	var input = make(map[string]interface{})
 
@@ -208,7 +208,6 @@ func buildFileInput(d *schema.ResourceData, properties []interface{}) (map[strin
 		}
 	}
 	input["metadata"] = buildInputMetadataMap(d)
-
 	return input, nil
 }
 
