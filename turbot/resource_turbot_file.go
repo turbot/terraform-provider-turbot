@@ -47,7 +47,7 @@ func resourceTurbotFile() *schema.Resource {
 			"content": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				DiffSuppressFunc: suppressIfContentMatches,
+				DiffSuppressFunc: suppressIfDataMatches,
 			},
 			"tags": {
 				Type:     schema.TypeMap,
@@ -251,16 +251,4 @@ func buildInputDataMap(d *schema.ResourceData) (map[string]interface{}, error) {
 		}
 	}
 	return newContent, nil
-}
-
-// data is a json string
-// apply standard formatting to old and new data then compare
-func suppressIfContentMatches(k, old, new string, d *schema.ResourceData) bool {
-	if old == "" || new == "" {
-		return false
-	}
-
-	oldFormatted := helpers.FormatJson(old)
-	newFormatted := helpers.FormatJson(new)
-	return oldFormatted == newFormatted
 }
