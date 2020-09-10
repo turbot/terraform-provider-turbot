@@ -115,16 +115,16 @@ func resourceTurbotFileRead(d *schema.ResourceData, meta interface{}) error {
 		}
 		return err
 	}
-
 	// rebuild content from the resource
-	content, err := helpers.MapToJsonString(resource.Data)
-
-	if err != nil {
-		return fmt.Errorf("error building resource content: %s", err.Error())
+	if len(resource.Data) != 0 {
+		content, err := helpers.MapToJsonString(resource.Data)
+		if err != nil {
+			return fmt.Errorf("error building resource content: %s", err.Error())
+		}
+		d.Set("content", content)
 	}
 
 	customMetadata := resource.Turbot.Custom
-
 	// set parent_akas property by loading resource and fetching the akas
 	if err := storeAkas(resource.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
@@ -138,7 +138,7 @@ func resourceTurbotFileRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	// assign results back into ResourceData
 	d.Set("parent", resource.Turbot.ParentId)
-	d.Set("content", content)
+
 	return nil
 }
 
@@ -256,9 +256,6 @@ func buildInputDataMap(d *schema.ResourceData) (map[string]interface{}, error) {
 // data is a json string
 // apply standard formatting to old and new data then compare
 func suppressIfContentMatches(k, old, new string, d *schema.ResourceData) bool {
-	if old == "{}" && new == "" {
-		return true
-	}
 	if old == "" || new == "" {
 		return false
 	}
