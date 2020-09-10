@@ -115,16 +115,16 @@ func resourceTurbotFileRead(d *schema.ResourceData, meta interface{}) error {
 		}
 		return err
 	}
-
 	// rebuild content from the resource
-	content, err := helpers.MapToJsonString(resource.Data)
-
-	if err != nil {
-		return fmt.Errorf("error building resource content: %s", err.Error())
+	if len(resource.Data) != 0 {
+		content, err := helpers.MapToJsonString(resource.Data)
+		if err != nil {
+			return fmt.Errorf("error building resource content: %s", err.Error())
+		}
+		d.Set("content", content)
 	}
 
 	customMetadata := resource.Turbot.Custom
-
 	// set parent_akas property by loading resource and fetching the akas
 	if err := storeAkas(resource.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
@@ -138,7 +138,6 @@ func resourceTurbotFileRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	// assign results back into ResourceData
 	d.Set("parent", resource.Turbot.ParentId)
-	d.Set("content", content)
 	return nil
 }
 
@@ -195,17 +194,20 @@ func resourceTurbotFileImport(d *schema.ResourceData, meta interface{}) ([]*sche
 }
 
 func buildFileInput(d *schema.ResourceData, properties []interface{}) (map[string]interface{}, error) {
+	// initialize empty input map
 	var err error
 	var input = make(map[string]interface{})
 
 	input = mapFromResourceData(d, properties)
 	// convert data from json string to map
-	contentString := d.Get("content").(string)
-	if input["data"], err = helpers.JsonStringToMap(contentString); err != nil {
-		return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal content: \n%s\nerror: %s", contentString, err.Error())
+	// empty `data` object to handle no `content` given in config
+	input["data"] =  make(map[string]string)
+	if contentString, ok := d.GetOk("content"); ok {
+		if input["data"], err = helpers.JsonStringToMap(contentString.(string)); err != nil {
+			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal content: \n%s\nerror: %s", contentString, err.Error())
+		}
 	}
 	input["metadata"] = buildInputMetadataMap(d)
-
 	return input, nil
 }
 

@@ -10,7 +10,7 @@ import (
 )
 
 // test suites
-func TestAccFileResourcefile_Basic(t *testing.T) {
+func TestAccFileResourceFile_Basic(t *testing.T) {
 	resourceName := "turbot_file.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -50,6 +50,28 @@ func TestAccFileResourcefile_Basic(t *testing.T) {
 		},
 	})
 }
+func TestAccFileResourceFile_NoFileContent(t *testing.T) {
+		resourceName := "turbot_file.test"
+		resource.Test(t, resource.TestCase{
+				PreCheck:     func() { testAccPreCheck(t) },
+				Providers:    testAccProviders,
+				CheckDestroy: testAccCheckFileResourceDestroy,
+				Steps: []resource.TestStep{
+						{
+							Config: testAccFileResourceWithNoContent(),
+							Check: resource.ComposeTestCheckFunc(
+								testAccCheckFileResourceExists(resourceName),
+								resource.TestCheckResourceAttr(
+									"turbot_file.test", "title", "provider_file"),
+							),
+						},
+						{
+							ResourceName: resourceName,
+							ImportState:  true,
+						},
+					},
+			})
+}
 
 var fileContent = `{
  "foo": "provider_test",
@@ -79,7 +101,14 @@ resource "turbot_file" "test" {
 `, Content)
 	return config
 }
-
+func testAccFileResourceWithNoContent() string {
+		return`
+resource "turbot_file" "test" {
+	parent = "tmod:@turbot/turbot#/"
+	title  = "provider_file"
+    description = "test"
+}
+`}
 // helper functions
 func testAccCheckFileResourceExists(resource string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
