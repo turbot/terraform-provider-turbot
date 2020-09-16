@@ -244,6 +244,7 @@ func buildInputDataMap(d *schema.ResourceData) (map[string]interface{}, error) {
 		excludeContentProperties := helpers.GetOldMapProperties(oldContent, newContent)
 		for _, key := range excludeContentProperties {
 			// set keys of old content to `nil` in new content
+			// any property which doesn't exist in config is set to nil
 			if _, ok := oldContent[key.(string)]; ok {
 				newContent[key.(string)] = nil
 			}

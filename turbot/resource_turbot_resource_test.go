@@ -10,7 +10,7 @@ import (
 )
 
 // test suites
-func TestAccResourceFolder_Basic(t *testing.T) {
+func TestAccResource_BasicFolderResource(t *testing.T) {
 	resourceName := "turbot_resource.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -73,7 +73,7 @@ func TestAccResourceFolder_Basic(t *testing.T) {
 	})
 }
 
-func TestAccResourceFolder_Account(t *testing.T) {
+func TestAccResource_AccountResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -104,11 +104,59 @@ func TestAccResourceFolder_Account(t *testing.T) {
 		},
 	})
 }
+func TestAccResource_AccountResourceWithFullData(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckResourceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccResourceConfigAccount(accountType, metadata, accountData),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("turbot_resource.account_resource"),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.account_resource", "type", accountType),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.account_resource", "full_data", helpers.FormatJson(fullAccountData)),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.account_resource", "metadata", helpers.FormatJson(metadata)),
+				),
+			},
+		},
+	})
+}
+func TestAccResource_AccountResourceWithFullMetadata(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckResourceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccResourceConfigAccount(accountType, metadata, accountData),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("turbot_resource.account_resource"),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.account_resource", "type", accountType),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.account_resource", "full_data", helpers.FormatJson(fullAccountData)),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.account_resource", "full_metadat", helpers.FormatJson(metadata)),
+				),
+			},
+		},
+	})
+}
 
 // configs
 var folderType = `tmod:@turbot/turbot#/resource/types/folder`
 var accountType = `tmod:@turbot/aws#/resource/types/account`
 
+var fullAccountData = `{
+ "Id": "112233445566",
+ "title": "account"
+ "description": "full data account"
+}
+`
 var accountData = `{
  "Id": "112233445566",
  "title": "account"
@@ -124,6 +172,12 @@ var accountDataUpdatedTitle = `{
 var folderData = `{
  "title": "provider_test",
  "description": "test resource"
+}
+`
+var fullAccountMetadata = `{
+  "c1": "custom1",
+  "c2": "custom2",
+  "c3": "custom3"
 }
 `
 var metadata = `{
