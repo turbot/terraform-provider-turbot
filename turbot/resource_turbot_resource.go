@@ -141,28 +141,29 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 		}
 		return err
 	}
-	// -`data` include the properties that are specified in the resource config
 	if _, ok := d.GetOkExists("data"); ok {
+		// if data is set, only include the properties that are specified in the resource config
 		data, err := getStringValueForKey(d,"data",resource.Data)
 		if err != nil {
 			return err
 		}
 		d.Set("data", data)
 	} else if _, ok := d.GetOkExists("full_data"); ok {
-		// - In case of full_data read response from API is directly set
+		// if full_data is set, include all data read from API
 		if data, err := helpers.MapToJsonString(resource.Data); err != nil {
 			d.Set("full_data", data)
 		}
 	}
-	// -`metadata` include the properties that are specified in the resource config
+
 	if _, ok := d.GetOkExists("metadata"); ok {
+		// if metadata is set, only include the properties that are specified in the resource config
 		metadata, err := getStringValueForKey(d,"metadata",resource.Turbot.Custom)
 		if err != nil {
 			return err
 		}
 		d.Set("metadata", metadata)
 	} else if _, ok := d.GetOkExists("full_metadata"); ok {
-		// - In case of full_metadata read response from API is directly set
+		// if full_metadata is set, include all data read from API
 		if metadata, err := helpers.MapToJsonString(resource.Turbot.Custom); err != nil {
 			d.Set("full_metadata", metadata)
 		}
@@ -189,26 +190,32 @@ func resourceTurbotResourceUpdate(d *schema.ResourceData, meta interface{}) erro
 	}
 	// Identify data property (data/full_data)
 	var dataProperty string
-	if _, ok := d.GetOk("data"); ok {
+	var ok bool
+	if _, ok = d.GetOk("data"); ok {
 		dataProperty = "data"
-	} else if _, ok := d.GetOk("full_data"); ok {
+	} else if _, ok = d.GetOk("full_data"); ok {
 		dataProperty = "full_data"
 	}
-	input["data"], err = buildUpdatePayloadForData(d, client, dataProperty)
-	if err != nil {
-		return err
+	if ok {
+		input["data"], err = buildUpdatePayloadForData(d, client, dataProperty)
+		if err != nil {
+			return err
+		}
 	}
 	// Identify metadata property (metadata/full_netadata)
 	var metaProperty string
-	if _, ok := d.GetOk("metadata"); ok {
+	if _, ok = d.GetOk("metadata"); ok {
 		metaProperty = "metadata"
-	} else if _, ok := d.GetOk("full_metadata"); ok {
+	} else if _, ok = d.GetOk("full_metadata"); ok {
 		metaProperty = "full_metadata"
 	}
-	input["metadata"], err = buildUpdatePayloadForMetadata(d, metaProperty)
-	if err != nil {
-		return err
+	if ok {
+		input["metadata"], err = buildUpdatePayloadForMetadata(d, metaProperty)
+		if err != nil {
+			return err
+		}
 	}
+
 	input["id"] = id
 	turbotMetadata, err := client.UpdateResource(input)
 	if err != nil {
