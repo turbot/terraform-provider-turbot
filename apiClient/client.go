@@ -41,6 +41,23 @@ func CreateClient(config ClientConfig) (*Client, error) {
 		Graphql:   graphql.NewClient(credentials.Workspace),
 	}, nil
 }
+
+func GetCredentials(config ClientConfig) (ClientCredentials, error) {
+	credentials, err := getCredentialsByPrecedence(config)
+	if err != nil {
+		return ClientCredentials{}, err
+	}
+	if !CredentialsSet(credentials) {
+		return ClientCredentials{}, errors.New("failed to get credentials")
+	}
+	// update workspace url
+	credentials.Workspace, err = BuildApiUrl(credentials.Workspace)
+	if err != nil {
+		return ClientCredentials{}, err
+	}
+	return credentials, nil
+}
+
 /*
 	precedence of credentials:
 	- Credentials set in config
@@ -48,7 +65,7 @@ func CreateClient(config ClientConfig) (*Client, error) {
 	- ENV vars {TURBOT_ACCESS_KEY, TURBOT_SECRET_KEY, TURBOT_WORKSPACE}
 	- TURBOT_PROFILE env var
 */
-func GetCredentials(config ClientConfig) (ClientCredentials, error) {
+func getCredentialsByPrecedence(config ClientConfig)(ClientCredentials,error){
 	credentials := config.Credentials
 	if !CredentialsSet(credentials){
 		var err error
@@ -73,16 +90,6 @@ func GetCredentials(config ClientConfig) (ClientCredentials, error) {
 				}
 			}
 		}
-	}
-
-	if !CredentialsSet(credentials) {
-		return ClientCredentials{}, errors.New("failed to get credentials")
-	}
-	var err error
-	// update workspace url
-	credentials.Workspace, err = BuildApiUrl(credentials.Workspace)
-	if err != nil {
-		return ClientCredentials{}, err
 	}
 	return credentials, nil
 }
