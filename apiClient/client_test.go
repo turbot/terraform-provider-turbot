@@ -3,6 +3,7 @@ package apiClient
 import (
 	"github.com/stretchr/testify/assert"
 	"log"
+	"os"
 	"testing"
 )
 
@@ -18,7 +19,7 @@ func TestCredentialsPrecedence(t *testing.T) {
 	}
 	var tests = []test{
 		{
-			"Config Access Keys",
+			"Config has credentials",
 			ClientConfig{
 				ClientCredentials{
 					"xxbd857-XXXX-XXXX-XXXX-xxxxx039ff1x",
@@ -38,7 +39,7 @@ func TestCredentialsPrecedence(t *testing.T) {
 			},
 		},
 		{
-			"Profile set in config",
+			"Config has profile",
 			ClientConfig{
 				ClientCredentials{
 					"",
@@ -54,6 +55,26 @@ func TestCredentialsPrecedence(t *testing.T) {
 					"xxbd857-XXXX-XXXX-XXXX-xxxxx039ff1x",
 					"36xxb4f-XXXX-XXXX-XXXX-c91f44axx4f6",
 					"https://example.com/",
+				},
+			},
+		},
+		{
+			"Empty Config",
+			ClientConfig{
+				ClientCredentials{
+					"",
+					"",
+					"",
+				},
+				"",
+				"test",
+			},
+			expected{
+				true,
+				ClientCredentials{
+					os.Getenv("TURBOT_ACCESS_KEY"),
+					os.Getenv("TURBOT_SECRET_KEY"),
+					os.Getenv("TURBOT_WORKSPACE"),
 				},
 			},
 		},
