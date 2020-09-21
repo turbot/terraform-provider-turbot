@@ -43,47 +43,13 @@ func CreateClient(config ClientConfig) (*Client, error) {
 }
 
 func GetCredentials(config ClientConfig) (ClientCredentials, error) {
-	credentials := config.Credentials
-	if len(config.Profile) != 0 {
-		credentialsPath, err := getCredentialsPath(config)
-		if err != nil {
-			return ClientCredentials{}, err
-		}
-		credentials, err = loadProfile(credentialsPath, config.Profile)
-		if err != nil {
-			return ClientCredentials{}, err
-		}
+	credentials, err := getCredentialsByPrecedence(config)
+	if err != nil {
+		return ClientCredentials{}, err
 	}
-	if len(credentials.AccessKey) == 0 {
-		credentials.AccessKey = os.Getenv("TURBOT_ACCESS_KEY")
-	}
-	if len(credentials.SecretKey) == 0 {
-		credentials.SecretKey = os.Getenv("TURBOT_SECRET_KEY")
-	}
-	if len(credentials.Workspace) == 0 {
-		credentials.Workspace = os.Getenv("TURBOT_WORKSPACE")
-	}
-
 	if !CredentialsSet(credentials) {
-		// if credentials were not passed in, get from the credentials file
-		var err error
-		credentialsPath, err := getCredentialsPath(config)
-		if err != nil {
-			return ClientCredentials{}, err
-		}
-		// if no profile was provided in config, use TURBOT_PROFILE env var
-		if len(config.Profile) == 0 {
-			config.Profile = os.Getenv("TURBOT_PROFILE")
-		}
-		credentials, err = loadProfile(credentialsPath, config.Profile)
-		if err != nil {
-			return ClientCredentials{}, err
-		}
-		if !CredentialsSet(credentials) {
-			return ClientCredentials{}, errors.New("failed to get credentials")
-		}
+		return ClientCredentials{}, errors.New("failed to get credentials")
 	}
-	var err error
 	// update workspace url
 	credentials.Workspace, err = BuildApiUrl(credentials.Workspace)
 	if err != nil {
@@ -91,6 +57,64 @@ func GetCredentials(config ClientConfig) (ClientCredentials, error) {
 	}
 	return credentials, nil
 }
+
+/*
+	precedence of credentials:
+	- Credentials set in config
+	- profile set in config
+	- ENV vars {TURBOT_ACCESS_KEY, TURBOT_SECRET_KEY, TURBOT_WORKSPACE}
+	- TURBOT_PROFILE env var
+*/
+func getCredentialsByPrecedence(config ClientConfig)(ClientCredentials,error){
+	credentials := config.Credentials
+	if !CredentialsSet(credentials){
+		var err error
+		credentialsPath, err := getCredentialsPath(config)
+		if err != nil {
+			return ClientCredentials{}, err
+		}
+		if len(config.Profile) != 0 {
+			credentials, err = getProfileCredentials(config)
+			if err != nil {
+				return ClientCredentials{}, err
+			}
+		} else {
+			var credentialsOk bool
+			credentials, credentialsOk = getCredentialsFromEnv()
+			// if credentials were not passed in, get from the credentials file
+			if !credentialsOk {
+				config.Profile = os.Getenv("TURBOT_PROFILE")
+				credentials, err = loadProfile(credentialsPath, config.Profile)
+				if err != nil {
+					return ClientCredentials{}, err
+				}
+			}
+		}
+	}
+	return credentials, nil
+}
+
+func getCredentialsFromEnv()(ClientCredentials, bool){
+	credentials := ClientCredentials{
+		AccessKey: os.Getenv("TURBOT_ACCESS_KEY"),
+		SecretKey: os.Getenv("TURBOT_SECRET_KEY"),
+		Workspace: os.Getenv("TURBOT_WORKSPACE"),
+	}
+	return credentials, CredentialsSet(credentials)
+}
+
+func getProfileCredentials(config ClientConfig)(ClientCredentials, error){
+	credentialsPath, err := getCredentialsPath(config)
+	if err != nil {
+		return ClientCredentials{}, err
+	}
+	credentials, err := loadProfile(credentialsPath, config.Profile)
+	if err != nil {
+		return ClientCredentials{}, err
+	}
+	return credentials, nil
+}
+
 func getCredentialsPath(config ClientConfig) (string,error) {
 	var err error
 	credentialsPath := config.CredentialsPath
@@ -183,7 +207,6 @@ func loadProfile(credentialsPath, profile string) (ClientCredentials, error) {
 	}
 
 	var credentialsMap = map[string]ClientCredentials{}
-
 	err = yaml.Unmarshal(yamlFile, &credentialsMap)
 	if err != nil {
 		log.Fatalf("Unmarshal: %v", err)
