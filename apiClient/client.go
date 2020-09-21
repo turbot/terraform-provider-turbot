@@ -41,7 +41,13 @@ func CreateClient(config ClientConfig) (*Client, error) {
 		Graphql:   graphql.NewClient(credentials.Workspace),
 	}, nil
 }
-
+/*
+	precedence of credentials:
+	- Credentials set in config
+	- profile set in config
+	- ENV vars {TURBOT_ACCESS_KEY, TURBOT_SECRET_KEY, TURBOT_WORKSPACE}
+	- TURBOT_PROFILE env var
+*/
 func GetCredentials(config ClientConfig) (ClientCredentials, error) {
 	credentials := config.Credentials
 	if !CredentialsSet(credentials){
