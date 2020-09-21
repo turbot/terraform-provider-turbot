@@ -52,29 +52,31 @@ func GetCredentials(config ClientConfig) (ClientCredentials, error) {
 	credentials := config.Credentials
 	if !CredentialsSet(credentials){
 		var err error
+		credentialsPath, err := getCredentialsPath(config)
+		if err != nil {
+			return ClientCredentials{}, err
+		}
 		if len(config.Profile) != 0 {
 			credentials, err = getProfileCredentials(config)
 			if err != nil {
 				return ClientCredentials{}, err
 			}
 		} else {
-			credentials = setCredentialsFromEnv()
+			var credentialsOk bool
+			credentials, credentialsOk = getCredentialsFromEnv()
+			// if credentials were not passed in, get from the credentials file
+			if !credentialsOk {
+				config.Profile = os.Getenv("TURBOT_PROFILE")
+				credentials, err = loadProfile(credentialsPath, config.Profile)
+				if err != nil {
+					return ClientCredentials{}, err
+				}
+			}
 		}
 	}
+
 	if !CredentialsSet(credentials) {
-		// if credentials were not passed in, get from the credentials file
-		credentialsPath, err := getCredentialsPath(config)
-		if err != nil {
-			return ClientCredentials{}, err
-		}
-		config.Profile = os.Getenv("TURBOT_PROFILE")
-		credentials, err = loadProfile(credentialsPath, config.Profile)
-		if err != nil {
-			return ClientCredentials{}, err
-		}
-		if !CredentialsSet(credentials) {
-			return ClientCredentials{}, errors.New("failed to get credentials")
-		}
+		return ClientCredentials{}, errors.New("failed to get credentials")
 	}
 	var err error
 	// update workspace url
@@ -85,12 +87,13 @@ func GetCredentials(config ClientConfig) (ClientCredentials, error) {
 	return credentials, nil
 }
 
-func setCredentialsFromEnv()ClientCredentials{
-	return ClientCredentials{
+func getCredentialsFromEnv()(ClientCredentials, bool){
+	credentials := ClientCredentials{
 		AccessKey: os.Getenv("TURBOT_ACCESS_KEY"),
 		SecretKey: os.Getenv("TURBOT_SECRET_KEY"),
 		Workspace: os.Getenv("TURBOT_WORKSPACE"),
 	}
+	return credentials, CredentialsSet(credentials)
 }
 
 func getProfileCredentials(config ClientConfig)(ClientCredentials, error){
