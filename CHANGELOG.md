@@ -1,10 +1,10 @@
 ## 1.7.0 (September 21, 2020)
 ENHANCEMENTS:
-* `resource/resource_turbot_resource`: Introduced arguments `full_data` and `full_metadata` to provide a alternate of `data` and `metadata`. Now you can fully manage data and metadata, refer to resource documentation.
+* `resource/resource_turbot_resource`: Introduced arguments `full_data` and `full_metadata` to provide alternatives to `data` and `metadata`. These allow you to fully manage the resource data/metadata(any additional properties not in the config are deleted). Refer to resource documentation for full details.
 
 BUG FIXES:
-* `resource/resource_turbot_file`: While creation of a resource with no `content` attribute set, `apply` operation fails. ([#117](https://github.com/turbot/terraform-provider-turbot/issues/117))
-* `profile` argument in provider config wasn't respected over environment variables.
+* `resource/resource_turbot_file`: When creating a resource with no `content` attribute set, `apply` operation fails. ([#117](https://github.com/turbot/terraform-provider-turbot/issues/117))
+* The profile argument in provider config had lower precedence than TURBOT_PROFILE set in environment variables. This has been corrected to give the provider config higher precedence.
 
 ## 1.6.3 (August 24, 2020)
 BUG FIXES:
