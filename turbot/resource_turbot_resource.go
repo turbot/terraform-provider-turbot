@@ -141,32 +141,36 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 		}
 		return err
 	}
-	if _, ok := d.GetOkExists("data"); ok {
+	var data string
+	if _, ok := d.GetOk("data"); ok {
 		// if data is set, only include the properties that are specified in the resource config
 		data, err := getStringValueForKey(d,"data",resource.Data)
 		if err != nil {
 			return err
 		}
 		d.Set("data", data)
-	} else if _, ok := d.GetOkExists("full_data"); ok {
+	} else if _, ok := d.GetOk("full_data"); ok {
 		// if full_data is set, include all data read from API
-		if data, err := helpers.MapToJsonString(resource.Data); err != nil {
-			d.Set("full_data", data)
+		if data, err = helpers.MapToJsonString(resource.Data); err != nil {
+			return fmt.Errorf("error retrieving data properties: %s", err.Error())
 		}
+		d.Set("full_data", data)
 	}
 
-	if _, ok := d.GetOkExists("metadata"); ok {
+	// In the import case, we won't have this
+	var metadata string
+	if _, ok := d.GetOk("metadata"); ok {
 		// if metadata is set, only include the properties that are specified in the resource config
-		metadata, err := getStringValueForKey(d,"metadata",resource.Turbot.Custom)
-		if err != nil {
-			return err
+		if metadata, err = getStringValueForKey(d,"metadata",resource.Turbot.Custom);err != nil {
+			return fmt.Errorf("error retrieving metadata properties: %s", err.Error())
 		}
 		d.Set("metadata", metadata)
-	} else if _, ok := d.GetOkExists("full_metadata"); ok {
+	} else if _, ok := d.GetOk("full_metadata"); ok {
 		// if full_metadata is set, include all data read from API
-		if metadata, err := helpers.MapToJsonString(resource.Turbot.Custom); err != nil {
-			d.Set("full_metadata", metadata)
+		if metadata, err = helpers.MapToJsonString(resource.Turbot.Custom); err != nil {
+			return fmt.Errorf("error retrieving metadata properties: %s", err.Error())
 		}
+		d.Set("full_metadata", metadata)
 	}
 	// set parent_akas property by loading resource and fetching the akas
 	if err := storeAkas(resource.Turbot.ParentId, "parent_akas", d, meta); err != nil {

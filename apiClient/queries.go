@@ -369,6 +369,9 @@ func readResourceListQuery(filter string, properties map[string]string) string {
 func readFullResourceQuery(aka string) string {
 	return fmt.Sprintf(`{
   resource(id:"%s") {
+	type {
+		uri
+	}
     data
     turbot: get(path:"turbot")
   }
