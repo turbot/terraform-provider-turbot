@@ -390,11 +390,12 @@ type LdapDirectory struct {
 	Turbot                      TurbotResourceMetadata
 	Title                       string
 	Description                 string
+	DirectoryType               string
 	ProfileIdTemplate           string
 	GroupProfileIdTemplate      string
 	Url                         string
+	Status 						string
 	DistinguishedName           string
-	Password                    string
 	Base                        string
 	UserObjectFilter            string
 	DisabledUserFilter          string
@@ -410,12 +411,12 @@ type LdapDirectory struct {
 	UserGivenNameAttribute      string
 	UserFamilyNameAttribute     string
 	GroupCanonicalNameAttribute string
-	TlsEnabled                  string
+	TlsEnabled                  bool
 	TlsServerCertificate        string
 	GroupMemberOfAttribute      string
 	GroupMembershipAttribute    string
 	ConnectivityTestFilter      string
-	RejectUnauthorized          string
+	RejectUnauthorized          bool
 	DisabledGroupFilter         string
 }
 

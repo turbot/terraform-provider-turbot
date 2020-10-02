@@ -1,48 +1,49 @@
 package turbot
 
 import (
-"github.com/hashicorp/terraform/helper/schema"
-"github.com/terraform-providers/terraform-provider-turbot/apiClient"
-"github.com/terraform-providers/terraform-provider-turbot/helpers"
-"strings"
+	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
+	"github.com/terraform-providers/terraform-provider-turbot/helpers"
+	"log"
+	"strings"
 )
 
 // input properties which must be passed to a create/update call
 var ldapDirectoryInputProperties = []interface{}{
 	"title",
+	"parent",
 	"description",
-	"profileIdTemplate",
-	"groupProfileIdTemplate",
+	"profile_id_template",
+	"group_profile_id_template",
 	"url",
-	"distinguishedName",
+	"distinguished_name",
 	"password",
 	"base",
-	"userObjectFilter",
-	"disabledUserFilter",
-	"userMatchFilter",
-	"userSearchFilter",
-	"userSearchAttributes",
-	"groupObjectFilter",
-	"groupSearchFilter",
-	"groupSyncFilter",
-	"userCanonicalNameAttribute",
-	"userEmailAttribute",
-	"userDisplayNameAttribute",
-	"userGivenNameAttribute",
-	"userFamilyNameAttribute",
-	"groupCanonicalNameAttribute",
-	"tlsEnabled",
-	"tlsServerCertificate",
-	"groupMemberOfAttribute",
-	"groupMembershipAttribute",
-	"connectivityTestFilter",
-	"rejectUnauthorized",
-	"disabledGroupFilter",
+	"user_object_filter",
+	"disabled_user_filter",
+	"user_match_filter",
+	"user_search_filter",
+	"user_search_attributes",
+	"group_object_filter",
+	"group_search_filter",
+	"group_sync_filter",
+	"user_canonical_name_attribute",
+	"user_email_attribute",
+	"user_display_name_attribute",
+	"user_given_name_attribute",
+	"user_family_name_attribute",
+	"group_canonical_name_attribute",
+	"tls_enabled",
+	"tls_server_certificate",
+	"group_member_of_attribute",
+	"group_membership_attribute",
+	"connectivity_test_filter",
+	"reject_unauthorized",
+	"disabled_group_filter",
 }
-
 // exclude properties from input map to make a update call
-func getldapDirectoryUpdateProperties() []interface{} {
-	excludedProperties := []string{"profile_id_template"}
+func getLdapDirectoryUpdateProperties() []interface{} {
+	excludedProperties := []string{"profile_id_template", "parent"}
 	return helpers.RemoveProperties(ldapDirectoryInputProperties, excludedProperties)
 }
 
@@ -86,11 +87,24 @@ func resourceTurbotLdapDirectory() *schema.Resource {
 				Required: true,
 			},
 			"password": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:      schema.TypeString,
+				Required:  true,
+				Sensitive: true,
 			},
 			"url": {
 				Type:     schema.TypeString,
+				Required: true,
+			},
+			"base": {
+				Type: schema.TypeString,
+				Required: true,
+			},
+			"tls_enabled": {
+				Type:     schema.TypeBool,
+				Required: true,
+			},
+			"reject_unauthorized": {
+				Type:     schema.TypeBool,
 				Required: true,
 			},
 			"description": {
@@ -109,7 +123,6 @@ func resourceTurbotLdapDirectory() *schema.Resource {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
-				Default: []string{"*"},
 			},
 			"user_search_filter": {
 				Type:     schema.TypeString,
@@ -155,10 +168,6 @@ func resourceTurbotLdapDirectory() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"tls_enabled": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
 			"tls_server_certificate": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -172,10 +181,6 @@ func resourceTurbotLdapDirectory() *schema.Resource {
 				Optional: true,
 			},
 			"connectivity_test_filter": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"reject_unauthorized": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
@@ -203,10 +208,12 @@ func resourceTurbotLdapDirectoryExists(d *schema.ResourceData, meta interface{})
 
 func resourceTurbotLdapDirectoryCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
-
+	//sensitive
 	// build mutation input
-
 	input := mapFromResourceData(d, ldapDirectoryInputProperties)
+	if password, ok := d.GetOk("password"); ok {
+		input["password"] = password
+	}
 	input["status"] = "NEW"
 
 	ldapDirectory, err := client.CreateLdapDirectory(input)
@@ -220,12 +227,11 @@ func resourceTurbotLdapDirectoryCreate(d *schema.ResourceData, meta interface{})
 	}
 	// assign the id
 	d.SetId(ldapDirectory.Turbot.Id)
-	// assign properties coming back from create graphQl API
-	d.Set("parent", ldapDirectory.Parent)
+	// assign result back into ResourceData
+	d.Set("parent", ldapDirectory.Turbot.ParentId)
 	d.Set("title", ldapDirectory.Title)
 	d.Set("status", strings.ToUpper(ldapDirectory.Status))
 	d.Set("directory_type", ldapDirectory.DirectoryType)
-	// Set the values from Resource Data
 	return nil
 }
 
@@ -243,12 +249,15 @@ func resourceTurbotLdapDirectoryRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	// assign results back into ResourceData
-	d.Set("parent", ldapDirectory.Parent)
+	d.Set("parent", ldapDirectory.Turbot.ParentId)
 	d.Set("title", ldapDirectory.Title)
 	d.Set("description", ldapDirectory.Description)
 	d.Set("status", strings.ToUpper(ldapDirectory.Status))
 	d.Set("profile_id_template", ldapDirectory.ProfileIdTemplate)
-	d.Set("directory_type", ldapDirectory.DirectoryType)
+	d.Set("base", ldapDirectory.Base)
+	d.Set("url", ldapDirectory.Url)
+	d.Set("tls_enabled", ldapDirectory.TlsEnabled)
+	d.Set("reject_unauthorized", ldapDirectory.RejectUnauthorized)
 	d.Set("tags", ldapDirectory.Turbot.Tags)
 	// set parent_akas property by loading resource and fetching the akas
 	return storeAkas(ldapDirectory.Turbot.ParentId, "parent_akas", d, meta)
@@ -258,7 +267,7 @@ func resourceTurbotLdapDirectoryUpdate(d *schema.ResourceData, meta interface{})
 	client := meta.(*apiClient.Client)
 
 	// build mutation payload
-	input := mapFromResourceData(d, getldapDirectoryUpdateProperties())
+	input := mapFromResourceData(d, getLdapDirectoryUpdateProperties())
 	input["id"] = d.Id()
 	// do update
 	ldapDirectory, err := client.UpdateLdapDirectory(input)
@@ -267,10 +276,17 @@ func resourceTurbotLdapDirectoryUpdate(d *schema.ResourceData, meta interface{})
 	}
 
 	// assign properties coming back from update graphQl API
-	d.Set("parent", ldapDirectory.)
+	d.Set("parent", ldapDirectory.Turbot.ParentId)
 	d.Set("title", ldapDirectory.Title)
+	d.Set("description", ldapDirectory.Description)
+	log.Println("Status->>",ldapDirectory.Status)
 	d.Set("status", strings.ToUpper(ldapDirectory.Status))
-	d.Set("directory_type", ldapDirectory.)
+	d.Set("profile_id_template", ldapDirectory.ProfileIdTemplate)
+	d.Set("base", ldapDirectory.Base)
+	d.Set("url", ldapDirectory.Url)
+	d.Set("tls_enabled", ldapDirectory.TlsEnabled)
+	d.Set("reject_unauthorized", ldapDirectory.RejectUnauthorized)
+	d.Set("tags", ldapDirectory.Turbot.Tags)
 	// set parent_akas property by loading resource and fetching the akas
 	return storeAkas(ldapDirectory.Turbot.ParentId, "parent_akas", d, meta)
 }
@@ -293,4 +309,9 @@ func resourceTurbotLdapDirectoryImport(d *schema.ResourceData, meta interface{})
 		return nil, err
 	}
 	return []*schema.ResourceData{d}, nil
+}
+
+func suppressIfPasswordPresent(k, old, new string, d *schema.ResourceData) bool {
+	// We do not read back password so suppress diff
+	return true
 }

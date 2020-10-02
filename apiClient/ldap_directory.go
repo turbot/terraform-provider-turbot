@@ -2,19 +2,22 @@ package apiClient
 
 import (
 	"fmt"
+	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 )
 
-var LdapDirectoryProperties = []interface{}{
-	map[string]interface{}{"parent": "turbot.parentId"},
+var ldapDirectoryProperties = []interface{}{
+	map[string]string{"parent": "turbot.parentId"},
 	"title",
 	"description",
 	"profileIdTemplate",
+	"status",
 	"groupProfileIdTemplate",
 	"url",
 	"distinguishedName",
 	"password",
 	"base",
 	"userObjectFilter",
+	"directoryType",
 	"disabledUserFilter",
 	"userMatchFilter",
 	"userSearchFilter",
@@ -36,20 +39,14 @@ var LdapDirectoryProperties = []interface{}{
 	"disabledGroupFilter",
 }
 
-func (client *Client) ReadLdapDirectory(id string) (*LdapDirectory, error) {
-	// create a map of the properties we want the graphql query to return
-	query := readResourceQuery(id, LdapDirectoryProperties)
-	responseData := &LdapDirectoryResponse{}
-
-	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, fmt.Errorf("error reading local directory: %s", err.Error())
-	}
-	return &responseData.Resource, nil
+// exclude password from read call, secret id
+func getLdapDirectoryReadProperties() []interface{} {
+	excludedProperties := []string{"password"}
+	return helpers.RemoveProperties(ldapDirectoryProperties, excludedProperties)
 }
 
 func (client *Client) CreateLdapDirectory(input map[string]interface{}) (*LdapDirectory, error) {
-	query := createLdapDirectoryMutation(LdapDirectoryProperties)
+	query := createLdapDirectoryMutation(ldapDirectoryProperties)
 	responseData := &LdapDirectoryResponse{}
 	variables := map[string]interface{}{
 		"input": input,
@@ -62,8 +59,20 @@ func (client *Client) CreateLdapDirectory(input map[string]interface{}) (*LdapDi
 	return &responseData.Resource, nil
 }
 
+func (client *Client) ReadLdapDirectory(id string) (*LdapDirectory, error) {
+	// create a map of the properties we want the graphql query to return
+	query := readResourceQuery(id, getLdapDirectoryReadProperties())
+	responseData := &LdapDirectoryResponse{}
+
+	// execute api call
+	if err := client.doRequest(query, nil, responseData); err != nil {
+		return nil, fmt.Errorf("error reading local directory: %s", err.Error())
+	}
+	return &responseData.Resource, nil
+}
+
 func (client *Client) UpdateLdapDirectory(input map[string]interface{}) (*LdapDirectory, error) {
-	query := updateLdapDirectoryMutation(LdapDirectoryProperties)
+	query := updateLdapDirectoryMutation(ldapDirectoryProperties)
 	responseData := &LdapDirectoryResponse{}
 	variables := map[string]interface{}{
 		"input": input,

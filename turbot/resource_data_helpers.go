@@ -23,9 +23,17 @@ func mapFromResourceData(d *schema.ResourceData, properties []interface{}) map[s
 		} else {
 			// otherwise perform automatic mapping from snake case (Terraform format) to lowerCamelCase (Turbot format).
 			terraformProperty := element.(string)
-			value, propertySet := d.GetOk(terraformProperty)
+			// GetOK() func is unable to fetch required bool arguments
+			// Added GetOkExists() fetch boolean values
+			// TODO: Add support for fetching sensitive values
+			var value interface{}
+			if _, propertySet := d.GetOk(terraformProperty); propertySet {
+				value = d.Get(terraformProperty)
+			} else if _, propertySet := d.GetOkExists(terraformProperty); propertySet {
+				value = d.Get(terraformProperty)
+			}
 			// if property is set, map it
-			if propertySet {
+			if value != nil {
 				var turbotProperty = strcase.ToLowerCamel(terraformProperty)
 				propertyMap[turbotProperty] = value
 			}
