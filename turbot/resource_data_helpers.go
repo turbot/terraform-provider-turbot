@@ -25,7 +25,7 @@ func mapFromResourceData(d *schema.ResourceData, properties []interface{}) map[s
 			terraformProperty := element.(string)
 			value, propertySet := d.GetOk(terraformProperty)
 			// if property is set, map it
-			if propertySet {
+			if propertySet{
 				var turbotProperty = strcase.ToLowerCamel(terraformProperty)
 				propertyMap[turbotProperty] = value
 			}

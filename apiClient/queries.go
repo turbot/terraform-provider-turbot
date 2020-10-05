@@ -586,6 +586,33 @@ func deleteGroupProfileMutation() string {
 }`)
 }
 
+// ldap directory
+func createLdapDirectoryMutation(properties []interface{}) string {
+	return fmt.Sprintf(`mutation createLdapDirectory($input: CreateLdapDirectoryInput!) {
+  		resource: createLdapDirectory(input: $input){
+%s
+    	turbot:get(path:"turbot")
+  }
+}`, buildResourceProperties(properties))
+}
+
+func updateLdapDirectoryMutation(properties []interface{}) string {
+	return fmt.Sprintf(`mutation updateLdapDirectory($input: UpdateLdapDirectoryInput!) {
+  		resource: updateLdapDirectory(input: $input){
+%s
+    	turbot:get(path:"turbot")
+  }
+}`, buildResourceProperties(properties))
+}
+
+func deleteLdapDirectory() string {
+	return `mutation DeleteResource($input: DeleteResourceInput!) {
+ 	resource: deleteResource(input: $input) {
+		turbot: get(path:"turbot")
+	}
+}`
+}
+
 // get turbot workspace version
 func (client *Client) GetTurbotWorkspaceVersion() (*semver.Version, error) {
 	query := readPolicyValueQuery("tmod:@turbot/turbot#/policy/types/workspaceVersion", "tmod:@turbot/turbot#/")
