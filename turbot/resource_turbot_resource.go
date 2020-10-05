@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 	"github.com/terraform-providers/terraform-provider-turbot/helpers"
+	"strings"
 )
 
 var resourceProperties = []interface{}{"parent", "type", "tags", "akas"}
@@ -391,7 +392,13 @@ func markPropertiesForDeletion(d *schema.ResourceData, key string) (map[string]i
 			// set keys of old content to `nil` in new content
 			// any property which doesn't exist in config is set to nil
 			if _, ok := oldContent[key.(string)]; ok {
-				newContent[key.(string)] = nil
+				if getResourceType(d.Get("type").(string)) == "folder" {
+					if key != "description" {
+						newContent[key.(string)] = nil
+					}
+				}else {
+					newContent[key.(string)] = nil
+				}
 			}
 		}
 	}
@@ -411,4 +418,13 @@ func getStringValueForKey(d *schema.ResourceData, key string, readResponse map[s
 		return "",fmt.Errorf("error building resource data: %s", err.Error())
 	}
 	return metadataString, nil
+}
+
+func getResourceType(uri string) string {
+	var typeUri string
+	// underflow check
+	if len(uri) - 1 > 0 {
+		typeUri =  strings.Split(uri,"/")[ len(uri) - 1]
+	}
+	return typeUri
 }
