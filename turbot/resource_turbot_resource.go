@@ -421,10 +421,11 @@ func getStringValueForKey(d *schema.ResourceData, key string, readResponse map[s
 }
 
 func getResourceType(uri string) string {
-	var typeUri string
+	splitsOfUri := strings.Split(uri,"/")
 	// underflow check
-	if len(uri) - 1 > 0 {
-		typeUri =  strings.Split(uri,"/")[ len(uri) - 1]
+	var typeUri string
+	if len(splitsOfUri) > 0 {
+		typeUri = splitsOfUri[len(splitsOfUri)-1]
 	}
 	return typeUri
 }
