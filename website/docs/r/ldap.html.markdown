@@ -18,15 +18,15 @@ The `Turbot LDAP Directory` resource adds support for ldap directories. It is us
 ```hcl
 resource "turbot_ldap_directory" "test" {
   parent                = "tmod:@turbot/turbot#/"
-  title                 = "ldap Directory"
-  description           = "My first ldap directory"
-  profile_id_template   = "{{profile.email}}"
-  base                  = "test"
+  title                 = "Microsoft Active Directory for LDAP testing"
+  description           = "Microsoft Active Directory for LDAP testing"
+  profile_id_template   = "{{profile.$source.mail}}"
+  base                  = "dc=turbot,dc=com"
   distinguished_name    = "ldap directory"
-  password              = ""
-  url                   = "test.com"
- tls_enabled            = false
- reject_unauthorized    = false
+  password              = "admin-user@turbot.com"
+  url                   = "ldaps://10.84.52.83"
+  tls_enabled           = false
+  reject_unauthorized   = false
 }
 ```
 
