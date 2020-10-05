@@ -1,4 +1,7 @@
-## 1.7.0 (September 21, 2020)
+## 1.7.0 (October 5, 2020)
+FEATURES:
+* **New Resource:** `turbot_ldap_directory` ([#56](https://github.com/turbot/terraform-provider-turbot/issues/56))
+
 ENHANCEMENTS:
 * `resource/resource_turbot_resource`: Introduced arguments `full_data` and `full_metadata` to provide alternatives to `data` and `metadata`. These allow you to fully manage the resource data/metadata(any additional properties not in the config are deleted). Refer to resource documentation for full details.
 
