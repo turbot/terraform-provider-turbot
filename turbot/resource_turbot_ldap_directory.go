@@ -4,7 +4,6 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
 	"github.com/terraform-providers/terraform-provider-turbot/helpers"
-	"log"
 	"strings"
 )
 
@@ -40,10 +39,11 @@ var ldapDirectoryInputProperties = []interface{}{
 	"connectivity_test_filter",
 	"reject_unauthorized",
 	"disabled_group_filter",
+	"tags",
 }
 // exclude properties from input map to make a update call
 func getLdapDirectoryUpdateProperties() []interface{} {
-	excludedProperties := []string{"profile_id_template", "parent"}
+	excludedProperties := []string{"profile_id_template","group_profile_id_template","", "parent"}
 	return helpers.RemoveProperties(ldapDirectoryInputProperties, excludedProperties)
 }
 
@@ -90,6 +90,7 @@ func resourceTurbotLdapDirectory() *schema.Resource {
 				Type:      schema.TypeString,
 				Required:  true,
 				Sensitive: true,
+				DiffSuppressFunc: suppressIfPasswordPresent,
 			},
 			"url": {
 				Type:     schema.TypeString,
@@ -208,11 +209,17 @@ func resourceTurbotLdapDirectoryExists(d *schema.ResourceData, meta interface{})
 
 func resourceTurbotLdapDirectoryCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
-	//sensitive
 	// build mutation input
 	input := mapFromResourceData(d, ldapDirectoryInputProperties)
 	if password, ok := d.GetOk("password"); ok {
 		input["password"] = password
+	}
+	// required boolean values are only fetched from - GetOkExists()
+	if tlsEnabled, ok := d.GetOkExists("tls_enabled"); ok {
+		input["tlsEnabled"] = tlsEnabled
+	}
+	if rejectUnauthorized, ok := d.GetOkExists("reject_unauthorized"); ok {
+		input["rejectUnauthorized"] = rejectUnauthorized
 	}
 	input["status"] = "NEW"
 
@@ -230,6 +237,7 @@ func resourceTurbotLdapDirectoryCreate(d *schema.ResourceData, meta interface{})
 	// assign result back into ResourceData
 	d.Set("parent", ldapDirectory.Turbot.ParentId)
 	d.Set("title", ldapDirectory.Title)
+	d.Set("description", ldapDirectory.Description)
 	d.Set("status", strings.ToUpper(ldapDirectory.Status))
 	d.Set("directory_type", ldapDirectory.DirectoryType)
 	return nil
@@ -254,6 +262,28 @@ func resourceTurbotLdapDirectoryRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("description", ldapDirectory.Description)
 	d.Set("status", strings.ToUpper(ldapDirectory.Status))
 	d.Set("profile_id_template", ldapDirectory.ProfileIdTemplate)
+	d.Set("distinguished_name", ldapDirectory.DistinguishedName)
+	d.Set("directory_type", ldapDirectory.DirectoryType)
+	d.Set("group_profile_id_template", ldapDirectory.GroupProfileIdTemplate)
+	d.Set("user_object_filter", ldapDirectory.UserObjectFilter)
+	d.Set("disabled_user_filter", ldapDirectory.DisabledUserFilter)
+	d.Set("user_match_filter", ldapDirectory.UserMatchFilter)
+	d.Set("user_search_filter", ldapDirectory.UserSearchFilter)
+	d.Set("user_search_attributes", ldapDirectory.UserSearchAttributes)
+	d.Set("group_object_filter", ldapDirectory.GroupObjectFilter)
+	d.Set("group_search_filter", ldapDirectory.GroupSearchFilter)
+	d.Set("group_sync_filter", ldapDirectory.GroupSyncFilter)
+	d.Set("user_canonical_name_attribute", ldapDirectory.UserCanonicalNameAttribute)
+	d.Set("group_canonical_name_attribute", ldapDirectory.GroupCanonicalNameAttribute)
+	d.Set("user_email_attribute", ldapDirectory.UserEmailAttribute)
+	d.Set("user_display_name_attribute", ldapDirectory.UserDisplayNameAttribute)
+	d.Set("user_given_name_attribute", ldapDirectory.UserGivenNameAttribute)
+	d.Set("user_family_name_attribute", ldapDirectory.UserFamilyNameAttribute)
+	d.Set("tls_server_certificate", ldapDirectory.TlsServerCertificate)
+	d.Set("group_member_of_attribute", ldapDirectory.GroupMemberOfAttribute)
+	d.Set("group_membership_attribute", ldapDirectory.GroupMembershipAttribute)
+	d.Set("connectivity_test_filter", ldapDirectory.ConnectivityTestFilter)
+	d.Set("disabled_group_filter", ldapDirectory.DisabledGroupFilter)
 	d.Set("base", ldapDirectory.Base)
 	d.Set("url", ldapDirectory.Url)
 	d.Set("tls_enabled", ldapDirectory.TlsEnabled)
@@ -279,7 +309,6 @@ func resourceTurbotLdapDirectoryUpdate(d *schema.ResourceData, meta interface{})
 	d.Set("parent", ldapDirectory.Turbot.ParentId)
 	d.Set("title", ldapDirectory.Title)
 	d.Set("description", ldapDirectory.Description)
-	log.Println("Status->>",ldapDirectory.Status)
 	d.Set("status", strings.ToUpper(ldapDirectory.Status))
 	d.Set("profile_id_template", ldapDirectory.ProfileIdTemplate)
 	d.Set("base", ldapDirectory.Base)
@@ -312,6 +341,9 @@ func resourceTurbotLdapDirectoryImport(d *schema.ResourceData, meta interface{})
 }
 
 func suppressIfPasswordPresent(k, old, new string, d *schema.ResourceData) bool {
-	// We do not read back password so suppress diff
-	return true
+	// We do not read back client secret so suppress diff caused by empty value
+	if old != "" && new == "" {
+		return true
+	}
+	return false
 }

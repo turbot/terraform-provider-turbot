@@ -54,7 +54,7 @@ func (client *Client) CreateLdapDirectory(input map[string]interface{}) (*LdapDi
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating local directory: %s", err.Error())
+		return nil, fmt.Errorf("error creating ldap directory: %s", err.Error())
 	}
 	return &responseData.Resource, nil
 }
@@ -66,7 +66,7 @@ func (client *Client) ReadLdapDirectory(id string) (*LdapDirectory, error) {
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, fmt.Errorf("error reading local directory: %s", err.Error())
+		return nil, fmt.Errorf("error reading ldap directory: %s", err.Error())
 	}
 	return &responseData.Resource, nil
 }
@@ -80,7 +80,7 @@ func (client *Client) UpdateLdapDirectory(input map[string]interface{}) (*LdapDi
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error updating local directory: %s", err.Error())
+		return nil, fmt.Errorf("error updating ldap directory: %s", err.Error())
 	}
 	return &responseData.Resource, nil
 }
@@ -98,7 +98,7 @@ func (client *Client) DeleteLdapDirectory(aka string) error {
 
 	// execute api call
 	if err := client.doRequest(query, variables, &responseData); err != nil {
-		return fmt.Errorf("error deleting resource: %s", err.Error())
+		return fmt.Errorf("error deleting ldap directory: %s", err.Error())
 	}
 	return nil
 }

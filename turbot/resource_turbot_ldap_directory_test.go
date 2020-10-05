@@ -21,9 +21,27 @@ func TestAccLdapDirectory_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLdapDirectoryExists("turbot_ldap_directory.test"),
 					resource.TestCheckResourceAttr(
-						"turbot_ldap_directory.test", "title", "provider_test"),
+						"turbot_ldap_directory.test", "title", "Microsoft LDAP dir"),
 					resource.TestCheckResourceAttr(
-						"turbot_ldap_directory.test", "description", "test directory"),
+						"turbot_ldap_directory.test", "distinguished_name", "CN=Turbot"),
+				),
+			},
+			{
+				Config: testAccLdapDirectoryUpdateUrlConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLdapDirectoryExists("turbot_ldap_directory.test"),
+					resource.TestCheckResourceAttr(
+						"turbot_ldap_directory.test", "title", "Microsoft LDAP dir"),
+					resource.TestCheckResourceAttr(
+						"turbot_ldap_directory.test", "url", "xws"),
+				),
+			},
+			{
+				Config: testAccLdapDirectoryUpdateTitleConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLdapDirectoryExists("turbot_ldap_directory.test"),
+					resource.TestCheckResourceAttr(
+						"turbot_ldap_directory.test", "title", "Azure LDAP dir"),
 				),
 			},
 			{
@@ -36,30 +54,31 @@ func TestAccLdapDirectory_Basic(t *testing.T) {
 	})
 }
 
-//func TestAccLdapDirectory_tags(t *testing.T) {
-//	resourceName := "turbot_ldap_directory.test"
-//	resource.Test(t, resource.TestCase{
-//		PreCheck:     func() { testAccPreCheck(t) },
-//		Providers:    testAccProviders,
-//		CheckDestroy: testAccCheckLdapDirectoryDestroy,
-//		Steps: []resource.TestStep{
-//			{
-//				Config: testAccDirectoryTagsConfig(),
-//				Check: resource.ComposeTestCheckFunc(
-//					testAccCheckLdapDirectoryExists(resourceName),
-//					resource.TestCheckResourceAttr(resourceName, "tags.%", "2"),
-//					resource.TestCheckResourceAttr(resourceName, "tags.tag1", "tag1value"),
-//					resource.TestCheckResourceAttr(resourceName, "tags.tag2", "tag2value"),
-//				),
-//			},
-//			{
-//				ResourceName:      resourceName,
-//				ImportState:       true,
-//				ImportStateVerify: true,
-//			},
-//		},
-//	})
-//}
+func TestAccLdapDirectory_tags(t *testing.T) {
+	resourceName := "turbot_ldap_directory.test"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLdapDirectoryDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccLdapDirectoryTagsConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLdapDirectoryExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "tags.%", "2"),
+					resource.TestCheckResourceAttr(resourceName, "tags.tag1", "tag1value"),
+					resource.TestCheckResourceAttr(resourceName, "tags.tag2", "tag2value"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{"password"},
+			},
+		},
+	})
+}
 
 // configs
 func testAccLdapDirectoryConfig() string {
@@ -74,46 +93,73 @@ resource "turbot_ldap_directory" "test" {
   	base = "xw"
   	tls_enabled = false
   	reject_unauthorized = false
+    tags = {
+		  tag1 = "tag1value"
+		  tag2 = "tag2value"
+	}
 }
 `
 }
 
-/*func testAccLdapDirectoryUpdateDescConfig() string {
+func testAccLdapDirectoryUpdateUrlConfig() string {
 	return `
 resource "turbot_ldap_directory" "test" {
 	parent = "tmod:@turbot/turbot#/"
-	title = "provider_test"
-	description = "test directory for turbot terraform provider"
-	profile_id_template = "{{profile.email}}"
+  	title = "Microsoft LDAP dir"
+  	profile_id_template =  "{{profile.email}}"
+  	distinguished_name = "CN=Turbot"
+  	password = "x7hjFeErf0_+"
+  	url = "xws"
+  	base = "xw"
+  	tls_enabled = false
+  	reject_unauthorized = false
+    tags = {
+		  tag1 = "tag1value"
+		  tag2 = "tag2value"
+	}
 }
 `
-}*/
+}
 
-//func testAccDirectoryUpdateTitleConfig() string {
-//	return `
-//resource "turbot_ldap_directory" "test" {
-//	parent = "tmod:@turbot/turbot#/"
-//	title = "provider_test_refactor"
-//	description = "test directory"
-//	profile_id_template = "{{profile.email}}"
-//}
-//`
-//}
+func testAccLdapDirectoryUpdateTitleConfig() string {
+	return `
+resource "turbot_ldap_directory" "test" {
+	parent = "tmod:@turbot/turbot#/"
+  	title = "Azure LDAP dir"
+  	profile_id_template =  "{{profile.email}}"
+  	distinguished_name = "CN=Turbot"
+  	password = "x7hjFeErf0_+"
+  	url = "xw"
+  	base = "xw"
+  	tls_enabled = false
+  	reject_unauthorized = false
+    tags = {
+		  tag1 = "tag1value"
+		  tag2 = "tag2value"
+	}
+}
+`
+}
 
-//func testAccDirectoryTagsConfig() string {
-//	return `
-//resource "turbot_ldap_directory" "test" {
-//	parent = "tmod:@turbot/turbot#/"
-//	title = "provider_test_refactor"
-//	description = "test directory"
-//	profile_id_template = "{{profile.email}}"
-//	tags = {
-//		  tag1 = "tag1value"
-//		  tag2 = "tag2value"
-//	}
-//}
-//`
-//}
+func testAccLdapDirectoryTagsConfig() string {
+	return `
+resource "turbot_ldap_directory" "test" {
+	parent = "tmod:@turbot/turbot#/"
+  	title = "Microsoft LDAP dir"
+  	profile_id_template =  "{{profile.email}}"
+  	distinguished_name = "CN=Turbot"
+  	password = "x7hjFeErf0_+"
+  	url = "xw"
+  	base = "xw"
+  	tls_enabled = false
+  	reject_unauthorized = false
+    tags = {
+		  tag1 = "tag1value"
+		  tag2 = "tag2value"
+	}
+}
+`
+}
 
 // helper functions
 func testAccCheckLdapDirectoryExists(resource string) resource.TestCheckFunc {
