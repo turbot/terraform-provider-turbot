@@ -43,6 +43,7 @@ func resourceTurbotFolder() *schema.Resource {
 			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
+				DiffSuppressFunc: suppressIfDescriptionNotPresent,
 			},
 			"tags": {
 				Type:     schema.TypeMap,
@@ -145,4 +146,13 @@ func resourceTurbotFolderImport(d *schema.ResourceData, meta interface{}) ([]*sc
 		return nil, err
 	}
 	return []*schema.ResourceData{d}, nil
+}
+
+// folder resource type doesn't support deletion of description attribute
+func suppressIfDescriptionNotPresent(_, old, new string, d *schema.ResourceData) bool {
+	// if description is not in config, but in state-file
+	if old != "" && new == "" {
+		return true
+	}
+	return false
 }
