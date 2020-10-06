@@ -69,10 +69,21 @@ func TestAccResource_BasicFolderResource(t *testing.T) {
 						"turbot_resource.test", "metadata", helpers.FormatJson(metadataUpdated)),
 				),
 			},
+			{
+				Config: testAccResourceConfigFolder(folderType, folderWithNoDescription, metadataUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("turbot_resource.test"),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.test", "type", folderType),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.test", "data", helpers.FormatJson(folderDataUpdatedTitle)),
+					resource.TestCheckResourceAttr(
+						"turbot_resource.test", "metadata", helpers.FormatJson(metadataUpdated)),
+				),
+			},
 		},
 	})
 }
-
 func TestAccResource_AccountResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -198,6 +209,10 @@ var folderDataUpdatedTitle = `{
 var folderDataUpdatedDescription = `{
  "title": "provider_test",
  "description": "test resource_updated"
+}
+`
+var folderWithNoDescription = `{
+ "title": "provider_test_updated"
 }
 `
 
