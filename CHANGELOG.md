@@ -7,6 +7,7 @@ ENHANCEMENTS:
 
 BUG FIXES:
 * `resource/resource_turbot_file`: When creating a resource with no `content` attribute set, `apply` operation fails. ([#117](https://github.com/turbot/terraform-provider-turbot/issues/117))
+* `resource/resource_turbot_folder`: After deletion of `description` attribute, `plan` operation shows a diff. ([#127](https://github.com/turbot/terraform-provider-turbot/issues/127))
 * The profile argument in provider config had lower precedence than TURBOT_PROFILE set in environment variables. This has been corrected to give the provider config higher precedence.
 
 ## 1.6.3 (August 24, 2020)
