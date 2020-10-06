@@ -391,14 +391,10 @@ func markPropertiesForDeletion(d *schema.ResourceData, key string) (map[string]i
 		for _, key := range excludeContentProperties {
 			// set keys of old content to `nil` in new content
 			// any property which doesn't exist in config is set to nil
-			if _, ok := oldContent[key.(string)]; ok {
-				if getResourceType(d.Get("type").(string)) == "folder" {
-					if key != "description" {
-						newContent[key.(string)] = nil
-					}
-				}else {
-					newContent[key.(string)] = nil
-				}
+			// NOTE: for folder we cannot currently delete the description property
+			shouldDelete := !(getResourceType(d.Get("type").(string)) == "folder" &&  key == "description")
+			if _, ok := oldContent[key.(string)]; ok && shouldDelete {
+				newContent[key.(string)] = nil
 			}
 		}
 	}
