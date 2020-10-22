@@ -47,6 +47,7 @@ The following arguments are supported:
 - `parent` - (Required) ID or `aka` of the parent resource.
 - `title` - (Required) Short descriptive name for the file. This appears as the file name in the Turbot Console.
 - `tags` - (Optional) Labels that can be used to manage, group, categorize, search, and save metadata for this file.
+- `akas` - (Optional) Unique identifier of the resource.
 
 ## Attributes Reference
 
