@@ -13,7 +13,7 @@ The `turbot_resource` defines a resource in Turbot. Typically it is used to defi
 
 ## Example Usage
 
-###Creating Your First Resource
+**Creating Your First Resource**
 
 ```hcl
 resource "turbot_resource" "my_resource" {
@@ -35,7 +35,7 @@ EOT
 }
 ```
 
-###Using full_data
+**Using full_data**
 
 ```hcl
 resource "turbot_resource" "my_resource" {
@@ -51,7 +51,7 @@ EOT
 }
 ```
 
-###Using full_metadata
+**Using full_metadata**
 
 ```hcl
 resource "turbot_resource" "my_resource" {
