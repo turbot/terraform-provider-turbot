@@ -55,6 +55,7 @@ The following arguments are supported:
 - `parent` - (Required) ID or `aka` of the parent resource.
 - `title` - (Required) Short descriptive name for the folder. This appears as the folder name in the Turbot Console.
 - `tags` - (Optional) Labels that can be used to manage, group, categorize, search, and save metadata for this folder.
+- `akas` - (Optional) Unique identifier of the resource.
 
 ## Attributes Reference
 
