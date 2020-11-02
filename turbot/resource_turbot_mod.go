@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
+	errors2 "github.com/terraform-providers/terraform-provider-turbot/errorHandler"
 	"log"
 	"strings"
 	"time"
@@ -127,7 +128,7 @@ func resourceTurbotModInstall(d *schema.ResourceData, meta interface{}) error {
 		id := mod.Turbot.Id
 		return fmt.Errorf("mod %s is already installed ( id: %s ). To manage this mod using Terraform, import the mod using command 'terraform import <resource_address> <id>'", modAka, id)
 	}
-	if !apiClient.NotFoundError(err) {
+	if !errors2.NotFoundError(err) {
 		// if the error is not a 'not found' error, the mod is already installed
 		return err
 	}
@@ -196,7 +197,7 @@ func resourceTurbotModRead(d *schema.ResourceData, meta interface{}) error {
 	id := d.Id()
 	mod, err := client.ReadMod(id)
 	if err != nil {
-		if apiClient.NotFoundError(err) {
+		if errors2.NotFoundError(err) {
 			// mod was not found - clear id
 			d.SetId("")
 		}

@@ -1,4 +1,4 @@
-package apiClient
+package errorHandler
 
 import (
 	"fmt"
@@ -39,7 +39,7 @@ func ExtractErrorCode(err error) (int, error) {
 	return 0, rootError
 }
 
-func BuildHttpErrorMessage(err error) error {
+func BuildErrorMessage(err error) error {
 	// if it's a Not Found error, we return the actual graphql error.
 	if NotFoundError(err) {
 		return err
@@ -54,7 +54,7 @@ func BuildHttpErrorMessage(err error) error {
 		// retryable error codes - [502, 503, 504]
 		errString = fmt.Sprintf("The server returned a %s error (%v). Please wait a few minutes and try again.", http.StatusText(errCode), errCode)
 	} else {
-		// non-retryable errors
+		// non-retryable errorHandler
 		errString = fmt.Sprintf("The server returned a %s error (%v). Please contact Turbot support.", http.StatusText(errCode), errCode)
 	}
 	return errors.New(errString)

@@ -1,9 +1,5 @@
 package apiClient
 
-import (
-	"fmt"
-)
-
 // create a map of the properties we want the graphql query to return
 var samlDirectoryProperties = []interface{}{
 	map[string]string{"parent": "turbot.parentId"},
@@ -33,7 +29,7 @@ func (client *Client) ReadSamlDirectory(id string) (*SamlDirectory, error) {
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, fmt.Errorf("error saml directory: %s", err.Error())
+		return nil, client.handleReadError(err, id,"saml directory")
 	}
 	return &responseData.Resource, nil
 }
@@ -47,7 +43,7 @@ func (client *Client) CreateSamlDirectory(input map[string]interface{}) (*SamlDi
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating saml directory: %s", err.Error())
+		return nil, client.handleCreateError(err, input,"saml directory")
 	}
 	return &responseData.Resource, nil
 }
@@ -61,7 +57,7 @@ func (client *Client) UpdateSamlDirectory(input map[string]interface{}) (*SamlDi
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error updating saml directory: %s", err.Error())
+		return nil, client.handleUpdateError(err, input,"saml directory")
 	}
 	return &responseData.Resource, nil
 }

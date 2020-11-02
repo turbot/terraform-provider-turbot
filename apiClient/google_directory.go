@@ -20,7 +20,7 @@ func (client *Client) ReadGoogleDirectory(id string) (*GoogleDirectory, error) {
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, fmt.Errorf("error reading google directory: %s", err.Error())
+		return nil, client.handleReadError(err,id,"google")
 	}
 	return &responseData.Directory, nil
 }

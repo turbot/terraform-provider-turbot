@@ -3,6 +3,7 @@ package turbot
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
+	"github.com/terraform-providers/terraform-provider-turbot/errorHandler"
 	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 )
 
@@ -136,7 +137,7 @@ func resourceTurbotProfileRead(d *schema.ResourceData, meta interface{}) error {
 
 	profile, err := client.ReadProfile(id)
 	if err != nil {
-		if apiClient.NotFoundError(err) {
+		if errorHandler.NotFoundError(err) {
 			// profile was not found - clear id
 			d.SetId("")
 		}

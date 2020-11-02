@@ -1,9 +1,5 @@
 package apiClient
 
-import (
-	"fmt"
-)
-
 // create a map of the properties we want the graphql query to return
 var localDirectoryUserProperties = []interface{}{
 	map[string]string{"parent": "turbot.parentId"},
@@ -28,7 +24,7 @@ func (client *Client) CreateLocalDirectoryUser(input map[string]interface{}) (*L
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating local directory user: %s", err.Error())
+		return nil, client.handleCreateError(err, input,"local directory user")
 	}
 	return &responseData.Resource, nil
 }
@@ -39,7 +35,7 @@ func (client *Client) ReadLocalDirectoryUser(id string) (*LocalDirectoryUser, er
 	responseData := &LocalDirectoryUserResponse{}
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, fmt.Errorf("error reading local directory user: %s", err.Error())
+		return nil, client.handleReadError(err,id,"local directory user")
 	}
 	return &responseData.Resource, nil
 }
@@ -52,7 +48,7 @@ func (client *Client) UpdateLocalDirectoryUserResource(input map[string]interfac
 	}
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error updating local directory user: %s", err.Error())
+		return nil, client.handleUpdateError(err,input,"local directory user")
 	}
 	return &responseData.Resource, nil
 }

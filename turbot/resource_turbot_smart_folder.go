@@ -3,6 +3,7 @@ package turbot
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
+	"github.com/terraform-providers/terraform-provider-turbot/errorHandler"
 	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 )
 
@@ -102,7 +103,7 @@ func resourceTurbotSmartFolderRead(d *schema.ResourceData, meta interface{}) err
 
 	smartFolder, err := client.ReadSmartFolder(id)
 	if err != nil {
-		if apiClient.NotFoundError(err) {
+		if errorHandler.NotFoundError(err) {
 			// folder was not found - clear id
 			d.SetId("")
 		}

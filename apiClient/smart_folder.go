@@ -1,9 +1,5 @@
 package apiClient
 
-import (
-	"fmt"
-)
-
 func (client *Client) CreateSmartFolder(input map[string]interface{}) (*SmartFolder, error) {
 	query := createSmartFolderMutation()
 	responseData := &SmartFolderResponse{}
@@ -13,7 +9,7 @@ func (client *Client) CreateSmartFolder(input map[string]interface{}) (*SmartFol
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating smart folder: %s", err.Error())
+		return nil, client.handleCreateError(err, input,"smart folder")
 	}
 	return &responseData.SmartFolder, nil
 }
@@ -24,7 +20,7 @@ func (client *Client) ReadSmartFolder(id string) (*SmartFolder, error) {
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, fmt.Errorf("error reading smart folder: %s", err.Error())
+		return nil, client.handleReadError(err, id,"smart folder")
 	}
 	return &responseData.SmartFolder, nil
 }
@@ -37,7 +33,7 @@ func (client *Client) UpdateSmartFolder(input map[string]interface{}) (*SmartFol
 	}
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error updating smart folder: %s", err.Error())
+		return nil, client.handleUpdateError(err, input,"smart folder")
 	}
 	return &responseData.SmartFolder, nil
 }

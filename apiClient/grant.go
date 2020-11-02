@@ -14,7 +14,7 @@ func (client *Client) CreateGrant(input map[string]interface{}) (*TurbotGrantMet
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating grant: %s", err.Error())
+		return nil,client.handleUpdateError(err,input,"folder")
 	}
 	return &responseData.Grants.Turbot, nil
 }

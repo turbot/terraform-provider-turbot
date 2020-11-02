@@ -1,9 +1,5 @@
 package apiClient
 
-import (
-	"fmt"
-)
-
 var folderProperties = []interface{}{
 	//explicit mapping
 	map[string]string{
@@ -25,7 +21,7 @@ func (client *Client) CreateFolder(input map[string]interface{}) (*Folder, error
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating folder: %s", err.Error())
+		return nil, client.handleCreateError(err,input,"folder")
 	}
 	return &responseData.Resource, nil
 }
@@ -38,7 +34,7 @@ func (client *Client) ReadFolder(id string) (*Folder, error) {
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, fmt.Errorf("error reading folder: %s", err.Error())
+		return nil, client.handleReadError(err,id,"folder")
 	}
 	return &responseData.Resource, nil
 }
@@ -52,7 +48,7 @@ func (client *Client) UpdateFolder(input map[string]interface{}) (*Folder, error
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error updating folder: %s", err.Error())
+		return nil, client.handleUpdateError(err,input,"folder")
 	}
 	return &responseData.Resource, nil
 }
