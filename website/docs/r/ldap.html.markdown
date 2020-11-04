@@ -13,7 +13,7 @@ The `Turbot LDAP Directory` resource adds support for ldap directories. It is us
 
 ## Example Usage
 
-###Creating Your First LDAP Directory
+**Creating Your First LDAP Directory**
 
 ```hcl
 resource "turbot_ldap_directory" "test" {
