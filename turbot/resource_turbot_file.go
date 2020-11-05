@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
-	"github.com/terraform-providers/terraform-provider-turbot/errorHandler"
+	"github.com/terraform-providers/terraform-provider-turbot/errors"
 	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 )
 
@@ -110,7 +110,7 @@ func resourceTurbotFileRead(d *schema.ResourceData, meta interface{}) error {
 	id := d.Id()
 	resource, err := client.ReadFullResource(id)
 	if err != nil {
-		if errorHandler.NotFoundError(err) {
+		if errors.NotFoundError(err) {
 			// resource was not found - clear id
 			d.SetId("")
 		}

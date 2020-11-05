@@ -5,7 +5,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
-	"github.com/terraform-providers/terraform-provider-turbot/errorHandler"
+	"github.com/terraform-providers/terraform-provider-turbot/errors"
 	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 	"testing"
 )
@@ -220,7 +220,7 @@ var folderWithNoDescription = `{
 func testAccResourceConfigFolder(resourceType, data, metadata string) string {
 	config := fmt.Sprintf(`
 resource "turbot_resource" "test" {
-	parent = "tmod:@turbot/turbot#/"
+	parent = "tmod:@turbot/turbot#"
 	type = "%s"
 	data =  <<EOF
 %sEOF
@@ -234,7 +234,7 @@ resource "turbot_resource" "test" {
 func testAccResourceConfigAccount(resourceType, metadata, data string) string {
 	config := fmt.Sprintf(`
 resource "turbot_folder" "test" {
-	parent = "tmod:@turbot/turbot#/"
+	parent = "tmod:@turbot/turbot#"
 	title = "account_import"
 	description = "test folder for turbot terraform provider"
 }
@@ -276,7 +276,7 @@ func testAccCheckResourceDestroy(s *terraform.State) error {
 			if err == nil {
 				return fmt.Errorf("Alert still exists")
 			}
-			if !errorHandler.NotFoundError(err) {
+			if !errors.NotFoundError(err) {
 				return fmt.Errorf("expected 'not found' error, got %s", err)
 			}
 		}

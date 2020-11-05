@@ -5,7 +5,7 @@ import (
 	"github.com/go-yaml/yaml"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
-	"github.com/terraform-providers/terraform-provider-turbot/errorHandler"
+	"github.com/terraform-providers/terraform-provider-turbot/errors"
 	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 )
 
@@ -108,7 +108,7 @@ func resourceTurbotPolicySettingExists(d *schema.ResourceData, meta interface{})
 
 	_, err := client.ReadPolicySetting(id)
 	if err != nil {
-		if errorHandler.NotFoundError(err) {
+		if errors.NotFoundError(err) {
 			return false, nil
 		}
 		return false, err
@@ -148,7 +148,7 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 
 	policySetting, err := client.CreatePolicySetting(input)
 	if err != nil {
-		if !errorHandler.FailedValidationError(err) {
+		if !errors.FailedValidationError(err) {
 			d.SetId("")
 			return err
 		}
@@ -198,7 +198,7 @@ func resourceTurbotPolicySettingRead(d *schema.ResourceData, meta interface{}) e
 
 	policySetting, err := client.ReadPolicySetting(id)
 	if err != nil {
-		if errorHandler.NotFoundError(err) {
+		if errors.NotFoundError(err) {
 			// setting was not found - clear id
 			d.SetId("")
 		}
@@ -254,7 +254,7 @@ func resourceTurbotPolicySettingUpdate(d *schema.ResourceData, meta interface{})
 
 	policySetting, err := client.UpdatePolicySetting(input)
 	if err != nil {
-		if !errorHandler.FailedValidationError(err) {
+		if !errors.FailedValidationError(err) {
 			d.SetId("")
 			return err
 		}

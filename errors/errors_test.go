@@ -1,4 +1,4 @@
-package errorHandler
+package errors
 
 import (
 	"github.com/pkg/errors"

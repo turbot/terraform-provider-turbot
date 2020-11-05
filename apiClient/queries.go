@@ -9,7 +9,7 @@ import (
 
 // NOTE: we do not use a fragment for resource metadata as we just request the full turbot property
 // using turbot: get(path:"turbot")
-// This is because we saw errorHandler returning null for the turbot property for a non existent resource
+// This is because we saw errors returning null for the turbot property for a non existent resource
 // TODO fix this to use a fragment
 
 func turbotPolicyMetadataFragment(prefix string) string {

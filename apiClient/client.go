@@ -8,7 +8,7 @@ import (
 	"github.com/go-yaml/yaml"
 	"github.com/machinebox/graphql"
 	"github.com/mitchellh/go-homedir"
-	errorsHandler "github.com/terraform-providers/terraform-provider-turbot/errorHandler"
+	errorsHandler "github.com/terraform-providers/terraform-provider-turbot/errors"
 	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 	"io/ioutil"
 	"log"

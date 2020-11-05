@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
-	"github.com/terraform-providers/terraform-provider-turbot/errorHandler"
+	"github.com/terraform-providers/terraform-provider-turbot/errors"
 )
 
 func dataSourceTurbotControl() *schema.Resource {
@@ -60,7 +60,7 @@ func dataSourceTurbotControlRead(d *schema.ResourceData, meta interface{}) error
 
 	control, err := client.ReadControl(args)
 	if err != nil {
-		if errorHandler.NotFoundError(err) {
+		if errors.NotFoundError(err) {
 			// setting was not found - clear id
 			d.SetId("")
 		}

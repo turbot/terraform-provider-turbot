@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
-	"github.com/terraform-providers/terraform-provider-turbot/errorHandler"
+	"github.com/terraform-providers/terraform-provider-turbot/errors"
 )
 
 func dataSourceTurbotPolicyValue() *schema.Resource {
@@ -58,7 +58,7 @@ func dataSourceTurbotPolicyValueRead(d *schema.ResourceData, meta interface{}) e
 
 	policyValue, err := client.ReadPolicyValue(policyTypeUri, resourceAka)
 	if err != nil {
-		if errorHandler.NotFoundError(err) {
+		if errors.NotFoundError(err) {
 			// setting was not found - clear id
 			d.SetId("")
 		}

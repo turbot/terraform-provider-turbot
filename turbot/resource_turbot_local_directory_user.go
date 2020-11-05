@@ -3,7 +3,7 @@ package turbot
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
-	"github.com/terraform-providers/terraform-provider-turbot/errorHandler"
+	"github.com/terraform-providers/terraform-provider-turbot/errors"
 )
 
 // properties which must be passed to a create/update call
@@ -152,7 +152,7 @@ func resourceTurbotLocalDirectoryUserRead(d *schema.ResourceData, meta interface
 	id := d.Id()
 	localDirectoryUser, err := client.ReadLocalDirectoryUser(id)
 	if err != nil {
-		if errorHandler.NotFoundError(err) {
+		if errors.NotFoundError(err) {
 			// folder was not found - clear id
 			d.SetId("")
 		}

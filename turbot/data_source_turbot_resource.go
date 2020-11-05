@@ -3,7 +3,7 @@ package turbot
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
-	"github.com/terraform-providers/terraform-provider-turbot/errorHandler"
+	"github.com/terraform-providers/terraform-provider-turbot/errors"
 )
 
 func dataSourceTurbotResource() *schema.Resource {
@@ -52,7 +52,7 @@ func dataSourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) erro
 	resourceAka := d.Get("id").(string)
 	resource, err := client.ReadSerializableResource(resourceAka)
 	if err != nil {
-		if errorHandler.NotFoundError(err) {
+		if errors.NotFoundError(err) {
 			// setting was not found - clear id
 			d.SetId("")
 		}

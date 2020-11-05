@@ -5,7 +5,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
-	"github.com/terraform-providers/terraform-provider-turbot/errorHandler"
+	"github.com/terraform-providers/terraform-provider-turbot/errors"
 	"time"
 )
 
@@ -57,9 +57,9 @@ func resourceTurbotShadowResourceCreate(d *schema.ResourceData, meta interface{}
 	maxErrorRetries := 5
 	err = resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
 		turbotResource, err = getResource(filter, resourceAka, client)
-		// when we get NotFoundError, we retry for the timeout determined by the parameter TimeoutCreate, controlled by the config parameters timeouts.create (defaulting to 5 minutes). For other random/transient errorHandler retry 5 times (maxErrorRetries)
+		// when we get NotFoundError, we retry for the timeout determined by the parameter TimeoutCreate, controlled by the config parameters timeouts.create (defaulting to 5 minutes). For other random/transient errors retry 5 times (maxErrorRetries)
 		if err != nil {
-			if errorHandler.NotFoundError(err) {
+			if errors.NotFoundError(err) {
 				errorCount = 0
 			} else {
 				errorCount++

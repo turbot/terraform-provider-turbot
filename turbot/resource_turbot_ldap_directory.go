@@ -3,7 +3,7 @@ package turbot
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
-	"github.com/terraform-providers/terraform-provider-turbot/errorHandler"
+	"github.com/terraform-providers/terraform-provider-turbot/errors"
 	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 	"strings"
 )
@@ -250,7 +250,7 @@ func resourceTurbotLdapDirectoryRead(d *schema.ResourceData, meta interface{}) e
 
 	ldapDirectory, err := client.ReadLdapDirectory(id)
 	if err != nil {
-		if errorHandler.NotFoundError(err) {
+		if errors.NotFoundError(err) {
 			// local directory was not found - clear id
 			d.SetId("")
 		}

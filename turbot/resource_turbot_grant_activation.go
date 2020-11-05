@@ -3,7 +3,7 @@ package turbot
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
-	"github.com/terraform-providers/terraform-provider-turbot/errorHandler"
+	"github.com/terraform-providers/terraform-provider-turbot/errors"
 )
 
 var grantActivationInputProperties = []interface{}{"grant", "resource"}
@@ -79,7 +79,7 @@ func resourceTurbotGrantActivateRead(d *schema.ResourceData, meta interface{}) e
 
 	activeGrant, err := client.ReadGrantActivation(id)
 	if err != nil {
-		if errorHandler.NotFoundError(err) {
+		if errors.NotFoundError(err) {
 			// Grant was not found - clear id
 			d.SetId("")
 		}

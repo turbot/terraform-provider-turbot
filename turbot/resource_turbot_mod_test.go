@@ -5,7 +5,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
-	"github.com/terraform-providers/terraform-provider-turbot/errorHandler"
+	"github.com/terraform-providers/terraform-provider-turbot/errors"
 	"testing"
 )
 
@@ -266,8 +266,7 @@ func testAccMod_v5_0_0_Config() string {
 resource "turbot_mod" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	org = "turbot"
-	mod = "turbot-terraform-provider-test"
-	version = "5.0.0"
+	mod = "aws-vpc-security"
 }
 `
 }
@@ -374,7 +373,7 @@ func testAccModDestroy(s *terraform.State) error {
 			if err == nil {
 				return fmt.Errorf("Alert still exists")
 			}
-			if !errorHandler.NotFoundError(err) {
+			if !errors.NotFoundError(err) {
 				return fmt.Errorf("expected 'not found' error, got %s", err)
 			}
 		}

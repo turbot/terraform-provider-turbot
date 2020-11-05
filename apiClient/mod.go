@@ -64,7 +64,7 @@ func (client *Client) UninstallMod(modId string) error {
 		return fmt.Errorf("error uninstalling mod: %s", err.Error())
 	}
 	if !responseData.UninstallMod.Success {
-		return fmt.Errorf(" uninstallMod mutation ran with no errorHandler but failed to uninstall the mod")
+		return fmt.Errorf(" uninstallMod mutation ran with no errors but failed to uninstall the mod")
 	}
 
 	return nil

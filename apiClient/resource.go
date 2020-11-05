@@ -3,7 +3,7 @@ package apiClient
 import (
 	"fmt"
 	"github.com/mitchellh/mapstructure"
-	"github.com/terraform-providers/terraform-provider-turbot/errorHandler"
+	"github.com/terraform-providers/terraform-provider-turbot/errors"
 	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 	"log"
 )
@@ -151,7 +151,7 @@ func (client *Client) ResourceExists(id string) (bool, error) {
 	resource, err := client.ReadResource(id, nil)
 
 	if err != nil {
-		if errorHandler.NotFoundError(err) {
+		if errors.NotFoundError(err) {
 			return false, nil
 		}
 		return false, err
