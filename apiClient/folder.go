@@ -21,7 +21,7 @@ func (client *Client) CreateFolder(input map[string]interface{}) (*Folder, error
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, client.handleCreateError(err,input,"folder")
+		return nil, client.handleCreateError(err, input, "folder")
 	}
 	return &responseData.Resource, nil
 }
@@ -34,7 +34,7 @@ func (client *Client) ReadFolder(id string) (*Folder, error) {
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, client.handleReadError(err,id,"folder")
+		return nil, client.handleReadError(err, id, "folder")
 	}
 	return &responseData.Resource, nil
 }
@@ -48,7 +48,7 @@ func (client *Client) UpdateFolder(input map[string]interface{}) (*Folder, error
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, client.handleUpdateError(err,input,"folder")
+		return nil, client.handleUpdateError(err, input, "folder")
 	}
 	return &responseData.Resource, nil
 }

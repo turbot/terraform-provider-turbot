@@ -13,7 +13,7 @@ func (client *Client) CreatePolicySetting(input map[string]interface{}) (*Policy
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, client.handleCreateError(err, input,"policy setting")
+		return nil, client.handleCreateError(err, input, "policy setting")
 	}
 	return &responseData.PolicySetting, nil
 }
@@ -24,7 +24,7 @@ func (client *Client) ReadPolicySetting(id string) (*PolicySetting, error) {
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, client.handleReadError(err, id,"policy setting")
+		return nil, client.handleReadError(err, id, "policy setting")
 	}
 	return &responseData.PolicySetting, nil
 }
@@ -38,7 +38,7 @@ func (client *Client) UpdatePolicySetting(input map[string]interface{}) (*Policy
 	}
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, client.handleUpdateError(err, input,"policy setting")
+		return nil, client.handleUpdateError(err, input, "policy setting")
 	}
 	return &responseData.PolicySetting, nil
 }

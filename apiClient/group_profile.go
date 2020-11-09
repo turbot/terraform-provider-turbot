@@ -20,7 +20,7 @@ func (client *Client) CreateGroupProfile(input map[string]interface{}) (*GroupPr
 	}
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, client.handleCreateError(err,input,"group profile")
+		return nil, client.handleCreateError(err, input, "group profile")
 	}
 	return &responseData.Resource, nil
 }
@@ -33,7 +33,7 @@ func (client *Client) ReadGroupProfile(id string) (*GroupProfile, error) {
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, client.handleReadError(err,id,"group profile")
+		return nil, client.handleReadError(err, id, "group profile")
 	}
 	return &responseData.Resource, nil
 }
@@ -46,7 +46,7 @@ func (client *Client) UpdateGroupProfile(input map[string]interface{}) (*GroupPr
 	}
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, client.handleUpdateError(err, input,"group profile")
+		return nil, client.handleUpdateError(err, input, "group profile")
 	}
 	return &responseData.Resource, nil
 }

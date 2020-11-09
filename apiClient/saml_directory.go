@@ -29,7 +29,7 @@ func (client *Client) ReadSamlDirectory(id string) (*SamlDirectory, error) {
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, client.handleReadError(err, id,"saml directory")
+		return nil, client.handleReadError(err, id, "saml directory")
 	}
 	return &responseData.Resource, nil
 }
@@ -43,7 +43,7 @@ func (client *Client) CreateSamlDirectory(input map[string]interface{}) (*SamlDi
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, client.handleCreateError(err, input,"saml directory")
+		return nil, client.handleCreateError(err, input, "saml directory")
 	}
 	return &responseData.Resource, nil
 }
@@ -57,7 +57,7 @@ func (client *Client) UpdateSamlDirectory(input map[string]interface{}) (*SamlDi
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, client.handleUpdateError(err, input,"saml directory")
+		return nil, client.handleUpdateError(err, input, "saml directory")
 	}
 	return &responseData.Resource, nil
 }

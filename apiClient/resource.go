@@ -16,7 +16,7 @@ func (client *Client) CreateResource(input map[string]interface{}) (*TurbotResou
 	}
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, client.handleCreateError(err,input,"resource")
+		return nil, client.handleCreateError(err, input, "resource")
 	}
 	return &responseData.Resource.Turbot, nil
 }
@@ -29,7 +29,7 @@ func (client *Client) ReadResource(resourceAka string, properties map[string]str
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, client.handleReadError(err,resourceAka,"resource")
+		return nil, client.handleReadError(err, resourceAka, "resource")
 	}
 
 	resource, err := client.AssignResourceResults(responseData.Resource, properties)
@@ -46,7 +46,7 @@ func (client *Client) ReadFullResource(resourceAka string) (*Resource, error) {
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, client.handleReadError(err,resourceAka,"resource")
+		return nil, client.handleReadError(err, resourceAka, "resource")
 	}
 
 	resource, err := client.AssignResourceResults(responseData.Resource, nil)
@@ -74,7 +74,7 @@ func (client *Client) ReadSerializableResource(resourceAka string) (*Serializabl
 	// execute api call
 	err := client.doRequest(query, nil, responseData)
 	if err != nil {
-		return nil, client.handleReadError(err,resourceAka,"resource")
+		return nil, client.handleReadError(err, resourceAka, "resource")
 	}
 	resource := responseData.Resource
 
@@ -124,7 +124,7 @@ func (client *Client) UpdateResource(input map[string]interface{}) (*TurbotResou
 	}
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, client.handleUpdateError(err,input,"resource")
+		return nil, client.handleUpdateError(err, input, "resource")
 	}
 	return &responseData.Resource.Turbot, nil
 }

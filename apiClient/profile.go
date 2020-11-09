@@ -26,7 +26,7 @@ func (client *Client) CreateProfile(input map[string]interface{}) (*Profile, err
 	}
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, client.handleCreateError(err,input,"profile")
+		return nil, client.handleCreateError(err, input, "profile")
 	}
 	return &responseData.Resource, nil
 }
@@ -39,7 +39,7 @@ func (client *Client) ReadProfile(id string) (*Profile, error) {
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, client.handleReadError(err, id,"profile")
+		return nil, client.handleReadError(err, id, "profile")
 	}
 	return &responseData.Resource, nil
 }
@@ -52,7 +52,7 @@ func (client *Client) UpdateProfile(input map[string]interface{}) (*Profile, err
 	}
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, client.handleUpdateError(err, input,"profile")
+		return nil, client.handleUpdateError(err, input, "profile")
 	}
 	return &responseData.Resource, nil
 }
