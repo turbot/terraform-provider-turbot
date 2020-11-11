@@ -220,7 +220,7 @@ var folderWithNoDescription = `{
 func testAccResourceConfigFolder(resourceType, data, metadata string) string {
 	config := fmt.Sprintf(`
 resource "turbot_resource" "test" {
-	parent = "tmod:@turbot/turbot#"
+	parent = "tmod:@turbot/turbot#/"
 	type = "%s"
 	data =  <<EOF
 %sEOF
@@ -234,7 +234,7 @@ resource "turbot_resource" "test" {
 func testAccResourceConfigAccount(resourceType, metadata, data string) string {
 	config := fmt.Sprintf(`
 resource "turbot_folder" "test" {
-	parent = "tmod:@turbot/turbot#"
+	parent = "tmod:@turbot/turbot#/"
 	title = "account_import"
 	description = "test folder for turbot terraform provider"
 }

@@ -266,7 +266,8 @@ func testAccMod_v5_0_0_Config() string {
 resource "turbot_mod" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	org = "turbot"
-	mod = "aws-vpc-security"
+	mod = "turbot-terraform-provider-test"
+	version = "5.0.0"
 }
 `
 }

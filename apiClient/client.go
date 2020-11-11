@@ -293,22 +293,22 @@ func (client *Client) doRequest(query string, vars map[string]interface{}, respo
 func (client *Client) handleCreateError(err error, input map[string]interface{}, resourceType string ) error {
 	parent := input["parent"]
 	if errorsHandler.NotFoundError(err) {
-		return errors.New(fmt.Sprintf("error creating %s: parent resource %s not found",resourceType,parent))
+		return errors.New(fmt.Sprintf("error creating %s: parent resource not found: %s", resourceType, parent))
 	}
-	return errors.New(fmt.Sprintf("error creating %s: %s ",resourceType,err.Error()))
+	return errors.New(fmt.Sprintf("error creating %s: %s ", resourceType, err.Error()))
 }
 
 func (client *Client) handleReadError(err error, resource string, resourceType string ) error {
 	if errorsHandler.NotFoundError(err) {
-		return errors.New(fmt.Sprintf("error reading %s: resource not found: %s",resourceType,resource))
+		return errors.New(fmt.Sprintf("error reading %s: resource not found: %s", resourceType, resource))
 	}
-	return errors.New(fmt.Sprintf("error reading %s: %s ",resourceType,err.Error()))
+	return errors.New(fmt.Sprintf("error reading %s: %s ", resourceType, err.Error()))
 }
 
 func (client *Client) handleUpdateError(err error, input map[string]interface{}, resourceType string ) error {
 	resource := input["id"]
 	if errorsHandler.NotFoundError(err){
-		return errors.New(fmt.Sprintf("error updating %s: resource not found: %s",resourceType,resource))
+		return errors.New(fmt.Sprintf("error updating %s: resource not found: %s" , resourceType, resource))
 	}
-	return errors.New(fmt.Sprintf("error updating %s: %s ",resourceType,err.Error()))
+	return errors.New(fmt.Sprintf("error updating %s: %s ", resourceType, err.Error()))
 }
