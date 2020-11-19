@@ -1,4 +1,4 @@
-package apiClient
+package errors
 
 import (
 	"github.com/pkg/errors"

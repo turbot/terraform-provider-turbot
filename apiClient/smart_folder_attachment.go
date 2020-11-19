@@ -14,7 +14,7 @@ func (client *Client) CreateSmartFolderAttachment(input map[string]interface{}) 
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating smart folder attachment: %s", err.Error())
+		return nil, client.handleCreateError(err, input, "smart folder attachment")
 	}
 	return &responseData.SmartFolderAttach.Turbot, nil
 }

@@ -3,6 +3,7 @@ package apiClient
 import (
 	"fmt"
 	"github.com/mitchellh/mapstructure"
+	"github.com/terraform-providers/terraform-provider-turbot/errors"
 	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 	"log"
 )
@@ -15,7 +16,7 @@ func (client *Client) CreateResource(input map[string]interface{}) (*TurbotResou
 	}
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating resource: %s", err.Error())
+		return nil, client.handleCreateError(err, input, "resource")
 	}
 	return &responseData.Resource.Turbot, nil
 }
@@ -28,7 +29,7 @@ func (client *Client) ReadResource(resourceAka string, properties map[string]str
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, fmt.Errorf("error reading resource: %s", err.Error())
+		return nil, client.handleReadError(err, resourceAka, "resource")
 	}
 
 	resource, err := client.AssignResourceResults(responseData.Resource, properties)
@@ -45,7 +46,7 @@ func (client *Client) ReadFullResource(resourceAka string) (*Resource, error) {
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, fmt.Errorf("error reading resource: %s", err.Error())
+		return nil, client.handleReadError(err, resourceAka, "resource")
 	}
 
 	resource, err := client.AssignResourceResults(responseData.Resource, nil)
@@ -73,7 +74,7 @@ func (client *Client) ReadSerializableResource(resourceAka string) (*Serializabl
 	// execute api call
 	err := client.doRequest(query, nil, responseData)
 	if err != nil {
-		return nil, fmt.Errorf("error reading resource: %s", err.Error())
+		return nil, client.handleReadError(err, resourceAka, "resource")
 	}
 	resource := responseData.Resource
 
@@ -123,7 +124,7 @@ func (client *Client) UpdateResource(input map[string]interface{}) (*TurbotResou
 	}
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error updating resource: %s", err.Error())
+		return nil, client.handleUpdateError(err, input, "resource")
 	}
 	return &responseData.Resource.Turbot, nil
 }
@@ -150,7 +151,7 @@ func (client *Client) ResourceExists(id string) (bool, error) {
 	resource, err := client.ReadResource(id, nil)
 
 	if err != nil {
-		if NotFoundError(err) {
+		if errors.NotFoundError(err) {
 			return false, nil
 		}
 		return false, err

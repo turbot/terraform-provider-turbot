@@ -14,7 +14,7 @@ func (client *Client) CreateGrant(input map[string]interface{}) (*TurbotGrantMet
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating grant: %s", err.Error())
+		return nil, client.handleCreateError(err, input, "grant")
 	}
 	return &responseData.Grants.Turbot, nil
 }
@@ -25,7 +25,7 @@ func (client *Client) ReadGrant(id string) (*Grant, error) {
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, fmt.Errorf("error reading grant: %s", err.Error())
+		return nil, client.handleReadError(err, id, "grant")
 	}
 	return &responseData.Grant, nil
 }

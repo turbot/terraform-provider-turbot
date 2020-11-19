@@ -1,9 +1,5 @@
 package apiClient
 
-import (
-	"fmt"
-)
-
 var googleDirectoryProperties = []interface{}{
 	// implicit mappings
 	"title", "poolId", "profileIdTemplate", "groupIdTemplate", "loginNameTemplate", "clientSecret", "hostedDomain", "description", "clientId"}
@@ -20,7 +16,7 @@ func (client *Client) ReadGoogleDirectory(id string) (*GoogleDirectory, error) {
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, fmt.Errorf("error reading google directory: %s", err.Error())
+		return nil, client.handleReadError(err, id, "google")
 	}
 	return &responseData.Directory, nil
 }
@@ -33,7 +29,7 @@ func (client *Client) CreateGoogleDirectory(input map[string]interface{}) (*Turb
 	}
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating google directory: %s", err.Error())
+		return nil, client.handleCreateError(err, input, "google")
 	}
 	return &responseData.Resource.Turbot, nil
 }
@@ -47,7 +43,7 @@ func (client *Client) UpdateGoogleDirectory(input map[string]interface{}) (*Turb
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error updating google directory: %s", err.Error())
+		return nil, client.handleUpdateError(err, input, "google")
 	}
 	return &responseData.Resource.Turbot, nil
 }

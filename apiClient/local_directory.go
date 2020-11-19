@@ -1,9 +1,5 @@
 package apiClient
 
-import (
-	"fmt"
-)
-
 var localDirectoryProperties = []interface{}{
 	map[string]string{"parent": "turbot.parentId"},
 	"title",
@@ -20,7 +16,7 @@ func (client *Client) ReadLocalDirectory(id string) (*LocalDirectory, error) {
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, fmt.Errorf("error reading local directory: %s", err.Error())
+		return nil, client.handleReadError(err, id, "local directory")
 	}
 	return &responseData.Resource, nil
 }
@@ -34,7 +30,7 @@ func (client *Client) CreateLocalDirectory(input map[string]interface{}) (*Local
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating local directory: %s", err.Error())
+		return nil, client.handleCreateError(err, input, "local directory")
 	}
 	return &responseData.Resource, nil
 }
@@ -48,7 +44,7 @@ func (client *Client) UpdateLocalDirectory(input map[string]interface{}) (*Local
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error updating local directory: %s", err.Error())
+		return nil, client.handleUpdateError(err, input, "local directory")
 	}
 	return &responseData.Resource, nil
 }

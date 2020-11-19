@@ -14,7 +14,7 @@ func (client *Client) CreateGrantActivation(input map[string]interface{}) (*Turb
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating grant activation: %s", err.Error())
+		return nil, client.handleCreateError(err, input, "grant activation")
 	}
 	return &responseData.GrantActivate.Turbot, nil
 }
@@ -24,7 +24,7 @@ func (client *Client) ReadGrantActivation(id string) (*ActiveGrant, error) {
 	responseData := &ReadActiveGrantResponse{}
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, fmt.Errorf("error reading grant activation: %s", err.Error())
+		return nil, client.handleReadError(err, id, "grant activation")
 	}
 	return &responseData.ActiveGrant, nil
 }

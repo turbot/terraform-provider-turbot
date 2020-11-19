@@ -3,6 +3,7 @@ package turbot
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
+	"github.com/terraform-providers/terraform-provider-turbot/errors"
 	"github.com/terraform-providers/terraform-provider-turbot/helpers"
 	"strings"
 )
@@ -108,7 +109,7 @@ func resourceTurbotTurbotDirectoryRead(d *schema.ResourceData, meta interface{})
 
 	turbotDirectory, err := client.ReadTurbotDirectory(id)
 	if err != nil {
-		if apiClient.NotFoundError(err) {
+		if errors.NotFoundError(err) {
 			// local directoery was not found - clear id
 			d.SetId("")
 		}

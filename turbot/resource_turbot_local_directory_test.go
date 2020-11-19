@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
+	"github.com/terraform-providers/terraform-provider-turbot/errors"
 	"testing"
 )
 
@@ -156,7 +157,7 @@ func testAccCheckLocalDirectoryDestroy(s *terraform.State) error {
 			if err == nil {
 				return fmt.Errorf("Alert still exists")
 			}
-			if !apiClient.NotFoundError(err) {
+			if !errors.NotFoundError(err) {
 				return fmt.Errorf("expected 'not found' error, got %s", err)
 			}
 		}

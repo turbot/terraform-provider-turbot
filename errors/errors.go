@@ -1,4 +1,4 @@
-package apiClient
+package errors
 
 import (
 	"fmt"
@@ -39,7 +39,7 @@ func ExtractErrorCode(err error) (int, error) {
 	return 0, rootError
 }
 
-func BuildHttpErrorMessage(err error) error {
+func BuildErrorMessage(err error) error {
 	// if it's a Not Found error, we return the actual graphql error.
 	if NotFoundError(err) {
 		return err

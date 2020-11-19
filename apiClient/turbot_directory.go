@@ -1,9 +1,5 @@
 package apiClient
 
-import (
-	"fmt"
-)
-
 var turbotDirectoryProperties = []interface{}{
 	map[string]string{"parent": "turbot.parentId"},
 	"title",
@@ -23,7 +19,7 @@ func (client *Client) CreateTurbotDirectory(input map[string]interface{}) (*Turb
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, fmt.Errorf("error creating turbot directory: %s", err.Error())
+		return nil, client.handleCreateError(err, input, "turbot directory")
 	}
 	return &responseData.Resource, nil
 }
@@ -34,7 +30,7 @@ func (client *Client) ReadTurbotDirectory(id string) (*TurbotDirectory, error) {
 	responseData := &TurbotDirectoryResponse{}
 	// execute api call
 	if err := client.doRequest(query, nil, &responseData); err != nil {
-		return nil, fmt.Errorf("error reading turbot directory: %s", err.Error())
+		return nil, client.handleReadError(err, id, "turbot directory")
 	}
 	return &responseData.Resource, nil
 }
@@ -48,7 +44,7 @@ func (client *Client) UpdateTurbotDirectory(input map[string]interface{}) (*Turb
 
 	// execute api call
 	if err := client.doRequest(query, variables, &responseData); err != nil {
-		return nil, fmt.Errorf("error updating turbot directory: %s", err.Error())
+		return nil, client.handleUpdateError(err, input, "turbot directory")
 	}
 	return &responseData.Resource, nil
 }
