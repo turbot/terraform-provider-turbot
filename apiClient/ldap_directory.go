@@ -2,7 +2,7 @@ package apiClient
 
 import (
 	"fmt"
-	"github.com/terraform-providers/terraform-provider-turbot/helpers"
+	"github.com/turbot/terraform-provider-turbot/helpers"
 )
 
 var ldapDirectoryProperties = []interface{}{

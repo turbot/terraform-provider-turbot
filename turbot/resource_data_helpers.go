@@ -3,8 +3,8 @@ package turbot
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/iancoleman/strcase"
-	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
-	"github.com/terraform-providers/terraform-provider-turbot/helpers"
+	"github.com/turbot/terraform-provider-turbot/apiClient"
+	"github.com/turbot/terraform-provider-turbot/helpers"
 )
 
 // given the resource data and a list of properties, construct a map of property values

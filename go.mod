@@ -1,4 +1,4 @@
-module github.com/terraform-providers/terraform-provider-turbot
+module github.com/turbot/terraform-provider-turbot
 
 require (
 	github.com/Masterminds/semver v1.5.0

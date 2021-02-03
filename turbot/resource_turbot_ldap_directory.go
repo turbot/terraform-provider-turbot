@@ -2,9 +2,9 @@ package turbot
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
-	"github.com/terraform-providers/terraform-provider-turbot/errors"
-	"github.com/terraform-providers/terraform-provider-turbot/helpers"
+	"github.com/turbot/terraform-provider-turbot/apiClient"
+	"github.com/turbot/terraform-provider-turbot/errors"
+	"github.com/turbot/terraform-provider-turbot/helpers"
 	"strings"
 )
 

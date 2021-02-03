@@ -3,7 +3,7 @@ package turbot
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
+	"github.com/turbot/terraform-provider-turbot/apiClient"
 	"testing"
 )
 

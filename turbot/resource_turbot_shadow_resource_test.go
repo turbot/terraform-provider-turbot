@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
+	"github.com/turbot/terraform-provider-turbot/apiClient"
 	"testing"
 )
 
