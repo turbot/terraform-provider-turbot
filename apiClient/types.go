@@ -394,7 +394,7 @@ type LdapDirectory struct {
 	ProfileIdTemplate           string
 	GroupProfileIdTemplate      string
 	Url                         string
-	Status 						string
+	Status                      string
 	DistinguishedName           string
 	Base                        string
 	UserObjectFilter            string

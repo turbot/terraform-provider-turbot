@@ -146,7 +146,7 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 	var data string
 	if _, ok := d.GetOk("data"); ok {
 		// if data is set, only include the properties that are specified in the resource config
-		data, err := getStringValueForKey(d,"data",resource.Data)
+		data, err := getStringValueForKey(d, "data", resource.Data)
 		if err != nil {
 			return err
 		}
@@ -163,7 +163,7 @@ func resourceTurbotResourceRead(d *schema.ResourceData, meta interface{}) error 
 	var metadata string
 	if _, ok := d.GetOk("metadata"); ok {
 		// if metadata is set, only include the properties that are specified in the resource config
-		if metadata, err = getStringValueForKey(d,"metadata",resource.Turbot.Custom);err != nil {
+		if metadata, err = getStringValueForKey(d, "metadata", resource.Turbot.Custom); err != nil {
 			return fmt.Errorf("error retrieving metadata properties: %s", err.Error())
 		}
 		d.Set("metadata", metadata)
@@ -333,7 +333,7 @@ func getPropertiesFromConfig(d *schema.ResourceData, key string) (map[string]str
 	var properties map[string]string = nil
 	var err error = nil
 	if keyValue, ok := d.GetOk(key); ok {
-		if properties, err = helpers.PropertyMapFromJson(keyValue.(string)); err!= nil {
+		if properties, err = helpers.PropertyMapFromJson(keyValue.(string)); err != nil {
 			return nil, fmt.Errorf("error retrieving properties: %s", err.Error())
 		}
 	}
@@ -353,25 +353,25 @@ func buildResourceMapFromProperties(input map[string]interface{}, properties map
 // - build a map from the data or full_data property (specified by 'key' parameter)
 // - add a `nil` value for deleted properties
 // - remove any properties disallowed by the updateSchema
-func buildUpdatePayloadForData(d *schema.ResourceData, client *apiClient.Client, key string) (map[string]interface{},error) {
+func buildUpdatePayloadForData(d *schema.ResourceData, client *apiClient.Client, key string) (map[string]interface{}, error) {
 	var err error
-	dataMap, err := markPropertiesForDeletion(d,key)
+	dataMap, err := markPropertiesForDeletion(d, key)
 	if err != nil {
-		return nil ,err
+		return nil, err
 	}
 	excludedPropertiesInUpdate, err := client.BuildPropertiesFromUpdateSchema(d.Id(), []interface{}{"updateSchema"})
 	if err != nil {
-		return nil ,err
+		return nil, err
 	}
 	// build data object by excluding forbidden properties from either `data` and `full_data`
 	dataMap = buildDataUpdateProperties(dataMap, excludedPropertiesInUpdate)
 	return dataMap, nil
 }
 
-func buildUpdatePayloadForMetadata(d *schema.ResourceData, key string) (map[string]interface{},error)  {
-	metaData, err := markPropertiesForDeletion(d,key)
+func buildUpdatePayloadForMetadata(d *schema.ResourceData, key string) (map[string]interface{}, error) {
+	metaData, err := markPropertiesForDeletion(d, key)
 	if err != nil {
-		return nil ,err
+		return nil, err
 	}
 	return metaData, nil
 }
@@ -393,7 +393,7 @@ func markPropertiesForDeletion(d *schema.ResourceData, key string) (map[string]i
 			// set keys of old content to `nil` in new content
 			// any property which doesn't exist in config is set to nil
 			// NOTE: for folder we cannot currently delete the description property
-			shouldDelete := !(getResourceType(d.Get("type").(string)) == "folder" &&  key == "description")
+			shouldDelete := !(getResourceType(d.Get("type").(string)) == "folder" && key == "description")
 			if _, ok := oldContent[key.(string)]; ok && shouldDelete {
 				newContent[key.(string)] = nil
 			}
@@ -401,24 +401,25 @@ func markPropertiesForDeletion(d *schema.ResourceData, key string) (map[string]i
 	}
 	return newContent, nil
 }
+
 // - get properties for a given key from config
 // - build a map only including the properties fetched from config
 // - convert map to string
-func getStringValueForKey(d *schema.ResourceData, key string, readResponse map[string]interface{}) (string,error) {
+func getStringValueForKey(d *schema.ResourceData, key string, readResponse map[string]interface{}) (string, error) {
 	propertiesOfKey, err := getPropertiesFromConfig(d, key)
 	if err != nil {
-		return "",err
+		return "", err
 	}
 	metadata := buildResourceMapFromProperties(readResponse, propertiesOfKey)
 	metadataString, err := helpers.MapToJsonString(metadata)
 	if err != nil {
-		return "",fmt.Errorf("error building resource data: %s", err.Error())
+		return "", fmt.Errorf("error building resource data: %s", err.Error())
 	}
 	return metadataString, nil
 }
 
 func getResourceType(uri string) string {
-	splitsOfUri := strings.Split(uri,"/")
+	splitsOfUri := strings.Split(uri, "/")
 	// underflow check
 	var typeUri string
 	if len(splitsOfUri) > 0 {

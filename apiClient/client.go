@@ -66,9 +66,9 @@ func GetCredentials(config ClientConfig) (ClientCredentials, error) {
 	- ENV vars {TURBOT_ACCESS_KEY, TURBOT_SECRET_KEY, TURBOT_WORKSPACE}
 	- TURBOT_PROFILE env var
 */
-func getCredentialsByPrecedence(config ClientConfig)(ClientCredentials,error){
+func getCredentialsByPrecedence(config ClientConfig) (ClientCredentials, error) {
 	credentials := config.Credentials
-	if !CredentialsSet(credentials){
+	if !CredentialsSet(credentials) {
 		var err error
 		credentialsPath, err := getCredentialsPath(config)
 		if err != nil {
@@ -95,7 +95,7 @@ func getCredentialsByPrecedence(config ClientConfig)(ClientCredentials,error){
 	return credentials, nil
 }
 
-func getCredentialsFromEnv()(ClientCredentials, bool){
+func getCredentialsFromEnv() (ClientCredentials, bool) {
 	credentials := ClientCredentials{
 		AccessKey: os.Getenv("TURBOT_ACCESS_KEY"),
 		SecretKey: os.Getenv("TURBOT_SECRET_KEY"),
@@ -104,7 +104,7 @@ func getCredentialsFromEnv()(ClientCredentials, bool){
 	return credentials, CredentialsSet(credentials)
 }
 
-func getProfileCredentials(config ClientConfig)(ClientCredentials, error){
+func getProfileCredentials(config ClientConfig) (ClientCredentials, error) {
 	credentialsPath, err := getCredentialsPath(config)
 	if err != nil {
 		return ClientCredentials{}, err
@@ -116,7 +116,7 @@ func getProfileCredentials(config ClientConfig)(ClientCredentials, error){
 	return credentials, nil
 }
 
-func getCredentialsPath(config ClientConfig) (string,error) {
+func getCredentialsPath(config ClientConfig) (string, error) {
 	var err error
 	credentialsPath := config.CredentialsPath
 	if len(credentialsPath) == 0 {
@@ -131,8 +131,9 @@ func getCredentialsPath(config ClientConfig) (string,error) {
 			return "", err
 		}
 	}
-	return credentialsPath,err
+	return credentialsPath, err
 }
+
 // convert workspace into a fully formed api url
 func BuildApiUrl(rawWorkspace string) (string, error) {
 
@@ -290,7 +291,7 @@ func (client *Client) doRequest(query string, vars map[string]interface{}, respo
 	return nil
 }
 
-func (client *Client) handleCreateError(err error, input map[string]interface{}, resourceType string ) error {
+func (client *Client) handleCreateError(err error, input map[string]interface{}, resourceType string) error {
 	parent := input["parent"]
 	if errorsHandler.NotFoundError(err) {
 		return errors.New(fmt.Sprintf("error creating %s: parent resource not found: %s", resourceType, parent))
@@ -298,17 +299,17 @@ func (client *Client) handleCreateError(err error, input map[string]interface{},
 	return errors.New(fmt.Sprintf("error creating %s: %s ", resourceType, err.Error()))
 }
 
-func (client *Client) handleReadError(err error, resource string, resourceType string ) error {
+func (client *Client) handleReadError(err error, resource string, resourceType string) error {
 	if errorsHandler.NotFoundError(err) {
 		return errors.New(fmt.Sprintf("error reading %s: resource not found: %s", resourceType, resource))
 	}
 	return errors.New(fmt.Sprintf("error reading %s: %s ", resourceType, err.Error()))
 }
 
-func (client *Client) handleUpdateError(err error, input map[string]interface{}, resourceType string ) error {
+func (client *Client) handleUpdateError(err error, input map[string]interface{}, resourceType string) error {
 	resource := input["id"]
-	if errorsHandler.NotFoundError(err){
-		return errors.New(fmt.Sprintf("error updating %s: resource not found: %s" , resourceType, resource))
+	if errorsHandler.NotFoundError(err) {
+		return errors.New(fmt.Sprintf("error updating %s: resource not found: %s", resourceType, resource))
 	}
 	return errors.New(fmt.Sprintf("error updating %s: %s ", resourceType, err.Error()))
 }

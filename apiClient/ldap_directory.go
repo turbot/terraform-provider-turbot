@@ -54,7 +54,7 @@ func (client *Client) CreateLdapDirectory(input map[string]interface{}) (*LdapDi
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil, client.handleCreateError(err, input,"ldap directory")
+		return nil, client.handleCreateError(err, input, "ldap directory")
 	}
 	return &responseData.Resource, nil
 }
@@ -80,7 +80,7 @@ func (client *Client) UpdateLdapDirectory(input map[string]interface{}) (*LdapDi
 
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
-		return nil,  client.handleUpdateError(err, input, "ldap directory")
+		return nil, client.handleUpdateError(err, input, "ldap directory")
 	}
 	return &responseData.Resource, nil
 }

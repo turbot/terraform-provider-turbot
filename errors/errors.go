@@ -24,7 +24,7 @@ func FailedValidationError(err error) bool {
 func ExtractErrorCode(err error) (int, error) {
 	// error returned from machinebox/graphql is of graphql type
 	// errorNon200Template = "graphql: server returned a non-200 status code: 503"
-	rootError :=  err
+	rootError := err
 	if strings.Contains(err.Error(), "graphql") {
 		errorStringArray := strings.Split(err.Error(), ":")
 		if len(errorStringArray) == 3 {
