@@ -10,10 +10,10 @@ import (
 func TestCredentialsPrecedence(t *testing.T) {
 	type expected struct {
 		result bool
-		Creds ClientCredentials
+		Creds  ClientCredentials
 	}
 	type test struct {
-		name string
+		name     string
 		Config   ClientConfig
 		expected expected
 	}

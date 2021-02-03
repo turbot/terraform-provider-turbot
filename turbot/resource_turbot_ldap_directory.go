@@ -42,9 +42,10 @@ var ldapDirectoryInputProperties = []interface{}{
 	"disabled_group_filter",
 	"tags",
 }
+
 // exclude properties from input map to make a update call
 func getLdapDirectoryUpdateProperties() []interface{} {
-	excludedProperties := []string{"profile_id_template","group_profile_id_template","", "parent"}
+	excludedProperties := []string{"profile_id_template", "group_profile_id_template", "", "parent"}
 	return helpers.RemoveProperties(ldapDirectoryInputProperties, excludedProperties)
 }
 
@@ -88,9 +89,9 @@ func resourceTurbotLdapDirectory() *schema.Resource {
 				Required: true,
 			},
 			"password": {
-				Type:      schema.TypeString,
-				Required:  true,
-				Sensitive: true,
+				Type:             schema.TypeString,
+				Required:         true,
+				Sensitive:        true,
 				DiffSuppressFunc: suppressIfPasswordPresent,
 			},
 			"url": {
@@ -98,7 +99,7 @@ func resourceTurbotLdapDirectory() *schema.Resource {
 				Required: true,
 			},
 			"base": {
-				Type: schema.TypeString,
+				Type:     schema.TypeString,
 				Required: true,
 			},
 			"tls_enabled": {
