@@ -1,3 +1,16 @@
+## 1.8.0 (Febrary 4, 2021)
+ENHANCEMENTS:
+* `resource/resource_turbot_folder`: Add akas argument to make consistent with turbot_file. ([#91](https://github.com/turbot/terraform-provider-turbot/issues/91))
+* Improve clarity of error messages. ([#134](https://github.com/turbot/terraform-provider-turbot/issues/134))
+
+BUG FIXES:
+* `resource/resource_turbot_folder`: After removing description attribute, plan constantly shows a diff. ([#127](https://github.com/turbot/terraform-provider-turbot/issues/127))
+
+DOCUMENTATION:
+* `resource/resource_turbot_resource` and `resource/resource_turbot_ldap_directory`: Documentation updated ([#132](https://github.com/turbot/terraform-provider-turbot/issues/132))
+
+
+
 ## 1.7.0 (October 5, 2020)
 FEATURES:
 * **New Resource:** `turbot_ldap_directory` ([#56](https://github.com/turbot/terraform-provider-turbot/issues/56))
