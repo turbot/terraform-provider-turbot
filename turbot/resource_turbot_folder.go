@@ -42,8 +42,8 @@ func resourceTurbotFolder() *schema.Resource {
 				Required: true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:             schema.TypeString,
+				Optional:         true,
 				DiffSuppressFunc: suppressIfDescriptionNotPresent,
 			},
 			"tags": {
