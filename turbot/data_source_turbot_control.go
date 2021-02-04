@@ -3,8 +3,8 @@ package turbot
 import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
-	"github.com/terraform-providers/terraform-provider-turbot/errors"
+	"github.com/turbot/terraform-provider-turbot/apiClient"
+	"github.com/turbot/terraform-provider-turbot/errors"
 )
 
 func dataSourceTurbotControl() *schema.Resource {

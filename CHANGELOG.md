@@ -25,43 +25,43 @@ Transfer provider to Hashicorp registry. No user-facing changes.
 
 ## 1.6.0 (July 20, 2020)
 FEATURES:
-* **New Data Source:** `turbot_control` ([#32](https://github.com/terraform-providers/terraform-provider-turbot/issues/32))
+* **New Data Source:** `turbot_control` ([#32](https://github.com/turbot/terraform-provider-turbot/issues/32))
 
 ENHANCEMENTS:
-* `resource/resource_turbot_saml_directory`:  Add argument `allow_idp_initiated_sso`to provide support for Allow IdP-initiated SSO. ([#39](https://github.com/terraform-providers/terraform-provider-turbot/issues/39))
-* `resource/resource_turbot_mod`: Add `timeout` block to support `create` timeout. This is the length of time  provider waits for mod installation to complete. Default value is 15min ([#53](https://github.com/terraform-providers/terraform-provider-turbot/issues/53))
+* `resource/resource_turbot_saml_directory`:  Add argument `allow_idp_initiated_sso`to provide support for Allow IdP-initiated SSO. ([#39](https://github.com/turbot/terraform-provider-turbot/issues/39))
+* `resource/resource_turbot_mod`: Add `timeout` block to support `create` timeout. This is the length of time  provider waits for mod installation to complete. Default value is 15min ([#53](https://github.com/turbot/terraform-provider-turbot/issues/53))
 ## 1.5.0 (July 15, 2020)
 ENHANCEMENTS:
-* Internal errors (5xx) received from the Turbot server will now show a friendly error message. We hope you never see them, but if you do, they should be easier to understand. ([#54](https://github.com/terraform-providers/terraform-provider-turbot/issues/54))
+* Internal errors (5xx) received from the Turbot server will now show a friendly error message. We hope you never see them, but if you do, they should be easier to understand. ([#54](https://github.com/turbot/terraform-provider-turbot/issues/54))
 
 ## 1.4.0 (July 09, 2020)
 FEATURES:
-* **New Resource:** `turbot_file` ([#34](https://github.com/terraform-providers/terraform-provider-turbot/issues/34))
+* **New Resource:** `turbot_file` ([#34](https://github.com/turbot/terraform-provider-turbot/issues/34))
 
 BUG FIXES:
-* `resource/resource_turbot_saml_directory`: Deprecate `group_id_template` and `pool_id` arguments, as these are no longer required or supported by the Turbot API. If passed, these parameters will be ignored. ([#37](https://github.com/terraform-providers/terraform-provider-turbot/issues/37))
-* `resource/resource_turbot_local_directory`: Deprecate `group_id_template`, `login_name_template` and `pool_id` arguments, as these are no longer required or supported by the Turbot API. If passed, these parameters will be ignored. ([#37](https://github.com/terraform-providers/terraform-provider-turbot/issues/37))
+* `resource/resource_turbot_saml_directory`: Deprecate `group_id_template` and `pool_id` arguments, as these are no longer required or supported by the Turbot API. If passed, these parameters will be ignored. ([#37](https://github.com/turbot/terraform-provider-turbot/issues/37))
+* `resource/resource_turbot_local_directory`: Deprecate `group_id_template`, `login_name_template` and `pool_id` arguments, as these are no longer required or supported by the Turbot API. If passed, these parameters will be ignored. ([#37](https://github.com/turbot/terraform-provider-turbot/issues/37))
 ## 1.3.1 (July 02, 2020)
 BUG FIXES 
-* `resource/resource_turbot_mod`: After creation of resource, when running `terraform plan`, `version_current` attribute gives a `diff` .([#38](https://github.com/terraform-providers/terraform-provider-turbot/issues/38))
+* `resource/resource_turbot_mod`: After creation of resource, when running `terraform plan`, `version_current` attribute gives a `diff` .([#38](https://github.com/turbot/terraform-provider-turbot/issues/38))
 
 ## 1.3.0 (May 29, 2020)
 ENHANCEMENTS:
-* `resource/resource_turbot_policy_setting`: `template_input` attribute now supports either a string or an array of strings in `YAML` format. ([#11](https://github.com/terraform-providers/terraform-provider-turbot/issues/11))
-* `resource/resource_turbot_shadow_resource`: Add `timeout` block to support `create` timeout. Default value of `create` timeout is 5min ([#19](https://github.com/terraform-providers/terraform-provider-turbot/issues/19))
+* `resource/resource_turbot_policy_setting`: `template_input` attribute now supports either a string or an array of strings in `YAML` format. ([#11](https://github.com/turbot/terraform-provider-turbot/issues/11))
+* `resource/resource_turbot_shadow_resource`: Add `timeout` block to support `create` timeout. Default value of `create` timeout is 5min ([#19](https://github.com/turbot/terraform-provider-turbot/issues/19))
 
 BUG FIXES 
-* `resource/resource_turbot_smart_folder_attachment`: After importing a resource, when running `terraform plan`, a resource replacement would be required.([#8](https://github.com/terraform-providers/terraform-provider-turbot/issues/8))
+* `resource/resource_turbot_smart_folder_attachment`: After importing a resource, when running `terraform plan`, a resource replacement would be required.([#8](https://github.com/turbot/terraform-provider-turbot/issues/8))
 
 ## 1.2.0 (May 20, 2020)
 FEATURES:
-* **New Resource:** `turbot_turbot_directory` ([#1](https://github.com/terraform-providers/terraform-provider-turbot/issues/1))
+* **New Resource:** `turbot_turbot_directory` ([#1](https://github.com/turbot/terraform-provider-turbot/issues/1))
 
 ENHANCEMENTS:
-* `resource/resource_turbot_saml_directory`:  Add arguments `allow_group_syncing`,`profile_groups_attribute`, `group_filter` and default value of `name_id_format` to `UNSPECIFIED`. ([#3](https://github.com/terraform-providers/terraform-provider-turbot/issues/3))
+* `resource/resource_turbot_saml_directory`:  Add arguments `allow_group_syncing`,`profile_groups_attribute`, `group_filter` and default value of `name_id_format` to `UNSPECIFIED`. ([#3](https://github.com/turbot/terraform-provider-turbot/issues/3))
 
 BUG FIXES
-* `resource/resource_turbot_resource`: Fix `Data validation error` while doing a update on resource.([#13](https://github.com/terraform-providers/terraform-provider-turbot/issues/13))
+* `resource/resource_turbot_resource`: Fix `Data validation error` while doing a update on resource.([#13](https://github.com/turbot/terraform-provider-turbot/issues/13))
 
 ## 1.1.0 (April 21, 2020)
 BUG FIXES

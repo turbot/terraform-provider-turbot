@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/go-yaml/yaml"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-turbot/apiClient"
-	"github.com/terraform-providers/terraform-provider-turbot/errors"
-	"github.com/terraform-providers/terraform-provider-turbot/helpers"
+	"github.com/turbot/terraform-provider-turbot/apiClient"
+	"github.com/turbot/terraform-provider-turbot/errors"
+	"github.com/turbot/terraform-provider-turbot/helpers"
 )
 
 var policySettingInputProperties = []interface{}{"value", "precedence", "template", "template_input", "note", "valid_from_timestamp", "valid_to_timestamp", "type", "resource"}

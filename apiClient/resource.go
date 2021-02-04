@@ -3,8 +3,8 @@ package apiClient
 import (
 	"fmt"
 	"github.com/mitchellh/mapstructure"
-	"github.com/terraform-providers/terraform-provider-turbot/errors"
-	"github.com/terraform-providers/terraform-provider-turbot/helpers"
+	"github.com/turbot/terraform-provider-turbot/errors"
+	"github.com/turbot/terraform-provider-turbot/helpers"
 	"log"
 )
 
