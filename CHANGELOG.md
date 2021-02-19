@@ -1,3 +1,8 @@
+## 1.8.1 (Febrary 19, 2021)
+
+BUG FIXES:
+* Improve error handling upon failure to parse the credentials file. ([#141](https://github.com/turbot/terraform-provider-turbot/issues/141))
+
 ## 1.8.0 (Febrary 4, 2021)
 ENHANCEMENTS:
 * `resource/resource_turbot_folder`: Add akas argument to make consistent with turbot_file. ([#91](https://github.com/turbot/terraform-provider-turbot/issues/91))
