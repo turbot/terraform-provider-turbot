@@ -11,7 +11,6 @@ import (
 	errorsHandler "github.com/turbot/terraform-provider-turbot/errors"
 	"github.com/turbot/terraform-provider-turbot/helpers"
 	"io/ioutil"
-	"log"
 	"net/url"
 	"os"
 	"path"
@@ -211,7 +210,7 @@ func loadProfile(credentialsPath, profile string) (ClientCredentials, error) {
 	var credentialsMap = map[string]ClientCredentials{}
 	err = yaml.Unmarshal(yamlFile, &credentialsMap)
 	if err != nil {
-		log.Fatalf("Unmarshal: %v", err)
+		return ClientCredentials{}, fmt.Errorf("Failed to unmarshal credentials file %s: %v", credentialsPath, err)
 	}
 	credentials := credentialsMap[profile]
 	if !CredentialsSet(credentials) {
