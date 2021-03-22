@@ -6,8 +6,7 @@ DIR=~/.terraform.d/plugins
 
 default: build
 
-build: fmtcheck
-	go install
+build:  install
 
 install: fmtcheck
 	mkdir -vp $(DIR)
