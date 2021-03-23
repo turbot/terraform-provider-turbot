@@ -222,6 +222,7 @@ func resourceTurbotPolicySettingRead(d *schema.ResourceData, meta interface{}) e
 	// if pgp_key has been supplied, encrypt value and value_source
 	storeValue(d, policySetting)
 	d.Set("precedence", policySetting.Precedence)
+	d.Set("resource", policySetting.Turbot.ResourceId)
 	d.Set("template", policySetting.Template)
 	d.Set("template_input", templateInput)
 	d.Set("note", policySetting.Note)
