@@ -1,3 +1,8 @@
+## 1.8.2 (March 23, 2021)
+
+BUG FIXES:
+* `resources/turbot_policy_setting`: Terraform import should save the resource information in the state file. ([#143](https://github.com/turbot/terraform-provider-turbot/issues/143))
+
 ## 1.8.1 (Febrary 19, 2021)
 
 BUG FIXES:
