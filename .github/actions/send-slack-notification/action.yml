@@ -1,0 +1,23 @@
+name: "Send Notification"
+description: "Notify Github action details after workflow execution complete"
+inputs:
+  webhookUrl:
+    description: "The slack webhook url in which the channel is registered"
+    required: true
+  messageBody:
+    description: "Message you want to post in channel"
+    required: true
+  channelName:
+    description: "Name of the slack channel in which you want to post message"
+    required: true
+  userName:
+    description: "The name of the BOT"
+    required: true
+  userIcon:
+    description: "The BOT icon which you want to show, e.g ':ghost:'"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - run: $GITHUB_ACTION_PATH/send-slack-notification.sh
+      shell: bash
