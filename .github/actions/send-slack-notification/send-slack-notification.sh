@@ -24,4 +24,4 @@ then
 fi
 
 # Command for posting the message to slack.
-curl -f -X POST --data-urlencode "payload={\"channel\": \"#${channel_name}\", \"username\": \"${username}\", \"text\": ${message_body} , \"icon_emoji\": \"${user_icon}\"}" ${webhook_url}
+curl -f -X POST --data-urlencode "payload={\"channel\": \"#${channel_name}\", \"username\": \"${username}\", \"text\": \"${message_body}\", \"icon_emoji\": \"${user_icon}\"}" ${webhook_url}
