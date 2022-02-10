@@ -1,14 +1,19 @@
+## 1.8.3 (February 10, 2022)
+
+ENHANCEMENTS:
+* Provider is now supported on `darwin/arm64` and `windows/arm64` platforms. ([#149](https://github.com/turbot/terraform-provider-turbot/issues/149))
+
 ## 1.8.2 (March 23, 2021)
 
 BUG FIXES:
 * `resources/turbot_policy_setting`: Terraform import should save the resource information in the state file. ([#143](https://github.com/turbot/terraform-provider-turbot/issues/143))
 
-## 1.8.1 (Febrary 19, 2021)
+## 1.8.1 (February 19, 2021)
 
 BUG FIXES:
 * Improve error handling upon failure to parse the credentials file. ([#141](https://github.com/turbot/terraform-provider-turbot/issues/141))
 
-## 1.8.0 (Febrary 4, 2021)
+## 1.8.0 (February 4, 2021)
 ENHANCEMENTS:
 * `resource/resource_turbot_folder`: Add akas argument to make consistent with turbot_file. ([#91](https://github.com/turbot/terraform-provider-turbot/issues/91))
 * Improve clarity of error messages. ([#134](https://github.com/turbot/terraform-provider-turbot/issues/134))
@@ -65,7 +70,7 @@ BUG FIXES:
 * `resource/resource_turbot_saml_directory`: Deprecate `group_id_template` and `pool_id` arguments, as these are no longer required or supported by the Turbot API. If passed, these parameters will be ignored. ([#37](https://github.com/turbot/terraform-provider-turbot/issues/37))
 * `resource/resource_turbot_local_directory`: Deprecate `group_id_template`, `login_name_template` and `pool_id` arguments, as these are no longer required or supported by the Turbot API. If passed, these parameters will be ignored. ([#37](https://github.com/turbot/terraform-provider-turbot/issues/37))
 ## 1.3.1 (July 02, 2020)
-BUG FIXES 
+BUG FIXES
 * `resource/resource_turbot_mod`: After creation of resource, when running `terraform plan`, `version_current` attribute gives a `diff` .([#38](https://github.com/turbot/terraform-provider-turbot/issues/38))
 
 ## 1.3.0 (May 29, 2020)
@@ -73,7 +78,7 @@ ENHANCEMENTS:
 * `resource/resource_turbot_policy_setting`: `template_input` attribute now supports either a string or an array of strings in `YAML` format. ([#11](https://github.com/turbot/terraform-provider-turbot/issues/11))
 * `resource/resource_turbot_shadow_resource`: Add `timeout` block to support `create` timeout. Default value of `create` timeout is 5min ([#19](https://github.com/turbot/terraform-provider-turbot/issues/19))
 
-BUG FIXES 
+BUG FIXES
 * `resource/resource_turbot_smart_folder_attachment`: After importing a resource, when running `terraform plan`, a resource replacement would be required.([#8](https://github.com/turbot/terraform-provider-turbot/issues/8))
 
 ## 1.2.0 (May 20, 2020)
@@ -133,7 +138,7 @@ ENHANCEMENTS:
 
 ## 1.0.0-beta.11 (December 6, 2019)
 BUG FIXES
-* `resource/turbot_shadow_resource`: `read error`. When doing the read of tracked resource, the shadow resource read query returns `child elements` as well. Fix this return tracked resource.([#162](https://github.com/turbotio/terraform-provider-turbot/issues/162))  
+* `resource/turbot_shadow_resource`: `read error`. When doing the read of tracked resource, the shadow resource read query returns `child elements` as well. Fix this return tracked resource.([#162](https://github.com/turbotio/terraform-provider-turbot/issues/162))
 
 TECHNICAL:
 * Fix `buildProperties` function to support `implicit & explicit` mapping ([#164](https://github.com/turbotio/terraform-provider-turbot/issues/164))
@@ -151,19 +156,19 @@ TECHNICAL:
 ## 1.0.0-beta.10 (November 20, 2019)
 
 BUG FIXES
-* Update Error handling for `not found` and `data validation` errors to correctly match error strings([#143](https://github.com/turbotio/terraform-provider-turbot/issues/143))  
+* Update Error handling for `not found` and `data validation` errors to correctly match error strings([#143](https://github.com/turbotio/terraform-provider-turbot/issues/143))
 
 ## 1.0.0-beta.9 (November 11, 2019)
 
 BUG FIXES
-* `resource/turbot_shadow_resource` : `deletion error`. When the tracked resource is deleted, the shadow resource would display an error. Fix this to delete the shadow resource when the tracked resource is deleted.([#127](https://github.com/turbotio/terraform-provider-turbot/issues/127)) 
+* `resource/turbot_shadow_resource` : `deletion error`. When the tracked resource is deleted, the shadow resource would display an error. Fix this to delete the shadow resource when the tracked resource is deleted.([#127](https://github.com/turbotio/terraform-provider-turbot/issues/127))
 
 ENHANCEMENTS:
 * `resource/turbot_profile` : make `directory_pool_id` optional
 * `resource/turbot_folder` : make `description` optional
 ## 1.0.0-beta.8 (November 4, 2019)
-NOTES: 
-This requires core version >=5.0.0-beta.96  
+NOTES:
+This requires core version >=5.0.0-beta.96
 
 ENHANCEMENTS:
 * `resource/turbot_policy_setting` : change default precedence to `REQUIRED`. ([#125](https://github.com/turbotio/terraform-provider-turbot/issues/125))
@@ -176,7 +181,7 @@ BUG FIXES
 ## 1.0.0-beta.7 (October 22, 2019)
 
 BREAKING CHANGES
-* `resource/turbot_grant` : change `profile` property to `identity` ([#106](https://github.com/turbotio/terraform-provider-turbot/issues/106)) 
+* `resource/turbot_grant` : change `profile` property to `identity` ([#106](https://github.com/turbotio/terraform-provider-turbot/issues/106))
 
 TECHNICAL:
 * `resource/turbot_grant` : to use new mutations ([#109](https://github.com/turbotio/terraform-provider-turbot/issues/109))
@@ -191,24 +196,24 @@ TECHNICAL:
 ENHANCEMENTS:
 * Add support for credentials profiles. ([#57](https://github.com/turbotio/terraform-provider-turbot/issues/57))
 * `resource/turbot_grant` : change arguments `permission_type` and `permission_level` to `type` and `level`. ([#92](https://github.com/turbotio/terraform-provider-turbot/issues/92))
-* `resource/turbot_policy_setting` : rename `policy_type` to `type`. ([#87](https://github.com/turbotio/terraform-provider-turbot/issues/87)) 
-* `resource/turbot_policy_value` : rename `policy_type` to `type`. ([#86](https://github.com/turbotio/terraform-provider-turbot/issues/86)) 
-* `resource/turbot_resource` : data provider schema. ([#42](https://github.com/turbotio/terraform-provider-turbot/issues/42))  
-* `resource/turbot_mod` : default `parent` property to the turbot resource. ([#93](https://github.com/turbotio/terraform-provider-turbot/issues/93)) 
+* `resource/turbot_policy_setting` : rename `policy_type` to `type`. ([#87](https://github.com/turbotio/terraform-provider-turbot/issues/87))
+* `resource/turbot_policy_value` : rename `policy_type` to `type`. ([#86](https://github.com/turbotio/terraform-provider-turbot/issues/86))
+* `resource/turbot_resource` : data provider schema. ([#42](https://github.com/turbotio/terraform-provider-turbot/issues/42))
+* `resource/turbot_mod` : default `parent` property to the turbot resource. ([#93](https://github.com/turbotio/terraform-provider-turbot/issues/93))
 * Update client to support renamed credentials environment variables `TURBOT_ACCESS_KEY` and `TURBOT_SECRET_KEY` ([#90](https://github.com/turbotio/terraform-provider-turbot/issues/90))
 
 TECHNICAL
-* Move MapFromResourceData and StoreAkas to helpers. ([#89](https://github.com/turbotio/terraform-provider-turbot/issues/89)) 
+* Move MapFromResourceData and StoreAkas to helpers. ([#89](https://github.com/turbotio/terraform-provider-turbot/issues/89))
 * Update all resources to support new resource mutation schema.  ([#94](https://github.com/turbotio/terraform-provider-turbot/issues/94))
 * Create helpers package. ([#89](https://github.com/turbotio/terraform-provider-turbot/issues/89))
-  
+
 
 BUG FIXES
 * Update client.BuildApiUrl to require both workspace and installation domain to be provided (e.g. `bananaman-turbot.putney.turbot.io`, rather than just `bananaman-turbot.putney`) ([#98](https://github.com/turbotio/terraform-provider-turbot/issues/98))
 
 ## 1.0.0-beta.5 (October 03, 2019)
 
-BUG FIXES: 
+BUG FIXES:
 * `resource/turbot_mod` : failing to install mods. Add error handling to the code to check for existing mod. ([#82](https://github.com/turbotio/terraform-provider-turbot/issues/82))
 
 FEATURES:
@@ -216,7 +221,7 @@ FEATURES:
 
 ENHANCEMENTS:
 * Add support for terraform 0.12. ([#75](https://github.com/turbotio/terraform-provider-turbot/issues/75))
-* Update all directory resource schemas to make status and directory_type computed.([#76](https://github.com/turbotio/terraform-provider-turbot/issues/76)) 
+* Update all directory resource schemas to make status and directory_type computed.([#76](https://github.com/turbotio/terraform-provider-turbot/issues/76))
 * `resource/turbot_policy_setting` : support encryption of value and value_source in state file. ([#77](https://github.com/turbotio/terraform-provider-turbot/issues/77))
 * `resource/turbot_google_directory` : support encryption of client_secret in state file. ([#47](https://github.com/turbotio/terraform-provider-turbot/issues/47))
 
@@ -229,13 +234,13 @@ FEATURES:
 * **New Resource:** `turbot_shadow_resource` ([#62](https://github.com/turbotio/terraform-provider-turbot/issues/62))
 
 ENHANCEMENTS:
-* Add tags support to various resources  ([#55](https://github.com/turbotio/terraform-provider-turbot/issues/55)): 
+* Add tags support to various resources  ([#55](https://github.com/turbotio/terraform-provider-turbot/issues/55)):
   * `turbot_folder`
   * `turbot_resource `
   * `turbot_local_directory`
   * `turbot_saml_directory`
   * `turbot_google_directory`
-  
+
 
 ## 1.0.0-beta.3 (September 20, 2019)
 
