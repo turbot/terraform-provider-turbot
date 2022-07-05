@@ -121,7 +121,13 @@ func resourceTurbotWatchRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("favorite", watch.Turbot.FavoriteId)
 	d.Set("handler", watch.Handler)
 	d.Set("description", watch.Description)
-	d.Set("resource", watch.Turbot.ResourceId)
+
+	// If the resource is imported, set the resourceId
+	// else set the value provided in the config
+	_, propertySet := d.GetOk("resource")
+	if !propertySet {
+		d.Set("resource", watch.Turbot.ResourceId)
+	}
 
 	return nil
 }
