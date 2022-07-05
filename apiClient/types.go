@@ -255,6 +255,19 @@ type Profile struct {
 	LastLoginTimestamp string
 }
 
+// Watches
+
+type WatchResponse struct {
+	Watch Watch
+}
+
+type Watch struct {
+	Turbot      TurbotWatchMetadata
+	Description string
+	Filters     []string
+	Handler     map[string]interface{}
+}
+
 // Smart folder
 
 type SmartFolderResponse struct {
@@ -478,4 +491,10 @@ type TurbotActiveGrantMetadata struct {
 	Id         string
 	GrantId    string
 	ResourceId string
+}
+
+type TurbotWatchMetadata struct {
+	Id         string
+	ResourceId string
+	FavoriteId string
 }
