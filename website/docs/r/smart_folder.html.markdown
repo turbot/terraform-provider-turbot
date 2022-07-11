@@ -15,12 +15,12 @@ nav:
 
 **Creating Your First Smart Folder**
 
- ```hcl
+```hcl
 resource "turbot_smart_folder" "folder" {
   parent  = "tmod:@turbot/turbot#/"
   title   = "My smart folder"
 }
-  ```
+```
 
 ## Argument Reference
 
@@ -31,14 +31,14 @@ The following arguments are supported:
 - `description` - (Optional) Brief description of the purpose and details of the smart folder.
 - `filter` - (Optional) A query syntax to identify the resources onto which the smart folder will automatically get attached.
 
-## Attributes Reference
+## Attributes Reference
 
 In addition to all the arguments above, the following attributes are exported:
 
 - `parent_akas` - A list of all `akas` for this smart folder’s parent resource.
 - `id` - Unique identifier of the resource.
 
-## Import
+## Import
 
 Smart Folders can be imported using the `id`. For example,
 

@@ -13,7 +13,7 @@ The `Turbot Google Directory` resource adds support for google directory. It is 
 
 ## Example Usage
 
-###Creating Your First Google Directory
+**Creating Your First Google Directory**
 
 ```hcl
 resource "turbot_google_directory" "google_apps" {

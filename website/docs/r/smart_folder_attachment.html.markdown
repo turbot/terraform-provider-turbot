@@ -63,7 +63,7 @@ The following arguments are supported:
 - `resource` - (Required) The id of the resource to which a smart folder will be attached.
 - `smart_folder` - (Required) The id of the smart folder to be attached.
 
-## Attributes Reference
+## Attributes Reference
 
 In addition to all the arguments above, the following attributes are exported:
 
