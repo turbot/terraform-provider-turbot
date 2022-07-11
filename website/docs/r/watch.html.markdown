@@ -34,7 +34,7 @@ The following arguments are supported:
 - `action` - (Required) The action the Watch takes when it finds a match, either a Turbot ID or URI.
 - `favorite` - (Optional) Favorite to associate the Watch with, as a Turbot ID.
 
-## Attributes Reference
+## Attributes Reference
 
 In addition to all the arguments above, the following attributes are exported:
 
@@ -42,7 +42,7 @@ In addition to all the arguments above, the following attributes are exported:
 - `handler` - The handler object for the watch.
 - `id` - Unique identifier of the watch.
 
-## Import
+## Import
 
 Watches can be imported using the `id`. For example,
 
