@@ -3,8 +3,9 @@ package apiClient
 import (
 	"bytes"
 	"fmt"
-	"github.com/blang/semver"
 	"strings"
+
+	"github.com/blang/semver"
 )
 
 // NOTE: we do not use a fragment for resource metadata as we just request the full turbot property
@@ -190,6 +191,62 @@ func readPolicyValueQuery(policyTypeUri string, resourceId string) string {
 	}
 }
 `, policyTypeUri, resourceId)
+}
+
+// watch
+func createWatchMutation() string {
+	return fmt.Sprintf(`mutation CreateWatch($input: CreateWatchInput!) {
+		watch: createWatch(input: $input) {
+			description
+			filters
+			handler
+			turbot {
+				id
+				resourceId
+				favoriteId
+			}
+		}
+	}`)
+}
+
+func readWatchQuery(id string) string {
+	return fmt.Sprintf(`query MyQuery {
+		watch(id: %s) {
+			description
+			filters
+			handler
+			turbot {
+				id
+				resourceId
+				favoriteId
+			}
+		}
+	}`, id)
+}
+
+func updateWatchMutation() string {
+	return fmt.Sprintf(`mutation UpdateWatch($input: UpdateWatchInput!) {
+		updateWatch(input: $input) {
+			description
+			filters
+			handler
+			turbot {
+				id
+				resourceId
+				favoriteId
+			}
+		}
+	}`)
+}
+
+func deleteWatchMutation(id string) string {
+	return fmt.Sprintf(`mutation DeleteMyWatch {
+		deleteWatch(input: {id: %s}) {
+			handler
+			filters
+		}
+	}
+	`, id)
 }
 
 // smart folder

@@ -2,10 +2,11 @@ package turbot
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/turbot/terraform-provider-turbot/apiClient"
-	"log"
 )
 
 func Provider() terraform.ResourceProvider {
@@ -51,6 +52,7 @@ func Provider() terraform.ResourceProvider {
 			"turbot_grant_activation":        resourceTurbotGrantActivation(),
 			"turbot_turbot_directory":        resourceTurbotTurbotDirectory(),
 			"turbot_file":                    resourceTurbotFile(),
+			"turbot_watch":                   resourceTurbotWatch(),
 			//"turbot_group_profile":           resourceTurbotGroupProfile(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
