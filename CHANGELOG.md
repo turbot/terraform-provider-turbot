@@ -1,3 +1,8 @@
+## 1.9.0 (July 11, 2022)
+
+FEATURES:
+* **New Resource:** `turbot_watch` ([#151](https://github.com/turbot/terraform-provider-turbot/pull/151))
+
 ## 1.8.3 (February 10, 2022)
 
 ENHANCEMENTS:
