@@ -1,3 +1,8 @@
+## 1.9.1 (July 11, 2022)
+
+DOCUMENTATION:
+* `resource/resource_turbot_google_directory`, `resource/resource_turbot_smart_folder`, `resource/resource_turbot_smart_folder_attachment` and `resource/resource_turbot_watch`: Documentation format updated. ([#154](https://github.com/turbot/terraform-provider-turbot/issues/154))
+
 ## 1.9.0 (July 11, 2022)
 
 FEATURES:
