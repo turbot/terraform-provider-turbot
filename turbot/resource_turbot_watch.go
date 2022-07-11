@@ -113,7 +113,6 @@ func resourceTurbotWatchRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	// NOTE currently turbot accepts array of filters but only uses the first
 	if len(watch.Filters) > 0 {
 		d.Set("filters", watch.Filters)
 	}

@@ -18,7 +18,7 @@ nav:
 ```hcl
 resource "turbot_watch" "watch" {
   resource = "185423120545381"
-  action   = "tmod:@turbot/firehose-aws-sns#/action/types/router",
+  action   = "tmod:@turbot/firehose-aws-sns#/action/types/router"
   filters  = [
     "level:self,descendant notificationType:active_grants_deleted"
   ]
