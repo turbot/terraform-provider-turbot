@@ -26,8 +26,8 @@ func turbotGrantMetadataFragment(prefix string) string {
 	return applyPrefix(prefix,
 		`turbot {
 	id
-	profileId  
-	resourceId 
+	profileId
+	resourceId
 }`)
 }
 
@@ -686,7 +686,7 @@ func (client *Client) GetTurbotWorkspaceVersion() (*semver.Version, error) {
 	// convert version value to semver value
 	version, err := semver.New(versionValue)
 	if err != nil {
-		return nil, fmt.Errorf("error reading turbot workspace version value: %s", err.Error())
+		return nil, fmt.Errorf("error reading guardrails workspace version value: %s", err.Error())
 	}
 	return version, nil
 }

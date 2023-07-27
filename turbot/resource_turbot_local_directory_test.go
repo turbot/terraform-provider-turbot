@@ -44,7 +44,7 @@ func TestAccLocalDirectory_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"turbot_local_directory.test", "title", "provider_test"),
 					resource.TestCheckResourceAttr(
-						"turbot_local_directory.test", "description", "test directory for turbot terraform provider"),
+						"turbot_local_directory.test", "description", "test directory for guardrails terraform provider"),
 				),
 			},
 			{
@@ -98,7 +98,7 @@ func testAccLocalDirectoryUpdateDescConfig() string {
 resource "turbot_local_directory" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	title = "provider_test"
-	description = "test directory for turbot terraform provider"
+	description = "test directory for guardrails terraform provider"
 	profile_id_template = "{{profile.email}}"
 }
 `

@@ -9,7 +9,7 @@ nav:
 
 # turbot\_smart\_folder\_attachment
 
-The `Turbot Smart Folder Attachment` resource attaches the smart folder to specific Turbot resources.
+The `Turbot Smart Folder Attachment` resource attaches the smart folder to specific Turbot Guardrails resources.
 
 
 
@@ -50,7 +50,7 @@ EOT
 
 ```hcl
 resource "turbot_smart_folder_attachment" "test" {
-  resource     = "${turbot_resource.my_resource.id}" 
+  resource     = "${turbot_resource.my_resource.id}"
   smart_folder = "${turbot_smart_folder.smart_folder.id}"
 }
 ```

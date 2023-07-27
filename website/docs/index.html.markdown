@@ -6,15 +6,15 @@ nav:
   order: 20
 ---
 
-# Provider: turbot
+# Turbot Guardrails Provider
 
-The Turbot provider is used to interact with the resources supported by Turbot.
+The Turbot Guardrails provider is used to interact with the resources supported by Turbot Guardrails.
 The provider needs to be configured with the proper credentials before it can
 be used.
 
 ## Authentication
 
-The Turbot provider offers a flexible means of providing credentials for authentication. The following methods are supported:
+The Turbot Guardrails provider offers a flexible means of providing credentials for authentication. The following methods are supported:
 
   - Credentials file
   - Static credentials
@@ -22,7 +22,7 @@ The Turbot provider offers a flexible means of providing credentials for authent
 
 ### Credentials file
 
-The Turbot provider credentials can be authenticated using the Turbot credentials file. In this case you need to add the provider information in the Terraform configuration file. By default Turbot stores your `credentials.yml` file at a default location - `.config/turbot/`.
+The Turbot Guardrails provider credentials can be authenticated using the Guardrails credentials file. In this case you need to add the provider information in the Terraform configuration file. By default Guardrails stores your `credentials.yml` file at a default location - `.config/turbot/`.
 
 **Example (Using your default profile)**
 
@@ -30,7 +30,7 @@ The Turbot provider credentials can be authenticated using the Turbot credential
      provider "turbot" {}
    ```
 
-**Example (Using a named profile)** 
+**Example (Using a named profile)**
 
    ```hcl
     provider "turbot" {
@@ -51,12 +51,12 @@ Alternatively you can also store your credentials in your desired path. This can
 
 ### Static Credentials
 
-  Static credentials can be provided by adding `access_key`, `secret_key` and `workspace` arguments in-line in the Turbot provider block. This information must be present in your configuration file.
+  Static credentials can be provided by adding `access_key`, `secret_key` and `workspace` arguments in-line in the Turbot Guardrails provider block. This information must be present in your configuration file.
 
 **Example Usage**
 
   ```hcl
-  # Configure the Turbot provider
+  # Configure the Turbot Guardrails provider
   provider "turbot" {
     workspace           = "https://example.com"
     access_key          = "b05*****-****-****-****-********580a"
@@ -76,7 +76,7 @@ Alternatively you can also store your credentials in your desired path. This can
 
 ### Environment Variables
 
-You can provide your credentials via `TURBOT_ACCESS_KEY`, `TURBOT_SECRET_KEY` and `TURBOT_WORKSPACE` environment variables, representing your Turbot Access Key, Secret Key and workspace respectively.
+You can provide your credentials via `TURBOT_ACCESS_KEY`, `TURBOT_SECRET_KEY` and `TURBOT_WORKSPACE` environment variables, representing your Turbot Guardrails Access Key, Secret Key and workspace respectively.
 
 **Example Usage**
 
@@ -90,8 +90,8 @@ You can provide your credentials via `TURBOT_ACCESS_KEY`, `TURBOT_SECRET_KEY` an
 
 The following arguments are used:
 
-* `workspace`  - Turbot workspace endpoint, e.g. `https://example.com/api/latest/graphql`. May also be set via the `TURBOT_WORKSPACE` environment variable.
-* `access_key` - Turbot access key, e.g. `1wxxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxe6`. May also be set via the `TURBOT_ACCESS_KEY` environment variable.
-* `secret_key` - Turbot secret key, e.g. `b90xxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxnp`. May also be set via the `TURBOT_SECRET_KEY` environment variable.
-* `profile`    - Turbot workspace profile, e.g. `testProfile`. May also be set via the `TURBOT_PROFILE` environment variable.
-* `credentials_file`    - Turbot shared credentials path, e.g. `user/testUser/{{credential_file_path}}`. May also be set via the `TURBOT_SHARED_CREDENTIALS_PATH` environment variable.
+* `workspace`  - Turbot Guardrails workspace endpoint, e.g. `https://example.com/api/latest/graphql`. May also be set via the `TURBOT_WORKSPACE` environment variable.
+* `access_key` - Turbot Guardrails access key, e.g. `1wxxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxe6`. May also be set via the `TURBOT_ACCESS_KEY` environment variable.
+* `secret_key` - Turbot Guardrails secret key, e.g. `b90xxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxnp`. May also be set via the `TURBOT_SECRET_KEY` environment variable.
+* `profile`    - Turbot Guardrails workspace profile, e.g. `testProfile`. May also be set via the `TURBOT_PROFILE` environment variable.
+* `credentials_file`    - Turbot Guardrails shared credentials path, e.g. `user/testUser/{{credential_file_path}}`. May also be set via the `TURBOT_SHARED_CREDENTIALS_PATH` environment variable.

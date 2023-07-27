@@ -28,7 +28,7 @@ func testAccResourceDataSourceConfig() string {
 resource "turbot_folder" "test" {
 	parent = "tmod:@turbot/turbot#/"
 	title = "provider_test"
-	description = "test folder for turbot terraform provider"
+	description = "test folder for guardrails terraform provider"
 	tags = {
 			Name = "terraform-test"
 		}

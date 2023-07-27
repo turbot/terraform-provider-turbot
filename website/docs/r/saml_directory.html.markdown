@@ -30,7 +30,7 @@ resource "turbot_saml_directory" "my_saml_directory" {
 The following arguments are supported:
 
 - `parent` - (Required) The `id` or `aka` of the level at which the SAML directory will be created.
-- `title` - (Required) Short descriptive name for the saml directory. This appears as the saml directory name in the Turbot Console. 
+- `title` - (Required) Short descriptive name for the saml directory. This appears as the saml directory name in the Turbot Guardrails Console.
 - `description` - (Optional) Brief description of the purpose and details of the directory.
 - `entry_point` - (Required) Defines the identity provider single sign-on URL.
 - `certificate` - (Required) The public key certificate ([base64-encoded](https://tools.ietf.org/html/rfc4648#section-4) ) which provides SAML entry point access

@@ -30,7 +30,7 @@ The following arguments are supported:
 
 - `mod` - (Required) The mod to be installed, updated or uninstalled. For example, `aws-s3`.
 - `org` - (Required) The parent author of the mod.
-- `parent` - (Optional) Installation point for the mod in the resource hierarchy. Defaults to the Turbot root resource.
+- `parent` - (Optional) Installation point for the mod in the resource hierarchy. Defaults to the Turbot Guardrails root resource.
 - `version` - (Optional) The version to be installed, e.g. `5.1.3`. If a semantic version range is given, e.g. `^5` then the latest available version from that range will be installed. Defaults to `*`, which is the latest available version of the mod.
 
 **Note:** Wild cards are not accepted as inputs for pre-releases.
