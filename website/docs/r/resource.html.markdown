@@ -9,7 +9,7 @@ nav:
 
 # turbot_resource
 
-The `turbot_resource` defines a resource in Turbot. Typically it is used to define the top level for a set of discoverable resources (e.g. an AWS account).
+The `turbot_resource` defines a resource in Turbot Guardrails. Typically it is used to define the top level for a set of discoverable resources (e.g. an AWS account).
 
 ## Example Usage
 
@@ -78,7 +78,7 @@ The following arguments are supported:
 - `full_metadata` - (Optional) JSON representation of all resource metadata properties to be set on the resource. NOTE: If additional metadata properties are set on the resource by other means, they are removed.
 - `akas` - (Optional) Unique identifier of the resource.
 - `tags` - (Optional) User defined label for grouping resources.
- 
+
 **NOTE**: Only one of the `data` and `full_data` must be specified. Likewise, only one of `metadata` and `full_metadata` must be set.
 
 ## Attributes Reference
@@ -86,7 +86,7 @@ The following arguments are supported:
 In addition to all the arguments above, the following attributes are exported:
 
 - `id` - Unique identifier of the resource.
-- `parent_akas` - A list of all `akas` for the Turbot resource's parent resource.
+- `parent_akas` - A list of all `akas` for the Turbot Guardrails resource's parent resource.
 
 ## Import
 

@@ -9,7 +9,7 @@ nav:
 
 # turbot\_turbot\_directory
 
-The `Turbot Directory` resource adds support for turbot directories. It is used to create and delete directory settings.
+The `Turbot Directory` resource adds support for authentication directories. It is used to create and delete directory settings.
 
 ## Example Usage
 
@@ -33,9 +33,9 @@ The `Turbot Directory` resource adds support for turbot directories. It is used 
 The following arguments are supported:
 
 - `parent` - (Required) ID or `aka` of the parent resource.
-- `profile_id_template` - (Required) A template to generate profile id for users authenticated through a turbot directory. For example, email id of the user.
+- `profile_id_template` - (Required) A template to generate profile id for users authenticated through a Turbot Guardrails directory. For example, email id of the user.
 - `title` - (Required) Short descriptive name for the directory.
-- `server` - (Required) 
+- `server` - (Required)
 - `description` - (Optional) Brief description of the purpose and details of the directory.
 - `tags` - (Optional) Labels that can be used to manage, group, categorize, search, and save metadata for the directory.
 
@@ -44,12 +44,12 @@ The following arguments are supported:
 In addition to all the arguments above, the following attributes are exported:
 
 - `parent_akas` - A list of all `akas` for this directory's parent resource.
-- `status` - Status of the turbot directory, which defaults to `ACTIVE`. Probable options are `ACTIVE`, `INACTIVE` and `NEW`.
-- `id` - Unique identifier of the turbot directory.
+- `status` - Status of the Turbot Guardrails directory, which defaults to `ACTIVE`. Probable options are `ACTIVE`, `INACTIVE` and `NEW`.
+- `id` - Unique identifier of the Turbot Guardrails directory.
 
 ## Import
 
-turbot Directories can be imported using the `id`. For example,
+Turbot Guardrails Directories can be imported using the `id`. For example,
 
 ```
 terraform import turbot_turbot_directory.test 123456789012

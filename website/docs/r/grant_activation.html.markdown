@@ -9,7 +9,7 @@ nav:
 
 # turbot\_grant\_activation
 
-The `Turbot Grant Activation` resource helps activate grants for Turbot users.
+The `Turbot Grant Activation` resource helps activate grants for Turbot Guardrails users.
 
 ## Example Usage
 

@@ -52,11 +52,11 @@ The following arguments are supported:
 In addition to all the arguments above, the following attributes are exported:
 
 - `id` - Unique identifier of the resource.
-- `parent_akas` - A list of all `akas` for this Turbot profiles's parent resource.
+- `parent_akas` - A list of all `akas` for this Turbot Guardrails profiles's parent resource.
 
 ## Import
 
-Turbot profiles can be imported using the `id`. For example,
+Turbot Guardrails profiles can be imported using the `id`. For example,
 
 ```
 terraform import turbot_folder.admin 123456789012

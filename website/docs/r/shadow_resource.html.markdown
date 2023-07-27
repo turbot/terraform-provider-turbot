@@ -9,10 +9,10 @@ nav:
 
 # turbot\_shadow\_resource
 
-Shadow resources allow management of the Turbot representation (a shadow) of
+Shadow resources allow management of the Turbot Guardrails representation (a shadow) of
 the actual resource. A shadow resource provides two important capabilities:
-  * The shadow will wait until Turbot has discovered the actual resource before being created.
-  * The shadow will be deleted before the actual resource, allowing a chance for Turbot managed changes to be cleaned up.
+  * The shadow will wait until Turbot Guardrails has discovered the actual resource before being created.
+  * The shadow will be deleted before the actual resource, allowing a chance for Turbot Guardrails managed changes to be cleaned up.
 
 
 ## Example Usage
@@ -20,11 +20,11 @@ the actual resource. A shadow resource provides two important capabilities:
 ### Set policy directly on a new cloud resource
 
 Setting a policy directly on a newly created resource will usually fail with
-a resource not found error. The resource is created, but Turbot has not had
+a resource not found error. The resource is created, but Turbot Guardrails has not had
 a chance to discover it yet. (Seconds matter!)
 
 A shadow resource provides a way to wait for the new resource to be discovered
-by Turbot, and then perform actions (e.g. setting a policy).
+by Turbot Guardrails, and then perform actions (e.g. setting a policy).
 
 ```hcl
 resource "aws_s3_bucket" "my_bucket" {

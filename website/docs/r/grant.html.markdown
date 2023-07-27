@@ -9,7 +9,7 @@ nav:
 
 # turbot_grant
 
-The `Turbot Grant` resource adds support for grants in Turbot. Turbot grant presents a cleaner and more explicit separation of duties on how users are managed in Turbot.
+The `Turbot Grant` resource adds support for grants in Turbot Guardrails. Turbot Guardrails grant presents a cleaner and more explicit separation of duties on how users are managed in Turbot Guardrails.
 
 ## Example Usage
 

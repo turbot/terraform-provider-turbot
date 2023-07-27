@@ -33,4 +33,4 @@ output "json" {
 * `metadata` - A set of data that describes and gives information about the data of the resource
 * `akas` - A list of akas for the resource
 * `tags` - User defined way of logically grouping resources.
-* `turbot` - JSON representation of turbot data of the resource.
+* `turbot` - JSON representation of guardrails data of the resource.

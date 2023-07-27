@@ -26,7 +26,7 @@ output "json" {
   value = "${data.turbot_policy_value.example}".value
 }
 ```
-Here is another example wherein the value of a turbot policy is used to set another policy on a folder.
+Here is another example wherein the value of a Turbot Guardrails policy is used to set another policy on a folder.
 
 ```hcl
 data "turbot_policy_value" "example" {
@@ -41,7 +41,7 @@ output "json" {
 resource "turbot_folder" "parent" {
   parent        = "tmod:@turbot/turbot#/"
   title         = "Data Source"
-  description   = "Testing the policy data source of Turbot"
+  description   = "Testing the policy data source of Turbot Guardrails"
 }
 resource "turbot_policy_setting" "test_policy" {
   resource      = "turbot_folder.parent.id"

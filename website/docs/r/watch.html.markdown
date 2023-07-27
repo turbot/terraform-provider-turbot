@@ -29,10 +29,10 @@ resource "turbot_watch" "watch" {
 
 The following arguments are supported:
 
-- `resource` - (Required) The resource to create the Watch for, either a Turbot ID or AKA.
+- `resource` - (Required) The resource to create the Watch for, either a Resource ID or AKA.
 - `filters` - (Required) A valid reverse filter to determine which notifications to process.
-- `action` - (Required) The action the Watch takes when it finds a match, either a Turbot ID or URI.
-- `favorite` - (Optional) Favorite to associate the Watch with, as a Turbot ID.
+- `action` - (Required) The action the Watch takes when it finds a match, either a Resource ID or URI.
+- `favorite` - (Optional) Favorite to associate the Watch with, as a Resource ID.
 
 ## Attributes Reference
 

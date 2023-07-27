@@ -9,7 +9,7 @@ nav:
 
 # turbot_folder
 
-The `Turbot Folder` resource adds support for folders. Turbot folders define a top level hierarchy to arrange resources and their policies.
+The `Turbot Folder` resource adds support for folders. Turbot Guardrails folders define a top level hierarchy to arrange resources and their policies.
 
 ## Example Usage
 
@@ -53,7 +53,7 @@ The following arguments are supported:
 
 - `description` - (Required) Brief description of the purpose and details of the folder.
 - `parent` - (Required) ID or `aka` of the parent resource.
-- `title` - (Required) Short descriptive name for the folder. This appears as the folder name in the Turbot Console.
+- `title` - (Required) Short descriptive name for the folder. This appears as the folder name in the Turbot Guardrails Console.
 - `tags` - (Optional) Labels that can be used to manage, group, categorize, search, and save metadata for this folder.
 - `akas` - (Optional) Unique identifier of the resource.
 

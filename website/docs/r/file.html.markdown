@@ -9,7 +9,7 @@ nav:
 
 # turbot_file
 
-The `Turbot file` resource allows storage of custom data within Turbot.
+The `Turbot file` resource allows storage of custom data within Turbot Guardrails.
 
 ## Example Usage
 
@@ -45,7 +45,7 @@ The following arguments are supported:
 - `content` - (Optional) Data of a file resource.
 - `description` - (Optional) Brief description of the purpose and details of the file.
 - `parent` - (Required) ID or `aka` of the parent resource.
-- `title` - (Required) Short descriptive name for the file. This appears as the file name in the Turbot Console.
+- `title` - (Required) Short descriptive name for the file. This appears as the file name in the Turbot Guardrails Console.
 - `tags` - (Optional) Labels that can be used to manage, group, categorize, search, and save metadata for this file.
 - `akas` - (Optional) Unique identifier of the resource.
 
