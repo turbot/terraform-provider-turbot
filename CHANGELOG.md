@@ -1,3 +1,8 @@
+## 1.10.0 (July 27, 2023)
+
+DOCUMENTATION:
+* Rebrand to Turbot Guardrails provider. ([#159](https://github.com/turbot/terraform-provider-turbot/issues/159))
+
 ## 1.9.1 (July 11, 2022)
 
 DOCUMENTATION:
