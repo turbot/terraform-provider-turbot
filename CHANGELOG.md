@@ -1,7 +1,7 @@
 ## 1.10.0 (July 27, 2023)
 
 DOCUMENTATION:
-* Rebrand to Turbot Guardrails provider. ([#159](https://github.com/turbot/terraform-provider-turbot/issues/159))
+* Rebrand to Turbot Guardrails provider. ([#159](https://github.com/turbot/terraform-provider-turbot/issues/159)). Resource and data source names in this provider have not changed to maintain compatibility, your existing templates will continue to work as without need to change anything.
 
 ## 1.9.1 (July 11, 2022)
 
