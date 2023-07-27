@@ -9,7 +9,7 @@ nav:
 
 # turbot\_turbot\_directory
 
-The `Turbot Directory` resource adds support for Turbot Guardrails directories. It is used to create and delete directory settings.
+The `Turbot Directory` resource adds support for authentication directories. It is used to create and delete directory settings.
 
 ## Example Usage
 
