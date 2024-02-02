@@ -13,6 +13,12 @@ type UpdateResourceResponse struct {
 	}
 }
 
+type PutResourceResponse struct {
+	Resource struct {
+		Turbot TurbotResourceMetadata
+	}
+}
+
 // note: the Resource property is just an interface{} - this is mapped manually into a Resource object,
 // rather than unmarshalled. This is to allow for dynamic data types, while always having the Turbot property
 type ReadResourceResponse struct {

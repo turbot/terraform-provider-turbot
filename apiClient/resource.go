@@ -129,6 +129,19 @@ func (client *Client) UpdateResource(input map[string]interface{}) (*TurbotResou
 	return &responseData.Resource.Turbot, nil
 }
 
+func (client *Client) PutResource(input map[string]interface{}) (*TurbotResourceMetadata, error) {
+	query := putResourceMutation(nil)
+	responseData := &PutResourceResponse{}
+	variables := map[string]interface{}{
+		"input": input,
+	}
+	// execute api call
+	if err := client.doRequest(query, variables, responseData); err != nil {
+		return nil, client.handleUpdateError(err, input, "resource")
+	}
+	return &responseData.Resource.Turbot, nil
+}
+
 func (client *Client) DeleteResource(aka string) error {
 	query := deleteResourceMutation()
 	// we do not care about the response

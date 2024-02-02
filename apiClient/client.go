@@ -59,11 +59,11 @@ func GetCredentials(config ClientConfig) (ClientCredentials, error) {
 }
 
 /*
-	precedence of credentials:
-	- Credentials set in config
-	- profile set in config
-	- ENV vars {TURBOT_ACCESS_KEY, TURBOT_SECRET_KEY, TURBOT_WORKSPACE}
-	- TURBOT_PROFILE env var
+precedence of credentials:
+- Credentials set in config
+- profile set in config
+- ENV vars {TURBOT_ACCESS_KEY, TURBOT_SECRET_KEY, TURBOT_WORKSPACE}
+- TURBOT_PROFILE env var
 */
 func getCredentialsByPrecedence(config ClientConfig) (ClientCredentials, error) {
 	credentials := config.Credentials
