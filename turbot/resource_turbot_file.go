@@ -158,7 +158,7 @@ func resourceTurbotFileUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 	input["id"] = id
 	// Delete `parent` from input because the putResource mutation does not expect `parent` in the input
-	delete(input, "parent") 
+	delete(input, "parent")
 	turbotMetadata, err := client.PutResource(input)
 	if err != nil {
 		return err
