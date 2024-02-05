@@ -37,7 +37,7 @@ func TestAccControlDataSource_TypeCheck(t *testing.T) {
 	})
 }
 
-//config
+// config
 func testAccControlConfig() string {
 	return `
 data "turbot_control" "test" {

@@ -375,6 +375,15 @@ func updateResourceMutation(properties []interface{}) string {
 }`, buildResourceProperties(properties))
 }
 
+func putResourceMutation(properties []interface{}) string {
+	return fmt.Sprintf(`mutation PutResource($input: PutResourceInput!) {
+ 	resource: putResource(input: $input) {
+%s
+		turbot: get(path:"turbot")
+	}
+}`, buildResourceProperties(properties))
+}
+
 func deleteResourceMutation() string {
 	return `mutation DeleteResource($input: DeleteResourceInput!) {
  	resource: deleteResource(input: $input) {
@@ -601,7 +610,7 @@ func updateSamlDirectoryMutation(properties []interface{}) string {
 }`, buildResourceProperties(properties))
 }
 
-//control
+// control
 func readControlQuery(args string) string {
 	return fmt.Sprintf(`{
 control(%s){
