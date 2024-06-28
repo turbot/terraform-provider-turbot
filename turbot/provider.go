@@ -53,6 +53,7 @@ func Provider() terraform.ResourceProvider {
 			"turbot_turbot_directory":        resourceTurbotTurbotDirectory(),
 			"turbot_file":                    resourceTurbotFile(),
 			"turbot_watch":                   resourceTurbotWatch(),
+			"turbot_policy_pack_attachment":  resourceTurbotPolicyPackAttachment(),
 			//"turbot_group_profile":           resourceTurbotGroupProfile(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
