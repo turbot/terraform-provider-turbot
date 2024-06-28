@@ -2,10 +2,11 @@ package apiClient
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"log"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCredentialsPrecedence(t *testing.T) {
@@ -85,7 +86,7 @@ func TestCredentialsPrecedence(t *testing.T) {
 		log.Println(test.name)
 		credentials, _ := GetCredentials(test.Config)
 		if !CredentialsSet(credentials) {
-			fmt.Sprintf(`In order to successfully execute TF calls, credentials must me set`)
+			fmt.Printf(`In order to successfully execute TF calls, credentials must me set`)
 		} else {
 			assert.Equal(t, test.expected.result, CredentialsSet(credentials))
 			assert.ObjectsAreEqual(test.expected.Creds, credentials)
