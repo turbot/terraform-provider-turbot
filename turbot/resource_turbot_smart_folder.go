@@ -8,7 +8,7 @@ import (
 )
 
 // properties which must be passed to a create/update call
-var smartFolderProperties = []interface{}{"title", "description", "parent", "filter"}
+var smartFolderProperties = []interface{}{"title", "description", "parent", "filter", "akas"}
 
 func getSmartFolderUpdateProperties() []interface{} {
 	excludedProperties := []string{"parent"}
@@ -53,6 +53,14 @@ func resourceTurbotSmartFolder() *schema.Resource {
 			"filter": {
 				Type:     schema.TypeString,
 				Optional: true,
+			},
+			"akas": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				DiffSuppressFunc: suppressIfAkaRemoved(),
 			},
 		},
 	}
@@ -122,6 +130,7 @@ func resourceTurbotSmartFolderRead(d *schema.ResourceData, meta interface{}) err
 	d.Set("parent", smartFolder.Parent)
 	d.Set("title", smartFolder.Title)
 	d.Set("description", smartFolder.Description)
+	d.Set("akas", smartFolder.Turbot.Akas)
 
 	return nil
 }

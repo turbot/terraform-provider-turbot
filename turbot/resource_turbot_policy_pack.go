@@ -8,7 +8,7 @@ import (
 )
 
 // properties which must be passed to a create/update call
-var policyPackProperties = []interface{}{"title", "description", "parent", "filter"}
+var policyPackProperties = []interface{}{"title", "description", "parent", "filter", "akas"}
 
 func getPolicyPackUpdateProperties() []interface{} {
 	excludedProperties := []string{"parent"}
@@ -54,6 +54,14 @@ func resourceTurbotPolicyPack() *schema.Resource {
 			"filter": {
 				Type:     schema.TypeString,
 				Optional: true,
+			},
+			"akas": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				DiffSuppressFunc: suppressIfAkaRemoved(),
 			},
 		},
 	}
@@ -123,6 +131,7 @@ func resourceTurbotPolicyPackRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set("parent", smartFolder.Parent)
 	d.Set("title", smartFolder.Title)
 	d.Set("description", smartFolder.Description)
+	d.Set("akas", smartFolder.Turbot.Akas)
 
 	return nil
 }
@@ -146,4 +155,29 @@ func resourceTurbotPolicyPackImport(d *schema.ResourceData, meta interface{}) ([
 		return nil, err
 	}
 	return []*schema.ResourceData{d}, nil
+}
+
+// Suppress the diff if trying to remove the akas completely
+func suppressIfAkaRemoved() func(k, old, new string, d *schema.ResourceData) bool {
+	return func(k, old, new string, d *schema.ResourceData) bool {
+		oldVal, newVal := d.GetChange("akas")
+		return slicesAreEquivalent(oldVal.([]interface{}), newVal.([]interface{}))
+	}
+}
+
+func slicesAreEquivalent(old, new []interface{}) bool {
+	if len(old) != len(new) {
+		return false
+	}
+	freqMap := make(map[interface{}]int)
+	for _, item := range old {
+		freqMap[item]++
+	}
+	for _, item := range new {
+		if count, exists := freqMap[item]; !exists || count == 0 {
+			return false
+		}
+		freqMap[item]--
+	}
+	return true
 }
