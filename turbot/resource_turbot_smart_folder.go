@@ -29,10 +29,11 @@ func resourceTurbotSmartFolder() *schema.Resource {
 			//aka of the parent resource
 			"parent": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 				// when doing a diff, the state file will contain the id of the parent but the config contains the aka,
 				// so we need custom diff code
 				DiffSuppressFunc: suppressIfAkaMatches("parent_akas"),
+				Default:          "tmod:@turbot/turbot#/",
 			},
 			//when doing a read, fetch the parent akas to use in suppressIfAkaMatches
 			"parent_akas": {
