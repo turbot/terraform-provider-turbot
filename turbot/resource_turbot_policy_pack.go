@@ -8,31 +8,31 @@ import (
 )
 
 // properties which must be passed to a create/update call
-var smartFolderProperties = []interface{}{"title", "description", "parent", "filter", "akas"}
+var policyPackProperties = []interface{}{"title", "description", "parent", "filter", "akas"}
 
-func getSmartFolderUpdateProperties() []interface{} {
+func getPolicyPackUpdateProperties() []interface{} {
 	excludedProperties := []string{"parent"}
-	return helpers.RemoveProperties(smartFolderProperties, excludedProperties)
+	return helpers.RemoveProperties(policyPackProperties, excludedProperties)
 }
 
-func resourceTurbotSmartFolder() *schema.Resource {
+func resourceTurbotPolicyPack() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceTurbotSmartFolderCreate,
-		Read:   resourceTurbotSmartFolderRead,
-		Update: resourceTurbotSmartFolderUpdate,
-		Delete: resourceTurbotSmartFolderDelete,
-		Exists: resourceTurbotSmartFolderExists,
+		Create: resourceTurbotPolicyPackCreate,
+		Read:   resourceTurbotPolicyPackRead,
+		Update: resourceTurbotPolicyPackUpdate,
+		Delete: resourceTurbotPolicyPackDelete,
+		Exists: resourceTurbotPolicyPackExists,
 		Importer: &schema.ResourceImporter{
-			State: resourceTurbotSmartFolderImport,
+			State: resourceTurbotPolicyPackImport,
 		},
 		Schema: map[string]*schema.Schema{
 			//aka of the parent resource
 			"parent": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type: schema.TypeString,
 				// when doing a diff, the state file will contain the id of the parent but the config contains the aka,
 				// so we need custom diff code
 				DiffSuppressFunc: suppressIfAkaMatches("parent_akas"),
+				Optional:         true,
 				Default:          "tmod:@turbot/turbot#/",
 			},
 			//when doing a read, fetch the parent akas to use in suppressIfAkaMatches
@@ -67,16 +67,16 @@ func resourceTurbotSmartFolder() *schema.Resource {
 	}
 }
 
-func resourceTurbotSmartFolderExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
+func resourceTurbotPolicyPackExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
 	client := meta.(*apiClient.Client)
 	id := d.Id()
 	return client.ResourceExists(id)
 }
 
-func resourceTurbotSmartFolderCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceTurbotPolicyPackCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
 	// build map of folder properties
-	input := mapFromResourceData(d, smartFolderProperties)
+	input := mapFromResourceData(d, policyPackProperties)
 
 	smartFolder, err := client.CreateSmartFolder(input)
 	if err != nil {
@@ -86,15 +86,15 @@ func resourceTurbotSmartFolderCreate(d *schema.ResourceData, meta interface{}) e
 	// assign the id
 	d.SetId(smartFolder.Turbot.Id)
 	// TODO Remove Read call once schema changes are In.
-	return resourceTurbotSmartFolderRead(d, meta)
+	return resourceTurbotPolicyPackRead(d, meta)
 }
 
-func resourceTurbotSmartFolderUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceTurbotPolicyPackUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
 	id := d.Id()
 
 	// build map of folder properties
-	input := mapFromResourceData(d, getSmartFolderUpdateProperties())
+	input := mapFromResourceData(d, getPolicyPackUpdateProperties())
 	input["id"] = id
 
 	_, err := client.UpdateSmartFolder(input)
@@ -103,10 +103,10 @@ func resourceTurbotSmartFolderUpdate(d *schema.ResourceData, meta interface{}) e
 	}
 	// set 'Read' Properties
 	// TODO Remove Read call once schema changes are In.
-	return resourceTurbotSmartFolderRead(d, meta)
+	return resourceTurbotPolicyPackRead(d, meta)
 }
 
-func resourceTurbotSmartFolderRead(d *schema.ResourceData, meta interface{}) error {
+func resourceTurbotPolicyPackRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
 	id := d.Id()
 
@@ -136,7 +136,7 @@ func resourceTurbotSmartFolderRead(d *schema.ResourceData, meta interface{}) err
 	return nil
 }
 
-func resourceTurbotSmartFolderDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceTurbotPolicyPackDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
 	id := d.Id()
 	err := client.DeleteResource(id)
@@ -150,9 +150,34 @@ func resourceTurbotSmartFolderDelete(d *schema.ResourceData, meta interface{}) e
 	return nil
 }
 
-func resourceTurbotSmartFolderImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-	if err := resourceTurbotSmartFolderRead(d, meta); err != nil {
+func resourceTurbotPolicyPackImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	if err := resourceTurbotPolicyPackRead(d, meta); err != nil {
 		return nil, err
 	}
 	return []*schema.ResourceData{d}, nil
+}
+
+// Suppress the diff if trying to remove the akas completely
+func suppressIfAkaRemoved() func(k, old, new string, d *schema.ResourceData) bool {
+	return func(k, old, new string, d *schema.ResourceData) bool {
+		oldVal, newVal := d.GetChange("akas")
+		return slicesAreEquivalent(oldVal.([]interface{}), newVal.([]interface{}))
+	}
+}
+
+func slicesAreEquivalent(old, new []interface{}) bool {
+	if len(old) != len(new) {
+		return false
+	}
+	freqMap := make(map[interface{}]int)
+	for _, item := range old {
+		freqMap[item]++
+	}
+	for _, item := range new {
+		if count, exists := freqMap[item]; !exists || count == 0 {
+			return false
+		}
+		freqMap[item]--
+	}
+	return true
 }
