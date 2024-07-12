@@ -1,3 +1,14 @@
+## 1.11.0  (July 12, 2024)
+
+FEATURES:
+
+* **New Resource:** `turbot_policy_pack` ([#171](https://github.com/turbot/terraform-provider-turbot/issues/171))
+* **New Resource:** `turbot_policy_pack_attachment` ([#173](https://github.com/turbot/terraform-provider-turbot/issues/173))
+
+ENHANCEMENTS:
+
+* `resource/turbot_smart_folder`: The `parent` argument is now optional and defaults to `tmod:@turbot/turbot#/`. ([#177](https://github.com/turbot/terraform-provider-turbot/issues/177))
+
 ## 1.10.1 (Febuary 05, 2024)
 
 BUG FIXES:
