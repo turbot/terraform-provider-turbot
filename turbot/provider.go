@@ -45,6 +45,7 @@ func Provider() terraform.ResourceProvider {
 			"turbot_local_directory_user":    resourceTurbotLocalDirectoryUser(),
 			"turbot_mod":                     resourceTurbotMod(),
 			"turbot_policy_pack":             resourceTurbotPolicyPack(),
+			"turbot_policy_pack_attachment":  resourceTurbotPolicyPackAttachment(),
 			"turbot_policy_setting":          resourceTurbotPolicySetting(),
 			"turbot_profile":                 resourceTurbotProfile(),
 			"turbot_resource":                resourceTurbotResource(),
@@ -54,13 +55,12 @@ func Provider() terraform.ResourceProvider {
 			"turbot_smart_folder_attachment": resourceTurbotSmartFolderAttachemnt(),
 			"turbot_turbot_directory":        resourceTurbotTurbotDirectory(),
 			"turbot_watch":                   resourceTurbotWatch(),
-			"turbot_policy_pack_attachment":  resourceTurbotPolicyPackAttachment(),
 			//"turbot_group_profile":           resourceTurbotGroupProfile(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
+			"turbot_control":      dataSourceTurbotControl(),
 			"turbot_policy_value": dataSourceTurbotPolicyValue(),
 			"turbot_resource":     dataSourceTurbotResource(),
-			"turbot_control":      dataSourceTurbotControl(),
 		},
 
 		ConfigureFunc: providerConfigure,
