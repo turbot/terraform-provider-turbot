@@ -63,8 +63,8 @@ Alternatively you can also store your credentials in your desired path. This can
     secret_key          = "d79*****-****-****-****-********b28"
   }
 
-  # Create a new smart folder
-  resource "turbot_smart_folder" "my_smart_folder" {
+  # Create a new policy pack
+  resource "turbot_policy_pack" "my_policy_pack" {
     # ...
   }
 
