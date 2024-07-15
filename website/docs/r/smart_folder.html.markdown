@@ -27,6 +27,7 @@ resource "turbot_smart_folder" "folder" {
 The following arguments are supported:
 
 - `title` - (Required) Short display name for the smart folder.
+- `akas` - (Optional) Unique identifier of the resource.
 - `description` - (Optional) Brief description of the purpose and details of the smart folder.
 - `filter` - (Optional) A query syntax to identify the resources onto which the smart folder will automatically get attached.
 - `parent` - (Optional) The `id` or `aka` of the level at which the smart folder will be created. Defaults to `tmod:@turbot/turbot#/`. 
