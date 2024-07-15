@@ -1,3 +1,9 @@
+## 1.11.1 (July 15, 2024)
+
+DOCUMENTATION:
+
+* `resource/turbot_policy_pack`: Added documentation for `akas` attribute for the resource. ([#179](https://github.com/turbot/terraform-provider-turbot/issues/179))
+
 ## 1.11.0  (July 12, 2024)
 
 FEATURES:
