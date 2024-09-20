@@ -1,3 +1,9 @@
+## 1.11.2 (September 20, 2024)
+
+BUG FIXES:
+
+* `resource/turbot_policy_pack_attachment`: terraform apply failed to detect existing Policy Pack attachments. ([#181](https://github.com/turbot/terraform-provider-turbot/issues/181))
+
 ## 1.11.1 (July 15, 2024)
 
 DOCUMENTATION:

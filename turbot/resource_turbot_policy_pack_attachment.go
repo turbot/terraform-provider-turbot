@@ -135,8 +135,9 @@ func buildPolicyPackId(policyPack, resource string) string {
 }
 
 func parsePolicyPackId(id string) (policyPack, resource string) {
-	segments := strings.Split(id, "_")
-	policyPack = segments[0]
-	resource = segments[1]
+	// Get the index of the first underscore
+	index := strings.Index(id, "_")
+	policyPack = id[:index]
+	resource = id[index+1:]
 	return
 }
