@@ -96,6 +96,26 @@ func resourceTurbotPolicySetting() *schema.Resource {
 				ForceNew: true,
 				Optional: true,
 			},
+			"enforce": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"value": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"template": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"template_input": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -140,6 +160,43 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 	// 2) pass value as 'valueSource'. update d.value to be the yaml parsed version of 'value'
 	input := mapFromResourceData(d, policySettingInputProperties)
 
+	// customInputPhase := map[string]map[string]string{
+	// 	"enforce": {
+	// 		"value": enforceValue["value"].(string),
+	// 	},
+	// }
+
+	var customInputPhase map[string]map[string]string
+	var enforceValString, enforceTemplate, enforceTemplateInput string
+	enforceValueList := d.Get("enforce").([]interface{})
+
+	if len(enforceValueList) > 0 {
+		enforceValue := enforceValueList[0].(map[string]interface{})
+
+		if len(enforceValue) > 0 {
+			if enforceValue["template"] != nil {
+				customInputPhase = map[string]map[string]string{
+					"enforce": {
+						"template":       enforceValue["template"].(string),
+						"template_input": enforceValue["template_input"].(string),
+					},
+				}
+				enforceTemplate = enforceValue["template"].(string)
+				enforceTemplateInput = enforceValue["template_input"].(string)
+			}
+
+			if enforceValue["value"] != nil {
+				customInputPhase = map[string]map[string]string{
+					"enforce": {
+						"value": enforceValue["value"].(string),
+					},
+				}
+				enforceValString = enforceValue["value"].(string)
+			}
+			input["phase"] = customInputPhase
+
+		}
+	}
 	if value, ok := d.GetOk("template_input"); ok {
 		// NOTE: ParseYamlString doesn't validate input as valid YAML format, on error it returns value
 		valueString := fmt.Sprintf("%v", value)
@@ -164,6 +221,7 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 		// update state value setting with yaml parsed valueSource
 		setValueFromValueSource(input["valueSource"].(string), d)
 	}
+
 	// if pgp_key has been supplied, encrypt value and value_source
 	storeValue(d, policySetting)
 	// set akas properties by loading resource and fetching the akas
@@ -186,6 +244,13 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 	d.Set("valid_from_timestamp", policySetting.ValidFromTimestamp)
 	d.Set("valid_to_timestamp", policySetting.ValidToTimestamp)
 	d.Set("type", policySetting.Type.Uri)
+	d.Set("phase", map[string]map[string]string{
+		"enforce": {
+			"value":          enforceValString,
+			"template":       enforceTemplate,
+			"template_input": enforceTemplateInput,
+		},
+	})
 	// assign the id
 	d.SetId(policySetting.Turbot.Id)
 
@@ -229,6 +294,11 @@ func resourceTurbotPolicySettingRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("valid_from_timestamp", policySetting.ValidFromTimestamp)
 	d.Set("valid_to_timestamp", policySetting.ValidToTimestamp)
 	d.Set("type", policySetting.Type.Uri)
+
+	if value, ok := d.GetOk("phase"); ok {
+		// If ok is true, 'example_attribute' is set in the configuration
+		d.Set("phase", value)
+	}
 	return nil
 }
 
