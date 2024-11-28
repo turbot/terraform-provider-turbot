@@ -162,7 +162,7 @@ func BuildApiUrl(rawWorkspace string) (string, error) {
 	if u.Path != "" {
 		apiVersionRegex := regexp.MustCompile(`\/api\/v[0-9]+$|latest$`)
 		if !apiVersionRegex.Match([]byte(u.Path)) {
-			return "", fmt.Errorf("invalid worksapce %s", workspace)
+			return "", fmt.Errorf("invalid workspace %s", workspace)
 		}
 		u.Path = path.Join(u.Path, "graphql")
 	} else {
