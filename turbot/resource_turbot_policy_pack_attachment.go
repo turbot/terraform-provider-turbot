@@ -10,7 +10,7 @@ import (
 
 var policyPackAttachProperties = map[string]string{
 	"resource":    "resource",
-	"policy_pack": "smartFolders",
+	"policy_pack": "policyPacks",
 }
 
 func resourceTurbotPolicyPackAttachment() *schema.Resource {
@@ -49,13 +49,13 @@ func resourceTurbotPolicyPackAttachmentExists(d *schema.ResourceData, meta inter
 	client := meta.(*apiClient.Client)
 	policyPackId, resource := parsePolicyPackId(d.Id())
 	// execute api call
-	smartFolder, err := client.ReadSmartFolder(policyPackId)
+	policyPack, err := client.ReadPolicyPack(policyPackId)
 	if err != nil {
 		return false, fmt.Errorf("error reading policy pack: %s", err.Error())
 	}
 
 	// find resource aka in list of attached resources
-	for _, attachedResource := range smartFolder.AttachedResources.Items {
+	for _, attachedResource := range policyPack.AttachedResources.Items {
 		if resource == attachedResource.Turbot.Id {
 			return true, nil
 		}
@@ -74,7 +74,7 @@ func resourceTurbotPolicyPackAttachmentCreate(d *schema.ResourceData, meta inter
 	policyPack := d.Get("policy_pack").(string)
 	input := mapFromResourceDataWithPropertyMap(d, policyPackAttachProperties)
 
-	_, err := client.CreateSmartFolderAttachment(input)
+	_, err := client.CreatePolicyPackAttachment(input)
 	if err != nil {
 		return err
 	}
@@ -113,7 +113,7 @@ func resourceTurbotPolicyPackAttachmentRead(d *schema.ResourceData, meta interfa
 func resourceTurbotPolicyPackAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
 	input := mapFromResourceDataWithPropertyMap(d, policyPackAttachProperties)
-	err := client.DeleteSmartFolderAttachment(input)
+	err := client.DeletePolicyPackAttachment(input)
 	if err != nil {
 		return err
 	}

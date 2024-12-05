@@ -80,7 +80,7 @@ func testAccCheckPolicyPackExists(resource string) resource.TestCheckFunc {
 			return fmt.Errorf("no Record ID is set")
 		}
 		client := testAccProvider.Meta().(*apiClient.Client)
-		_, err := client.ReadSmartFolder(rs.Primary.ID)
+		_, err := client.ReadPolicyPack(rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("error fetching item with resource %s. %s", resource, err)
 		}
@@ -92,7 +92,7 @@ func testAccCheckPolicyPackDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*apiClient.Client)
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type == "turbot_policy_pack" {
-			_, err := client.ReadSmartFolder(rs.Primary.ID)
+			_, err := client.ReadPolicyPack(rs.Primary.ID)
 			if err == nil {
 				return fmt.Errorf("alert still exists")
 			}

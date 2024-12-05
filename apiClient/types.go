@@ -308,6 +308,40 @@ type CreateSmartFolderAttachResponse struct {
 	}
 }
 
+// Policy Pack
+type PolicyPackResponse struct {
+	PolicyPack PolicyPack
+}
+
+type PolicyPack struct {
+	Turbot            TurbotResourceMetadata
+	Title             string
+	Description       string
+	Filters           []string
+	Targets           []string
+	Parent            string
+	AttachedResources struct {
+		Items []struct {
+			Turbot TurbotResourceMetadata
+		}
+	}
+}
+
+// Policy pack attachment
+type PolicyPackAttachment struct {
+	Turbot      TurbotResourceMetadata
+	Title       string
+	Description string
+	Filters     map[string]interface{}
+	Parent      string
+}
+
+type CreatePolicyPackAttachResponse struct {
+	PolicyPackAttach struct {
+		Turbot TurbotResourceMetadata
+	}
+}
+
 // Local directory
 type LocalDirectoryResponse struct {
 	Resource LocalDirectory
