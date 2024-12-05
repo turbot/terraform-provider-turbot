@@ -336,6 +336,11 @@ type PolicyPackAttachment struct {
 	Parent      string
 }
 
+type PolicyPackByPhase struct {
+	Phase string `json:"phase"`
+	Id    string `json:"id"`
+}
+
 type CreatePolicyPackAttachResponse struct {
 	PolicyPackAttach struct {
 		Turbot TurbotResourceMetadata

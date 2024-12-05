@@ -9,8 +9,7 @@ import (
 )
 
 var policyPackAttachProperties = map[string]string{
-	"resource":    "resource",
-	"policy_pack": "policyPacks",
+	"resource": "resource",
 }
 
 func resourceTurbotPolicyPackAttachment() *schema.Resource {
@@ -40,6 +39,11 @@ func resourceTurbotPolicyPackAttachment() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+			},
+			"phase": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
 			},
 		},
 	}
@@ -74,6 +78,17 @@ func resourceTurbotPolicyPackAttachmentCreate(d *schema.ResourceData, meta inter
 	policyPack := d.Get("policy_pack").(string)
 	input := mapFromResourceDataWithPropertyMap(d, policyPackAttachProperties)
 
+	policyPackByPhase := []apiClient.PolicyPackByPhase{
+		{
+			Id: policyPack,
+		},
+	}
+
+	if phase, ok := d.GetOk("phase"); ok {
+		policyPackByPhase[0].Phase = phase.(string)
+	}
+	input["policyPacksPhase"] = policyPackByPhase
+
 	_, err := client.CreatePolicyPackAttachment(input)
 	if err != nil {
 		return err
@@ -88,6 +103,7 @@ func resourceTurbotPolicyPackAttachmentCreate(d *schema.ResourceData, meta inter
 	d.SetId(stateId)
 	d.Set("resource", resource)
 	d.Set("policy_pack", policyPack)
+	d.Set("phase", d.Get("phase").(string))
 	return nil
 }
 
