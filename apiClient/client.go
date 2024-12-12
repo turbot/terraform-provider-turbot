@@ -10,7 +10,6 @@ import (
 	"github.com/mitchellh/go-homedir"
 	errorsHandler "github.com/turbot/terraform-provider-turbot/errors"
 	"github.com/turbot/terraform-provider-turbot/helpers"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"path"
@@ -202,7 +201,7 @@ func loadProfile(credentialsPath, profile string) (ClientCredentials, error) {
 	if len(profile) == 0 {
 		profile = "default"
 	}
-	yamlFile, err := ioutil.ReadFile(credentialsPath)
+	yamlFile, err := os.ReadFile(credentialsPath)
 	if err != nil {
 		return ClientCredentials{}, err
 	}
