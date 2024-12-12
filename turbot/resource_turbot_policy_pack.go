@@ -8,7 +8,7 @@ import (
 )
 
 // properties which must be passed to a create/update call
-var policyPackProperties = []interface{}{"title", "description", "parent", "filter", "targets", "akas"}
+var policyPackProperties = []interface{}{"title", "description", "parent", "filter", "akas"}
 
 func getPolicyPackUpdateProperties() []interface{} {
 	excludedProperties := []string{"parent"}
@@ -55,13 +55,6 @@ func resourceTurbotPolicyPack() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"targets": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
 			"akas": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -85,13 +78,13 @@ func resourceTurbotPolicyPackCreate(d *schema.ResourceData, meta interface{}) er
 	// build map of folder properties
 	input := mapFromResourceData(d, policyPackProperties)
 
-	policyPack, err := client.CreatePolicyPack(input)
+	smartFolder, err := client.CreateSmartFolder(input)
 	if err != nil {
 		return err
 	}
 
 	// assign the id
-	d.SetId(policyPack.Turbot.Id)
+	d.SetId(smartFolder.Turbot.Id)
 	// TODO Remove Read call once schema changes are In.
 	return resourceTurbotPolicyPackRead(d, meta)
 }
@@ -104,7 +97,7 @@ func resourceTurbotPolicyPackUpdate(d *schema.ResourceData, meta interface{}) er
 	input := mapFromResourceData(d, getPolicyPackUpdateProperties())
 	input["id"] = id
 
-	_, err := client.UpdatePolicyPack(input)
+	_, err := client.UpdateSmartFolder(input)
 	if err != nil {
 		return err
 	}
@@ -117,7 +110,7 @@ func resourceTurbotPolicyPackRead(d *schema.ResourceData, meta interface{}) erro
 	client := meta.(*apiClient.Client)
 	id := d.Id()
 
-	policyPack, err := client.ReadPolicyPack(id)
+	smartFolder, err := client.ReadSmartFolder(id)
 	if err != nil {
 		if errors.NotFoundError(err) {
 			// folder was not found - clear id
@@ -128,29 +121,17 @@ func resourceTurbotPolicyPackRead(d *schema.ResourceData, meta interface{}) erro
 
 	// assign results back into ResourceData
 	// set parent_akas property by loading resource and fetching the akas
-	if err := storeAkas(policyPack.Turbot.ParentId, "parent_akas", d, meta); err != nil {
+	if err := storeAkas(smartFolder.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
 	// NOTE currently turbot accepts array of filters but only uses the first
-	if len(policyPack.Filters) > 0 {
-		d.Set("filter", policyPack.Filters[0])
+	if len(smartFolder.Filters) > 0 {
+		d.Set("filter", smartFolder.Filters[0])
 	}
-	d.Set("parent", policyPack.Parent)
-	d.Set("title", policyPack.Title)
-	d.Set("description", policyPack.Description)
-	d.Set("akas", policyPack.Turbot.Akas)
-
-	// The "targets" parameter can be provided as either an ID or the URI of the resource.
-	// However, the query response always returns IDs, which can cause a mismatch between
-	// the input and the state file. To maintain consistency, the input values are directly
-	// saved to the state file as-is.
-	if value, ok := d.GetOk("targets"); ok {
-		targets := make([]string, len(value.([]interface{})))
-		for i, target := range value.([]interface{}) {
-			targets[i] = target.(string)
-		}
-		d.Set("targets", targets)
-	}
+	d.Set("parent", smartFolder.Parent)
+	d.Set("title", smartFolder.Title)
+	d.Set("description", smartFolder.Description)
+	d.Set("akas", smartFolder.Turbot.Akas)
 
 	return nil
 }

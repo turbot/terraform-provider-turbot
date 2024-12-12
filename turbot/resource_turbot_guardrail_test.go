@@ -11,17 +11,17 @@ import (
 )
 
 // test suites
-func TestAccPolicyPack_Basic(t *testing.T) {
+func TestAccGuardrail_Basic(t *testing.T) {
 	resourceName := "turbot_policy_pack.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckPolicyPackDestroy,
+		CheckDestroy: testAccCheckGuardrailDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPolicyPackConfig(),
+				Config: testAccGuardrailConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckPolicyPackExists("turbot_policy_pack.test"),
+					testAccCheckGuardrailExists("turbot_policy_pack.test"),
 					resource.TestCheckResourceAttr("turbot_policy_pack.test", "title", "policy_pack"),
 					resource.TestCheckResourceAttr("turbot_policy_pack.test", "description", "Policy Pack Testing"),
 					resource.TestCheckResourceAttr("turbot_policy_pack.test", "parent", "178806508050433"),
@@ -29,9 +29,9 @@ func TestAccPolicyPack_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccPolicyPackUpdateDescConfig(),
+				Config: testAccGuardrailUpdateDescConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckPolicyPackExists("turbot_policy_pack.test"),
+					testAccCheckGuardrailExists("turbot_policy_pack.test"),
 					resource.TestCheckResourceAttr("turbot_policy_pack.test", "title", "policy_pack"),
 					resource.TestCheckResourceAttr("turbot_policy_pack.test", "description", "Policy Pack updated"),
 					resource.TestCheckResourceAttr("turbot_policy_pack.test", "parent", "178806508050433"),
@@ -49,7 +49,7 @@ func TestAccPolicyPack_Basic(t *testing.T) {
 }
 
 // configs
-func testAccPolicyPackConfig() string {
+func testAccGuardrailConfig() string {
 	return `
 resource "turbot_policy_pack" "test" {
 	filter = "resourceType:181381985925765 $.turbot.tags.a:b"
@@ -59,7 +59,7 @@ resource "turbot_policy_pack" "test" {
 `
 }
 
-func testAccPolicyPackUpdateDescConfig() string {
+func testAccGuardrailUpdateDescConfig() string {
 	return `
 resource "turbot_policy_pack" "test" {
 	filter = "resourceType:181381985925765 $.turbot.tags.a:b"
@@ -70,7 +70,7 @@ resource "turbot_policy_pack" "test" {
 }
 
 // helper functions
-func testAccCheckPolicyPackExists(resource string) resource.TestCheckFunc {
+func testAccCheckGuardrailExists(resource string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[resource]
 		if !ok {
@@ -80,7 +80,7 @@ func testAccCheckPolicyPackExists(resource string) resource.TestCheckFunc {
 			return fmt.Errorf("no Record ID is set")
 		}
 		client := testAccProvider.Meta().(*apiClient.Client)
-		_, err := client.ReadSmartFolder(rs.Primary.ID)
+		_, err := client.ReadPolicyPack(rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("error fetching item with resource %s. %s", resource, err)
 		}
@@ -88,11 +88,11 @@ func testAccCheckPolicyPackExists(resource string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckPolicyPackDestroy(s *terraform.State) error {
+func testAccCheckGuardrailDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*apiClient.Client)
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type == "turbot_policy_pack" {
-			_, err := client.ReadSmartFolder(rs.Primary.ID)
+			_, err := client.ReadPolicyPack(rs.Primary.ID)
 			if err == nil {
 				return fmt.Errorf("alert still exists")
 			}
