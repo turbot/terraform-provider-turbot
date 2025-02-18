@@ -106,8 +106,9 @@ type MuteControlResponse struct {
 }
 
 type MuteControl struct {
-	Mute interface{}
-	Type struct {
+	Mute  interface{}
+	State string
+	Type  struct {
 		Uri string
 	}
 	Turbot map[string]string

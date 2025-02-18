@@ -630,37 +630,35 @@ control(id:%s){
 }
 
 func muteControlMutation() string {
-	return fmt.Sprintf(`mutation MuteControl($input: MuteControlInput!) {
+	return `mutation MuteControl($input: MuteControlInput!) {
 		muteControl: muteControl(input: $input) {
-			turbot {
-				id
-				muteState
-				muteToTimestamp
-				resourceId
-			}
 			mute
 			type {
 				uri
 			}
+			state
+			turbot {
+				id
+				resourceId
+			}
 		}
-	}`)
+	}`
 }
 
 func unMuteControlMutation() string {
-	return fmt.Sprintf(`mutation UnmuteControl($input: UnmuteControlInput!) {
+	return `mutation UnmuteControl($input: UnmuteControlInput!) {
 		unmuteControl: unmuteControl(input: $input) {
-			turbot {
-				id
-				muteState
-				muteToTimestamp
-				resourceId
-			}
 			mute
 			type {
 				uri
+			}	
+			state
+			turbot {
+				id
+				resourceId
 			}
 		}
-	}`)
+	}`
 }
 
 // group profile
