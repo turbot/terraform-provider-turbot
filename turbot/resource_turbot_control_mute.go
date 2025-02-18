@@ -126,9 +126,15 @@ func resourceTurbotControlMuteCreate(d *schema.ResourceData, meta interface{}) e
 	d.SetId(muteControl.Turbot["id"])
 
 	d.Set("control_id", muteControl.Turbot["id"])
-	d.Set("resource", muteControl.Turbot["resourceId"])
 	d.Set("state", muteControl.State)
 	d.Set("control_type", muteControl.Type.Uri)
+
+	if d.Get("resource") != nil {
+		resourceID := d.Get("resource").(string)
+		d.Set("resource", resourceID)
+	} else {
+		d.Set("resource", muteControl.Turbot["resourceId"])
+	}
 
 	// Check control mute status
 	muteConfig := muteControl.Mute.(map[string]interface{})
@@ -166,8 +172,14 @@ func resourceTurbotControlMuteRead(d *schema.ResourceData, meta interface{}) err
 	d.SetId(control.Turbot["id"])
 	d.Set("control_id", control.Turbot["id"])
 	d.Set("control_type", control.Type.Uri)
-	d.Set("resource", control.Turbot["resourceId"])
 	d.Set("state", control.State)
+
+	if d.Get("resource") != nil {
+		resourceID := d.Get("resource").(string)
+		d.Set("resource", resourceID)
+	} else {
+		d.Set("resource", control.Turbot["resourceId"])
+	}
 
 	muteConfig := control.Mute.(map[string]interface{})
 	if muteConfig["toTimestamp"] != nil {
