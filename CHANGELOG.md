@@ -1,4 +1,4 @@
-## 1.12.0 (tbd)
+## 1.12.0 (February 19, 2025)
 
 FEATURES:
 
