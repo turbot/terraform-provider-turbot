@@ -1,12 +1,12 @@
 ## 1.12.0 (tbd)
 
-BUG FIXES:
-
-* Fixed typo in error message ([#184](https://github.com/turbot/terraform-provider-turbot/issues/184))
-
 FEATURES:
 
 * **New Resource:** `turbot_control_mute` ([#189](https://github.com/turbot/terraform-provider-turbot/issues/189))
+
+BUG FIXES:
+
+* Fixed typo in error message ([#184](https://github.com/turbot/terraform-provider-turbot/issues/184))
 
 DOCUMENTATION:
 
