@@ -1,3 +1,18 @@
+## 1.12.0 (tbd)
+
+BUG FIXES:
+
+* Fixed typo in error message ([#184](https://github.com/turbot/terraform-provider-turbot/issues/184))
+* Fixed spacing in `turbot_turbot_directory` documentation ([#192](https://github.com/turbot/terraform-provider-turbot/issues/192))
+
+FEATURES:
+
+* **New Resource:** `turbot_control_mute` ([#189](https://github.com/turbot/terraform-provider-turbot/issues/189))
+
+DOCUMENTATION:
+
+* `resource/turbot_policy_pack`: Update example for `turbot_policy_pack` resource. ([#188](https://github.com/turbot/terraform-provider-turbot/issues/188))
+
 ## 1.11.2 (September 20, 2024)
 
 BUG FIXES:
