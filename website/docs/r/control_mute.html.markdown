@@ -9,19 +9,31 @@ nav:
 
 # turbot_control_mute
 
-`Turbot Control Mute` allows muting a control to streamline operations without compromising security policies.
+Mute controls if you want to ignore them. The `turbot_control_mute` allows muting a control to help streamline operations without compromising security policies.
 
 ## Example Usage
 
-**Suppress alarms and errors for a AWS > EC2 > Instance > Approved control**
+**Suppress alarms and errors for an `AWS > EC2 > Instance > Approved` control**
 
 ```hcl
 resource "turbot_control_mute" "mute_instance_approved" {
   resource     = "arn:aws:ec2:us-east-1:123456789012:instance/i-0a2f40f8ac841fa32"
   control_type = "tmod:@turbot/aws-ec2#/control/types/instanceCmdb"
-  note         = "Muting the control"
+  note         = "Muting the control till alarm/error is resolved."
   to_timestamp = "2025-10-26T06:07:19.652Z"
   until_states = ["ok"]
+}
+```
+
+**Suppress error for an `AWS > S3 > Bucket > Tags` control**
+
+```hcl
+resource "turbot_control_mute" "mute_bucket_tags" {
+  resource     = "arn:aws:s3:::bucket-for-turbot-tags-validation"
+  control_type = "tmod:@turbot/aws-s3#/control/types/bucketTags"
+  note         = "Muting the control till error is resolved."
+  to_timestamp = "2025-10-26T06:07:19.652Z"
+  until_states = ["ok", "alarm", "skipped"]
 }
 ```
 
