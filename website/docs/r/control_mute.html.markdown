@@ -13,7 +13,7 @@ Mute controls if you want to ignore them. The `turbot_control_mute` allows mutin
 
 ## Example Usage
 
-**Suppress alarms and errors for an `AWS > EC2 > Instance > Approved` control**
+**Suppress alarm and error for an `AWS > EC2 > Instance > Approved` control**
 
 ```hcl
 resource "turbot_control_mute" "mute_instance_approved" {
