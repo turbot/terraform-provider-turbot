@@ -613,11 +613,12 @@ func updateSamlDirectoryMutation(properties []interface{}) string {
 // control
 func readControlQuery(args string) string {
 	return fmt.Sprintf(`{
-control(%s){
+control(id:%s){
 	type{
 		uri
 	}
 	state
+	mute
 	reason
 	details
 	turbot {
@@ -626,6 +627,38 @@ control(%s){
 	}
 }
 }`, args)
+}
+
+func muteControlMutation() string {
+	return `mutation MuteControl($input: MuteControlInput!) {
+		muteControl: muteControl(input: $input) {
+			mute
+			type {
+				uri
+			}
+			state
+			turbot {
+				id
+				resourceId
+			}
+		}
+	}`
+}
+
+func unMuteControlMutation() string {
+	return `mutation UnmuteControl($input: UnmuteControlInput!) {
+		unmuteControl: unmuteControl(input: $input) {
+			mute
+			type {
+				uri
+			}	
+			state
+			turbot {
+				id
+				resourceId
+			}
+		}
+	}`
 }
 
 // group profile
