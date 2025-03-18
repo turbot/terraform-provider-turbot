@@ -520,3 +520,43 @@ type TurbotWatchMetadata struct {
 	ResourceId string
 	FavoriteId string
 }
+
+// Campaign
+type CampaignResponse struct {
+	Campaign Campaign
+}
+
+type Campaign struct {
+	Turbot      TurbotResourceMetadata
+	Description string
+	Status      string
+	Title       string
+	Recipients  []string
+	Accounts    struct {
+		Items []struct {
+			Turbot TurbotResourceMetadata
+		}
+	}
+	Guardrails struct {
+		Items []struct {
+			Turbot TurbotResourceMetadata
+		}
+	}
+	Phases CampaignPhases `json:"phases"`
+}
+
+type CampaignPhases struct {
+	Draft   *TurbotCampaignPhaseMetadata `json:"draft,omitempty"`
+	Preview *TurbotCampaignPhaseMetadata `json:"preview,omitempty"`
+	Check   *TurbotCampaignPhaseMetadata `json:"check,omitempty"`
+	Enforce *TurbotCampaignPhaseMetadata `json:"enforce,omitempty"`
+	Detach  *TurbotCampaignPhaseMetadata `json:"detach,omitempty"`
+}
+
+type TurbotCampaignPhaseMetadata struct {
+	TransitionAt     string   `json:"transitionAt,omitempty"`
+	TransitionNotice string   `json:"transitionNotice,omitempty"`
+	TransitionWhen   string   `json:"transitionWhen,omitempty"`
+	WarnAt           []string `json:"warnAt,omitempty"`
+	Recipients       []string `json:"recipients,omitempty"`
+}

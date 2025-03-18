@@ -732,3 +732,103 @@ func (client *Client) GetTurbotWorkspaceVersion() (*semver.Version, error) {
 	}
 	return version, nil
 }
+
+// campaign
+// filter and description are removed for a workaround, will be removed after a Core change.
+func createCampaignMutation() string {
+	return `mutation CreateCampaign($input: CreateCampaignInput!) {
+		campaign: createCampaign(input: $input) {
+			title
+			status
+			description
+			recipients			
+			phases			
+			turbot {
+				id
+				parentId
+				akas
+				title
+			}
+			accounts {
+				items {
+					turbot {
+						id
+					}
+				}
+			}
+			guardrails {
+				items {
+					turbot {
+						id
+					}
+				}
+			}
+		}
+	}`
+}
+
+func readCampaignQuery(id string) string {
+	return fmt.Sprintf(`{
+		campaign(id: "%s") {
+			description
+			status
+			title
+			parent {
+				turbot {
+					id
+				}
+			}
+			recipients
+			phases
+			accounts {
+				items {
+					turbot {
+						id
+					}
+				}
+			}
+			guardrails {
+				items {
+					turbot {
+						id
+					}
+				}
+			}
+			turbot {
+				id
+			}
+		}
+	}`, id)
+}
+
+func updateCampaignMutation() string {
+	return `mutation UpdateCampaign($input: UpdateCampaignInput!) {
+		campaign: updateCampaign(input: $input) {
+			title
+			status
+			description
+			recipients
+			phases
+			turbot {
+			id
+			parentId
+			akas
+			title
+			}
+			accounts {
+			items {
+				turbot {
+				id
+				}
+			}
+			}
+			guardrails {
+			items {
+				turbot {
+				id
+				}
+			}
+			}
+		}
+	}`
+}

@@ -1,3 +1,9 @@
+## 1.13.0 (Unreleased)
+
+FEATURES:
+
+* **New Resource:** `turbot_campaign` ([#195](https://github.com/turbot/terraform-provider-turbot/issues/195))
+
 ## 1.12.0 (February 19, 2025)
 
 FEATURES:
