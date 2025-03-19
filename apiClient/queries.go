@@ -773,11 +773,6 @@ func readCampaignQuery(id string) string {
 			description
 			status
 			title
-			parent {
-				turbot {
-					id
-				}
-			}
 			recipients
 			phases
 			accounts {
@@ -796,6 +791,9 @@ func readCampaignQuery(id string) string {
 			}
 			turbot {
 				id
+				akas
+				title
+				parentId
 			}
 		}
 	}`, id)
@@ -810,24 +808,24 @@ func updateCampaignMutation() string {
 			recipients
 			phases
 			turbot {
-			id
-			parentId
-			akas
-			title
+				id
+				parentId
+				akas
+				title
 			}
 			accounts {
-			items {
-				turbot {
-				id
+				items {
+					turbot {
+						id
+					}
 				}
-			}
 			}
 			guardrails {
-			items {
-				turbot {
-				id
+				items {
+					turbot {
+						id
+					}
 				}
-			}
 			}
 		}
 	}`

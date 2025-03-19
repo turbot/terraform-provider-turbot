@@ -10,7 +10,7 @@ import (
 )
 
 // properties which must be passed to a create/update call
-var campaignProperties = []interface{}{"title", "description", "status", "recipients", "preview", "check", "draft", "enforce", "guardrails", "accounts"}
+var campaignProperties = []interface{}{"title", "description", "status", "recipients", "preview", "check", "draft", "enforce", "guardrails", "accounts", "akas"}
 
 func getCampaignUpdateProperties() []interface{} {
 	excludedProperties := []string{"guardrails", "preview", "check", "draft", "enforce", "akas"}
@@ -106,10 +106,7 @@ func resourceTurbotCampaign() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					// Suppress the diff, since the akas cannot be updated after creation
-					return true
-				},
+				DiffSuppressFunc: suppressIfAkaRemoved(),
 			},
 		},
 	}
@@ -206,7 +203,7 @@ func resourceTurbotCampaignRead(d *schema.ResourceData, meta interface{}) error 
 
 	d.Set("description", campaign.Description)
 	d.Set("status", campaign.Status)
-	d.Set("title", campaign.Title)
+	d.Set("title", campaign.Turbot.Title)
 	d.Set("recipients", campaign.Recipients)
 	d.Set("akas", campaign.Turbot.Akas)
 
