@@ -732,3 +732,46 @@ func (client *Client) GetTurbotWorkspaceVersion() (*semver.Version, error) {
 	}
 	return version, nil
 }
+
+// guardrail
+
+func createGuardrailMutation() string {
+	return `mutation CreateGuardrail($input: CreateGuardrailInput!) {
+		guardrail: createGuardrail(input: $input) {
+			title
+			description
+			tags
+			turbot {
+				id
+				akas
+				title
+			}
+		}
+	}`
+}
+
+func readGuardrailQuery(id string) string {
+	return fmt.Sprintf(`{
+		guardrail: resource(id: "%s") {
+			title: get(path: "turbot.title")
+			description: get(path: "description")
+			targets: get(path: "targets")
+			color: get(path: "color")
+			turbot: get(path: "turbot")
+		}
+	}`, id)
+}
+
+func updateGuardrailMutation() string {
+	return `mutation UpdateGuardrail($input: UpdateGuardrailInput!) {
+		guardrail: updateGuardrail(input: $input) {
+			description
+			tags
+			turbot {
+				id
+				akas
+				title
+			}
+		}
+	}`
+}
