@@ -42,6 +42,7 @@ func Provider() terraform.ResourceProvider {
 			"turbot_grant":                   resourceTurbotGrant(),
 			"turbot_grant_activation":        resourceTurbotGrantActivation(),
 			"turbot_guardrail":               resourceTurbotGuardrail(),
+			"turbot_guardrail_attachment":    resourceTurbotGuardrailAttachment(),
 			"turbot_ldap_directory":          resourceTurbotLdapDirectory(),
 			"turbot_local_directory":         resourceTurbotLocalDirectory(),
 			"turbot_local_directory_user":    resourceTurbotLocalDirectoryUser(),

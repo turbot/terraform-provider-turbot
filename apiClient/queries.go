@@ -795,3 +795,25 @@ func updateGuardrailMutation() string {
 		}
 	}`
 }
+
+func attachGuardrailMutation() string {
+	return `mutation AttachGuardrail($input: AttachGuardrailInput!) {
+		guardrail: attachGuardrails(input: $input) {
+			turbot {
+				id
+				akas
+				title
+			}
+		}
+	}`
+}
+
+func detachGuardrailMutation() string {
+	return `mutation DetachGuardrail($input: DetachGuardrailInput!) {
+		guardrail: detachGuardrails(input: $input) {
+			turbot {
+				id
+			}
+		}
+	}`
+}

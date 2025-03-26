@@ -541,6 +541,10 @@ type Guardrail struct {
 	}
 }
 
+type AttachGuardrailResponse struct {
+	Turbot TurbotResourceMetadata
+}
+
 type Account struct {
 	Turbot TurbotResourceMetadata
 }
