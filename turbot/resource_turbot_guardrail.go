@@ -14,11 +14,10 @@ var guardrailProperties = map[string]string{
 	"controls":    "controlTypes",
 	"akas":        "akas",
 	"tags":        "tags",
-	"color":       "color",
 }
 
 func getGuardrailUpdateProperties() map[string]string {
-	excludedProperties := []string{"controls", "color"}
+	excludedProperties := []string{"controls"}
 
 	// Remove the excluded properties from guardrailProperties
 	for _, key := range excludedProperties {
@@ -48,11 +47,6 @@ func resourceTurbotGuardrail() *schema.Resource {
 				Description: "The description of the guardrail.",
 				Type:        schema.TypeString,
 				Optional:    true,
-			},
-			"color": {
-				Description: "The color of the guardrail to create, that will be used to highlight the policy pack in the Turbot console. If not set one will be chosen at random.",
-				Type:        schema.TypeString,
-				Computed:    true,
 			},
 			"targets": {
 				Description: "The targets where the guardrail will be applied.",
@@ -141,17 +135,25 @@ func resourceTurbotGuardrailRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	d.Set("title", guardrail.Title)
+	d.Set("title", guardrail.Turbot.Title)
 	d.Set("description", guardrail.Description)
-	d.Set("color", guardrail.Color)
 	d.Set("akas", guardrail.Turbot.Akas)
+	d.Set("tags", guardrail.Turbot.Tags)
 
-	if controls, ok := d.GetOk("controls"); ok {
-		d.Set("controls", controls)
+	if len(guardrail.Targets.Items) > 0 {
+		targets := []string{}
+		for _, target := range guardrail.Targets.Items {
+			targets = append(targets, target.Uri)
+		}
+		d.Set("targets", targets)
 	}
 
-	if targets, ok := d.GetOk("targets"); ok {
-		d.Set("targets", targets)
+	if len(guardrail.ControlTypes.Items) > 0 {
+		controls := []string{}
+		for _, control := range guardrail.ControlTypes.Items {
+			controls = append(controls, control.Uri)
+		}
+		d.Set("controls", controls)
 	}
 
 	return nil

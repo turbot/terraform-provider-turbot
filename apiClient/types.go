@@ -528,9 +528,27 @@ type GuardrailResponse struct {
 }
 
 type Guardrail struct {
-	Turbot      TurbotResourceMetadata
-	Title       string
 	Description string
-	Color       string
-	Targets     []string
+	Turbot      TurbotResourceMetadata
+	Accounts    struct {
+		Items []Account
+	}
+	ControlTypes struct {
+		Items []ControlType
+	}
+	Targets struct {
+		Items []Target
+	}
+}
+
+type Account struct {
+	Turbot TurbotResourceMetadata
+}
+
+type ControlType struct {
+	Uri string
+}
+
+type Target struct {
+	Uri string
 }

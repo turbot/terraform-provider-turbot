@@ -752,12 +752,32 @@ func createGuardrailMutation() string {
 
 func readGuardrailQuery(id string) string {
 	return fmt.Sprintf(`{
-		guardrail: resource(id: "%s") {
-			title: get(path: "turbot.title")
-			description: get(path: "description")
-			targets: get(path: "targets")
-			color: get(path: "color")
-			turbot: get(path: "turbot")
+		guardrail: guardrail(id: "%s") {
+			description
+			turbot {
+				id
+				akas
+				title
+				tags
+			}
+			accounts {
+				items {
+					turbot {
+						id
+						akas
+					}
+				}
+			}
+			targets {
+				items {
+					uri
+				}
+			}
+			controlTypes {
+				items {
+					uri
+				}
+			}
 		}
 	}`, id)
 }
