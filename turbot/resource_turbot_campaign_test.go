@@ -56,9 +56,9 @@ resource "turbot_campaign" "test" {
   accounts   = ["330101957430965"]
 
   preview {
-    transition_at     = "2025-11-29T00:00:00Z"
-	transition_when   = "no_alerts"
-	transition_notice = "enabled"
+    start_at       = "2025-11-29T00:00:00Z"
+	start_early_if = "no_alerts"
+	start_notice   = "enabled"
   }
 }
 `
@@ -75,9 +75,9 @@ resource "turbot_campaign" "test" {
   accounts   = ["330101957430965"]
 
   preview {
-    transition_at     = "2025-11-29T00:00:00Z"
-	transition_when   = "no_alerts"
-	transition_notice = "enabled"
+    start_at       = "2025-11-29T00:00:00Z"
+	start_early_if = "no_alerts"
+	start_notice   = "enabled"
   }
 }
 `

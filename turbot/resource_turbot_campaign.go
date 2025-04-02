@@ -114,15 +114,15 @@ func resourceTurbotCampaign() *schema.Resource {
 
 func phaseSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"transition_at": {
+		"start_at": {
 			Type:     schema.TypeString,
 			Required: true,
 		},
-		"transition_notice": {
+		"start_notice": {
 			Type:     schema.TypeString,
 			Optional: true,
 		},
-		"transition_when": {
+		"start_early_if": {
 			Type:     schema.TypeString,
 			Optional: true,
 		},
@@ -269,9 +269,9 @@ func setPhaseAttribute(input map[string]interface{}, attributeName string) map[s
 		phase := phaseList[0].(map[string]interface{})
 
 		return map[string]interface{}{
-			"transitionAt":     phase["transition_at"].(string),
-			"transitionNotice": phase["transition_notice"].(string),
-			"transitionWhen":   phase["transition_when"].(string),
+			"transitionAt":     phase["start_at"].(string),
+			"transitionNotice": phase["start_notice"].(string),
+			"transitionWhen":   phase["start_early_if"].(string),
 			"warnAt":           phase["warn_at"].([]interface{}),
 		}
 	}
