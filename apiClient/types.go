@@ -546,17 +546,21 @@ type Campaign struct {
 }
 
 type CampaignPhases struct {
-	Draft   *TurbotCampaignPhaseMetadata `json:"draft,omitempty"`
-	Preview *TurbotCampaignPhaseMetadata `json:"preview,omitempty"`
-	Check   *TurbotCampaignPhaseMetadata `json:"check,omitempty"`
-	Enforce *TurbotCampaignPhaseMetadata `json:"enforce,omitempty"`
-	Detach  *TurbotCampaignPhaseMetadata `json:"detach,omitempty"`
+	Draft   *TurbotCampaignDraftPhaseMetadata `json:"draft,omitempty"`
+	Preview *TurbotCampaignPhaseMetadata      `json:"preview,omitempty"`
+	Check   *TurbotCampaignPhaseMetadata      `json:"check,omitempty"`
+	Enforce *TurbotCampaignPhaseMetadata      `json:"enforce,omitempty"`
+	Detach  *TurbotCampaignPhaseMetadata      `json:"detach,omitempty"`
 }
 
 type TurbotCampaignPhaseMetadata struct {
-	TransitionAt     string   `json:"transitionAt,omitempty"`
-	TransitionNotice string   `json:"transitionNotice,omitempty"`
-	TransitionWhen   string   `json:"transitionWhen,omitempty"`
-	WarnAt           []string `json:"warnAt,omitempty"`
-	Recipients       []string `json:"recipients,omitempty"`
+	StartAt      string   `json:"startAt,omitempty"`
+	StartNotice  string   `json:"startNotice,omitempty"`
+	StartEarlyIf string   `json:"startEarlyIf,omitempty"`
+	WarnAt       []string `json:"warnAt,omitempty"`
+	Recipients   []string `json:"recipients,omitempty"`
+}
+
+type TurbotCampaignDraftPhaseMetadata struct {
+	StartAt string `json:"startAt,omitempty"`
 }

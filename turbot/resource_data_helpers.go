@@ -1,6 +1,8 @@
 package turbot
 
 import (
+	"reflect"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/iancoleman/strcase"
 	"github.com/turbot/terraform-provider-turbot/apiClient"
@@ -57,4 +59,16 @@ func storeAkas(aka, propertyName string, d *schema.ResourceData, meta interface{
 	// assign akas
 	d.Set(propertyName, akas)
 	return nil
+}
+
+// given an attribute, check for if the attribute contains a nil value
+func isNil(i interface{}) bool {
+	if i == nil {
+		return true
+	}
+	switch reflect.TypeOf(i).Kind() {
+	case reflect.Ptr, reflect.Map, reflect.Chan, reflect.Slice:
+		return reflect.ValueOf(i).IsNil()
+	}
+	return false
 }

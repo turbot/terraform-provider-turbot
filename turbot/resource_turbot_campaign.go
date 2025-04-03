@@ -1,8 +1,6 @@
 package turbot
 
 import (
-	"reflect"
-
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/turbot/terraform-provider-turbot/apiClient"
 	"github.com/turbot/terraform-provider-turbot/errors"
@@ -10,10 +8,10 @@ import (
 )
 
 // properties which must be passed to a create/update call
-var campaignProperties = []interface{}{"title", "description", "status", "recipients", "preview", "check", "draft", "enforce", "guardrails", "accounts", "akas"}
+var campaignProperties = []interface{}{"title", "description", "status", "recipients", "preview", "check", "draft", "enforce", "detach", "guardrails", "accounts", "akas"}
 
 func getCampaignUpdateProperties() []interface{} {
-	excludedProperties := []string{"guardrails", "preview", "check", "draft", "enforce", "akas"}
+	excludedProperties := []string{"guardrails", "preview", "check", "draft", "enforce", "detach", "akas"}
 	return helpers.RemoveProperties(campaignProperties, excludedProperties)
 }
 
@@ -69,35 +67,35 @@ func resourceTurbotCampaign() *schema.Resource {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
-					Schema: phaseSchema(),
+					Schema: campaignPhaseSchema(),
 				},
 			},
 			"detach": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
-					Schema: phaseSchema(),
+					Schema: campaignPhaseSchema(),
 				},
 			},
 			"draft": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
-					Schema: phaseSchema(),
+					Schema: campaignDraftSchema(),
 				},
 			},
 			"enforce": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
-					Schema: phaseSchema(),
+					Schema: campaignPhaseSchema(),
 				},
 			},
 			"preview": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
-					Schema: phaseSchema(),
+					Schema: campaignPhaseSchema(),
 				},
 			},
 			"akas": {
@@ -112,7 +110,7 @@ func resourceTurbotCampaign() *schema.Resource {
 	}
 }
 
-func phaseSchema() map[string]*schema.Schema {
+func campaignPhaseSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"start_at": {
 			Type:     schema.TypeString,
@@ -130,6 +128,15 @@ func phaseSchema() map[string]*schema.Schema {
 			Type:     schema.TypeList,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+	}
+}
+
+func campaignDraftSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"start_at": {
+			Type:     schema.TypeString,
+			Required: true,
 		},
 	}
 }
@@ -156,9 +163,22 @@ func resourceTurbotCampaignCreate(d *schema.ResourceData, meta interface{}) erro
 		phases["check"] = setPhaseAttribute(input, "check")
 		delete(input, "check")
 	}
-	input["phases"] = phases
 
-	// panic(fmt.Sprintf("HERE >>> %+v", input))
+	if !isNil(input["enforce"]) {
+		phases["enforce"] = setPhaseAttribute(input, "enforce")
+		delete(input, "enforce")
+	}
+
+	if !isNil(input["detach"]) {
+		phases["detach"] = setPhaseAttribute(input, "detach")
+		delete(input, "detach")
+	}
+
+	if !isNil(input["draft"]) {
+		phases["draft"] = setDraftInputAttribute(input, "draft")
+		delete(input, "draft")
+	}
+	input["phases"] = phases
 
 	campaign, err := client.CreateCampaign(input)
 	if err != nil {
@@ -225,8 +245,25 @@ func resourceTurbotCampaignRead(d *schema.ResourceData, meta interface{}) error 
 		d.Set("parent", campaign.Turbot.ParentId)
 	}
 
-	d.Set("preview", []interface{}{campaign.Phases.Preview})
-	d.Set("check", []interface{}{campaign.Phases.Check})
+	if campaign.Phases.Preview != nil {
+		d.Set("preview", []interface{}{campaign.Phases.Preview})
+	}
+
+	if campaign.Phases.Check != nil {
+		d.Set("check", []interface{}{campaign.Phases.Check})
+	}
+
+	if campaign.Phases.Enforce != nil {
+		d.Set("enforce", []interface{}{campaign.Phases.Enforce})
+	}
+
+	if campaign.Phases.Detach != nil {
+		d.Set("detach", []interface{}{campaign.Phases.Detach})
+	}
+
+	if campaign.Phases.Draft != nil {
+		d.Set("draft", []interface{}{campaign.Phases.Draft})
+	}
 
 	return nil
 }
@@ -252,27 +289,28 @@ func resourceTurbotCampaignImport(d *schema.ResourceData, meta interface{}) ([]*
 	return []*schema.ResourceData{d}, nil
 }
 
-func isNil(i interface{}) bool {
-	if i == nil {
-		return true
-	}
-	switch reflect.TypeOf(i).Kind() {
-	case reflect.Ptr, reflect.Map, reflect.Chan, reflect.Slice:
-		return reflect.ValueOf(i).IsNil()
-	}
-	return false
-}
-
 func setPhaseAttribute(input map[string]interface{}, attributeName string) map[string]interface{} {
 	phaseList := input[attributeName].([]interface{})
 	if len(phaseList) > 0 {
 		phase := phaseList[0].(map[string]interface{})
 
 		return map[string]interface{}{
-			"transitionAt":     phase["start_at"].(string),
-			"transitionNotice": phase["start_notice"].(string),
-			"transitionWhen":   phase["start_early_if"].(string),
-			"warnAt":           phase["warn_at"].([]interface{}),
+			"startAt":      phase["start_at"].(string),
+			"startNotice":  phase["start_notice"].(string),
+			"startEarlyIf": phase["start_early_if"].(string),
+			"warnAt":       phase["warn_at"].([]interface{}),
+		}
+	}
+	return nil
+}
+
+func setDraftInputAttribute(input map[string]interface{}, attributeName string) map[string]interface{} {
+	draftInputs := input[attributeName].([]interface{})
+	if len(draftInputs) > 0 {
+		draft := draftInputs[0].(map[string]interface{})
+
+		return map[string]interface{}{
+			"startAt": draft["start_at"].(string),
 		}
 	}
 	return nil
