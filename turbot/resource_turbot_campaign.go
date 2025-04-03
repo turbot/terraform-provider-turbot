@@ -124,6 +124,11 @@ func campaignPhaseSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Optional: true,
 		},
+		"recipients": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
 		"warn_at": {
 			Type:     schema.TypeList,
 			Optional: true,
@@ -295,6 +300,7 @@ func setPhaseAttribute(input map[string]interface{}, attributeName string) map[s
 			"startNotice":  phase["start_notice"].(string),
 			"startEarlyIf": phase["start_early_if"].(string),
 			"warnAt":       phase["warn_at"].([]interface{}),
+			"recipients":   phase["recipients"].([]interface{}),
 		}
 	}
 	return nil
