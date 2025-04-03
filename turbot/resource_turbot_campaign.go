@@ -221,49 +221,45 @@ func resourceTurbotCampaignRead(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 
+	// Set basic attributes
 	d.Set("description", campaign.Description)
 	d.Set("status", campaign.Status)
 	d.Set("title", campaign.Turbot.Title)
 	d.Set("recipients", campaign.Recipients)
 	d.Set("akas", campaign.Turbot.Akas)
 
-	if len(campaign.Accounts.Items) > 0 {
-		accounts := []string{}
-		for _, item := range campaign.Accounts.Items {
-			accounts = append(accounts, item.Turbot.Id)
+	// Helper to extract Turbot.Id from a slice of items
+	extractIds := func(items []struct {
+		Turbot apiClient.TurbotResourceMetadata
+	}) []string {
+		ids := make([]string, len(items))
+		for i, item := range items {
+			ids[i] = item.Turbot.Id
 		}
-		d.Set("accounts", accounts)
+		return ids
+	}
+
+	if len(campaign.Accounts.Items) > 0 {
+		d.Set("accounts", extractIds(campaign.Accounts.Items))
 	}
 	if len(campaign.Guardrails.Items) > 0 {
-		guardrails := []string{}
-		for _, item := range campaign.Guardrails.Items {
-			guardrails = append(guardrails, item.Turbot.Id)
-		}
-		d.Set("guardrails", guardrails)
+		d.Set("guardrails", extractIds(campaign.Guardrails.Items))
 	}
 	if !isNil(campaign.Turbot.ParentId) {
 		d.Set("parent", campaign.Turbot.ParentId)
 	}
 
-	if campaign.Phases.Preview != nil {
-		d.Set("preview", []interface{}{campaign.Phases.Preview})
+	// Helper to set phase if it's not nil
+	setPhase := func(key string, phase interface{}) {
+		if phase != nil {
+			_ = d.Set(key, []interface{}{phase})
+		}
 	}
-
-	if campaign.Phases.Check != nil {
-		d.Set("check", []interface{}{campaign.Phases.Check})
-	}
-
-	if campaign.Phases.Enforce != nil {
-		d.Set("enforce", []interface{}{campaign.Phases.Enforce})
-	}
-
-	if campaign.Phases.Detach != nil {
-		d.Set("detach", []interface{}{campaign.Phases.Detach})
-	}
-
-	if campaign.Phases.Draft != nil {
-		d.Set("draft", []interface{}{campaign.Phases.Draft})
-	}
+	setPhase("preview", campaign.Phases.Preview)
+	setPhase("check", campaign.Phases.Check)
+	setPhase("enforce", campaign.Phases.Enforce)
+	setPhase("detach", campaign.Phases.Detach)
+	setPhase("draft", campaign.Phases.Draft)
 
 	return nil
 }
