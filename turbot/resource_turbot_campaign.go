@@ -1,0 +1,313 @@
+package turbot
+
+import (
+	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/turbot/terraform-provider-turbot/apiClient"
+	"github.com/turbot/terraform-provider-turbot/errors"
+	"github.com/turbot/terraform-provider-turbot/helpers"
+)
+
+// properties which must be passed to a create/update call
+var campaignProperties = []interface{}{"title", "description", "status", "recipients", "preview", "check", "draft", "enforce", "detach", "guardrails", "accounts", "akas"}
+
+func getCampaignUpdateProperties() []interface{} {
+	excludedProperties := []string{"guardrails", "preview", "check", "draft", "enforce", "detach", "akas"}
+	return helpers.RemoveProperties(campaignProperties, excludedProperties)
+}
+
+func resourceTurbotCampaign() *schema.Resource {
+	return &schema.Resource{
+		Create: resourceTurbotCampaignCreate,
+		Read:   resourceTurbotCampaignRead,
+		Update: resourceTurbotCampaignUpdate,
+		Delete: resourceTurbotCampaignDelete,
+		Exists: resourceTurbotCampaignExists,
+		Importer: &schema.ResourceImporter{
+			State: resourceTurbotCampaignImport,
+		},
+		Schema: map[string]*schema.Schema{
+			"guardrails": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"accounts": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"recipients": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"title": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"description": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"status": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"parent": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"check": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: campaignPhaseSchema(),
+				},
+			},
+			"detach": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: campaignPhaseSchema(),
+				},
+			},
+			"draft": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: campaignDraftSchema(),
+				},
+			},
+			"enforce": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: campaignPhaseSchema(),
+				},
+			},
+			"preview": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: campaignPhaseSchema(),
+				},
+			},
+			"akas": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				DiffSuppressFunc: suppressIfAkaRemoved(),
+			},
+		},
+	}
+}
+
+func campaignPhaseSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"start_at": {
+			Type:     schema.TypeString,
+			Required: true,
+		},
+		"start_notice": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+		"start_early_if": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+		"recipients": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+		"warn_at": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+	}
+}
+
+func campaignDraftSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"start_at": {
+			Type:     schema.TypeString,
+			Required: true,
+		},
+	}
+}
+
+func resourceTurbotCampaignExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
+	client := meta.(*apiClient.Client)
+	id := d.Id()
+	return client.ResourceExists(id)
+}
+
+func resourceTurbotCampaignCreate(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*apiClient.Client)
+
+	// build map of campaign properties
+	input := mapFromResourceData(d, campaignProperties)
+
+	// extract and set phase-related inputs
+	phases := make(map[string]interface{})
+
+	phaseKeys := []string{"preview", "check", "enforce", "detach"}
+	for _, key := range phaseKeys {
+		if !isNil(input[key]) {
+			phases[key] = setPhaseAttribute(input, key)
+			delete(input, key)
+		}
+	}
+
+	// special handling for "draft"
+	if !isNil(input["draft"]) {
+		phases["draft"] = setDraftInputAttribute(input, "draft")
+		delete(input, "draft")
+	}
+
+	input["phases"] = phases
+
+	// create the campaign
+	campaign, err := client.CreateCampaign(input)
+	if err != nil {
+		return err
+	}
+
+	// assign the id
+	d.SetId(campaign.Turbot.Id)
+
+	// TODO Remove Read call once schema changes are In.
+	return resourceTurbotCampaignRead(d, meta)
+}
+
+func resourceTurbotCampaignUpdate(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*apiClient.Client)
+	id := d.Id()
+
+	// build map of folder properties
+	input := mapFromResourceData(d, getCampaignUpdateProperties())
+	input["id"] = id
+
+	_, err := client.UpdateCampaign(input)
+	if err != nil {
+		return err
+	}
+	// set 'Read' Properties
+	return resourceTurbotCampaignRead(d, meta)
+}
+
+func resourceTurbotCampaignRead(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*apiClient.Client)
+	id := d.Id()
+
+	campaign, err := client.ReadCampaign(id)
+	if err != nil {
+		if errors.NotFoundError(err) {
+			// folder was not found - clear id
+			d.SetId("")
+		}
+		return err
+	}
+
+	// Set basic attributes
+	d.Set("description", campaign.Description)
+	d.Set("status", campaign.Status)
+	d.Set("title", campaign.Turbot.Title)
+	d.Set("recipients", campaign.Recipients)
+	d.Set("akas", campaign.Turbot.Akas)
+
+	// helper to extract Turbot.Id from a slice of items
+	extractIds := func(items []struct {
+		Turbot apiClient.TurbotResourceMetadata
+	}) []string {
+		ids := make([]string, len(items))
+		for i, item := range items {
+			ids[i] = item.Turbot.Id
+		}
+		return ids
+	}
+
+	if len(campaign.Accounts.Items) > 0 {
+		d.Set("accounts", extractIds(campaign.Accounts.Items))
+	}
+	if len(campaign.Guardrails.Items) > 0 {
+		d.Set("guardrails", extractIds(campaign.Guardrails.Items))
+	}
+	if !isNil(campaign.Turbot.ParentId) {
+		d.Set("parent", campaign.Turbot.ParentId)
+	}
+
+	// helper to set phase if it's not nil
+	setPhase := func(key string, phase interface{}) {
+		if !isNil(phase) {
+			d.Set(key, []interface{}{phase})
+		}
+	}
+
+	setPhase("preview", campaign.Phases.Preview)
+	setPhase("check", campaign.Phases.Check)
+	setPhase("enforce", campaign.Phases.Enforce)
+	setPhase("detach", campaign.Phases.Detach)
+	setPhase("draft", campaign.Phases.Draft)
+
+	return nil
+}
+
+func resourceTurbotCampaignDelete(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*apiClient.Client)
+	id := d.Id()
+	err := client.DeleteResource(id)
+	if err != nil {
+		return err
+	}
+
+	// clear the id to show we have deleted
+	d.SetId("")
+
+	return nil
+}
+
+func resourceTurbotCampaignImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	if err := resourceTurbotCampaignRead(d, meta); err != nil {
+		return nil, err
+	}
+	return []*schema.ResourceData{d}, nil
+}
+
+func setPhaseAttribute(input map[string]interface{}, attributeName string) map[string]interface{} {
+	phaseList := input[attributeName].([]interface{})
+	if len(phaseList) > 0 {
+		phase := phaseList[0].(map[string]interface{})
+
+		return map[string]interface{}{
+			"startAt":      phase["start_at"].(string),
+			"startNotice":  phase["start_notice"].(string),
+			"startEarlyIf": phase["start_early_if"].(string),
+			"warnAt":       phase["warn_at"].([]interface{}),
+			"recipients":   phase["recipients"].([]interface{}),
+		}
+	}
+	return nil
+}
+
+func setDraftInputAttribute(input map[string]interface{}, attributeName string) map[string]interface{} {
+	draftInputs := input[attributeName].([]interface{})
+	if len(draftInputs) > 0 {
+		draft := draftInputs[0].(map[string]interface{})
+
+		return map[string]interface{}{
+			"startAt": draft["start_at"].(string),
+		}
+	}
+	return nil
+}
