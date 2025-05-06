@@ -155,36 +155,29 @@ func resourceTurbotCampaignExists(d *schema.ResourceData, meta interface{}) (b b
 func resourceTurbotCampaignCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
 
-	// build map of folder properties
+	// build map of campaign properties
 	input := mapFromResourceData(d, campaignProperties)
 
-	phases := map[string]interface{}{}
-	if !isNil(input["preview"]) {
-		phases["preview"] = setPhaseAttribute(input, "preview")
-		delete(input, "preview")
+	// extract and set phase-related inputs
+	phases := make(map[string]interface{})
+
+	phaseKeys := []string{"preview", "check", "enforce", "detach"}
+	for _, key := range phaseKeys {
+		if !isNil(input[key]) {
+			phases[key] = setPhaseAttribute(input, key)
+			delete(input, key)
+		}
 	}
 
-	if !isNil(input["check"]) {
-		phases["check"] = setPhaseAttribute(input, "check")
-		delete(input, "check")
-	}
-
-	if !isNil(input["enforce"]) {
-		phases["enforce"] = setPhaseAttribute(input, "enforce")
-		delete(input, "enforce")
-	}
-
-	if !isNil(input["detach"]) {
-		phases["detach"] = setPhaseAttribute(input, "detach")
-		delete(input, "detach")
-	}
-
+	// special handling for "draft"
 	if !isNil(input["draft"]) {
 		phases["draft"] = setDraftInputAttribute(input, "draft")
 		delete(input, "draft")
 	}
+
 	input["phases"] = phases
 
+	// create the campaign
 	campaign, err := client.CreateCampaign(input)
 	if err != nil {
 		return err
@@ -233,7 +226,7 @@ func resourceTurbotCampaignRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("recipients", campaign.Recipients)
 	d.Set("akas", campaign.Turbot.Akas)
 
-	// Helper to extract Turbot.Id from a slice of items
+	// helper to extract Turbot.Id from a slice of items
 	extractIds := func(items []struct {
 		Turbot apiClient.TurbotResourceMetadata
 	}) []string {
@@ -254,12 +247,13 @@ func resourceTurbotCampaignRead(d *schema.ResourceData, meta interface{}) error 
 		d.Set("parent", campaign.Turbot.ParentId)
 	}
 
-	// Helper to set phase if it's not nil
+	// helper to set phase if it's not nil
 	setPhase := func(key string, phase interface{}) {
-		if phase != nil {
-			_ = d.Set(key, []interface{}{phase})
+		if !isNil(phase) {
+			d.Set(key, []interface{}{phase})
 		}
 	}
+
 	setPhase("preview", campaign.Phases.Preview)
 	setPhase("check", campaign.Phases.Check)
 	setPhase("enforce", campaign.Phases.Enforce)
