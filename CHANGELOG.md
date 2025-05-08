@@ -2,7 +2,7 @@
 
 BUG FIXES:
 
-* Fixed an issue where parent updates in `resource_turbot_file` were silently ignored. Parent updates are now handled correctly to ensure changes are properly applied. ([#206](https://github.com/turbot/terraform-provider-turbot/issues/206))
+* Resolved an issue where parent updates in `resource_turbot_file` were silently ignored. These updates are now processed correctly to ensure changes are properly applied. ([#206](https://github.com/turbot/terraform-provider-turbot/issues/206))
 
 
 ## 1.12.0 (February 19, 2025)
