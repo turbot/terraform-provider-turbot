@@ -2,6 +2,7 @@ package turbot
 
 import (
 	"fmt"
+
 	"github.com/go-yaml/yaml"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/turbot/terraform-provider-turbot/apiClient"
@@ -9,7 +10,7 @@ import (
 	"github.com/turbot/terraform-provider-turbot/helpers"
 )
 
-var policySettingInputProperties = []interface{}{"value", "precedence", "template", "template_input", "note", "valid_from_timestamp", "valid_to_timestamp", "type", "resource"}
+var policySettingInputProperties = []interface{}{"value", "precedence", "template", "template_input", "note", "valid_from_timestamp", "valid_to_timestamp", "type", "resource", "force"}
 
 func getPolicySettingUpdateProperties() []interface{} {
 	excludedProperties := []string{"type", "resource"}
@@ -95,6 +96,11 @@ func resourceTurbotPolicySetting() *schema.Resource {
 				Type:     schema.TypeString,
 				ForceNew: true,
 				Optional: true,
+			},
+			"force": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
 			},
 		},
 	}
@@ -186,6 +192,11 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 	d.Set("valid_from_timestamp", policySetting.ValidFromTimestamp)
 	d.Set("valid_to_timestamp", policySetting.ValidToTimestamp)
 	d.Set("type", policySetting.Type.Uri)
+
+	if input["force"] != nil {
+		d.Set("force", input["force"].(bool))
+	}
+
 	// assign the id
 	d.SetId(policySetting.Turbot.Id)
 
@@ -229,6 +240,11 @@ func resourceTurbotPolicySettingRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("valid_from_timestamp", policySetting.ValidFromTimestamp)
 	d.Set("valid_to_timestamp", policySetting.ValidToTimestamp)
 	d.Set("type", policySetting.Type.Uri)
+
+	if force, ok := d.GetOk("force"); ok {
+		d.Set("force", force)
+	}
+
 	return nil
 }
 
@@ -288,6 +304,11 @@ func resourceTurbotPolicySettingUpdate(d *schema.ResourceData, meta interface{})
 	d.Set("valid_from_timestamp", policySetting.ValidFromTimestamp)
 	d.Set("valid_to_timestamp", policySetting.ValidToTimestamp)
 	d.Set("type", policySetting.Type.Uri)
+
+	if input["force"] != nil {
+		d.Set("force", input["force"].(bool))
+	}
+
 	return nil
 }
 
