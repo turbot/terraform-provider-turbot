@@ -2,6 +2,7 @@ package turbot
 
 import (
 	"fmt"
+
 	"github.com/go-yaml/yaml"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/turbot/terraform-provider-turbot/apiClient"
@@ -50,8 +51,9 @@ func resourceTurbotPolicySetting() *schema.Resource {
 				DiffSuppressFunc: suppressIfEncryptedOrValueSourceMatches,
 			},
 			"value_source": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
 			},
 			"value_key_fingerprint": {
 				Type:     schema.TypeString,
