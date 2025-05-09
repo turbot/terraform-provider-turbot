@@ -417,13 +417,11 @@ func getResourceTypeIdQuery(aka string) string {
 
 func readResourceListQuery(filter string, properties map[string]string) string {
 	var propertiesString bytes.Buffer
-	if properties != nil {
-		for alias, propertyPath := range properties {
-			propertiesString.WriteString(fmt.Sprintf("\t\t\t%s: get(path: \"%s\")\n", alias, propertyPath))
-		}
+	for alias, propertyPath := range properties {
+		propertiesString.WriteString(fmt.Sprintf("\t\t\t%s: get(path: \"%s\")\n", alias, propertyPath))
 	}
 	return fmt.Sprintf(`{
-	resourceList(filter:"%s") {
+	resources(filter:"%s") {
 		items{
 %s
 			turbot: get(path:"turbot")

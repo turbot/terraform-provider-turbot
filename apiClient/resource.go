@@ -2,10 +2,11 @@ package apiClient
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/mitchellh/mapstructure"
 	"github.com/turbot/terraform-provider-turbot/errors"
 	"github.com/turbot/terraform-provider-turbot/helpers"
-	"log"
 )
 
 func (client *Client) CreateResource(input map[string]interface{}) (*TurbotResourceMetadata, error) {
@@ -113,7 +114,7 @@ func (client *Client) ReadResourceList(filter string, properties map[string]stri
 		return nil, fmt.Errorf("error fetching resource list: %s", err.Error())
 	}
 
-	return responseData.ResourceList.Items, nil
+	return responseData.Resources.Items, nil
 }
 
 func (client *Client) UpdateResource(input map[string]interface{}) (*TurbotResourceMetadata, error) {

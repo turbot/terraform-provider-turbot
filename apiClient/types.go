@@ -26,7 +26,7 @@ type ReadResourceResponse struct {
 }
 
 type ReadResourceListResponse struct {
-	ResourceList struct {
+	Resources struct {
 		Items []Resource
 	}
 }
