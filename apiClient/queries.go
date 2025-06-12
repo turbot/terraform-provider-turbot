@@ -195,7 +195,7 @@ func readPolicyValueQuery(policyTypeUri string, resourceId string) string {
 
 func findPolicyTypeQuery(policyTypeUri string) string {
 	return fmt.Sprintf(`{
-  policySettings: policyTypes(filter: "policyTypeId:%s level:self") {
+  policyTypes: policyTypes(filter: "policyTypeId:%s level:self") {
     items {
 		modUri
 		turbot {
