@@ -746,3 +746,88 @@ func (client *Client) GetTurbotWorkspaceVersion() (*semver.Version, error) {
 	}
 	return version, nil
 }
+
+// guardrail
+
+func createGuardrailMutation() string {
+	return `mutation CreateGuardrail($input: CreateGuardrailInput!) {
+		guardrail: createGuardrail(input: $input) {
+			title
+			description
+			tags
+			turbot {
+				id
+				akas
+				title
+			}
+		}
+	}`
+}
+
+func readGuardrailQuery(id string) string {
+	return fmt.Sprintf(`{
+		guardrail: guardrail(id: "%s") {
+			description
+			turbot {
+				id
+				akas
+				title
+				tags
+			}
+			accounts {
+				items {
+					turbot {
+						id
+						akas
+					}
+				}
+			}
+			targets {
+				items {
+					uri
+				}
+			}
+			controlTypes {
+				items {
+					uri
+				}
+			}
+		}
+	}`, id)
+}
+
+func updateGuardrailMutation() string {
+	return `mutation UpdateGuardrail($input: UpdateGuardrailInput!) {
+		guardrail: updateGuardrail(input: $input) {
+			description
+			tags
+			turbot {
+				id
+				akas
+				title
+			}
+		}
+	}`
+}
+
+func attachGuardrailMutation() string {
+	return `mutation AttachGuardrail($input: AttachGuardrailInput!) {
+		guardrail: attachGuardrails(input: $input) {
+			turbot {
+				id
+				akas
+				title
+			}
+		}
+	}`
+}
+
+func detachGuardrailMutation() string {
+	return `mutation DetachGuardrail($input: DetachGuardrailInput!) {
+		guardrail: detachGuardrails(input: $input) {
+			turbot {
+				id
+			}
+		}
+	}`
+}

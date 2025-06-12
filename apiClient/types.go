@@ -535,3 +535,39 @@ type TurbotWatchMetadata struct {
 	ResourceId string
 	FavoriteId string
 }
+
+// Guardrail
+
+type GuardrailResponse struct {
+	Guardrail Guardrail
+}
+
+type Guardrail struct {
+	Description string
+	Turbot      TurbotResourceMetadata
+	Accounts    struct {
+		Items []Account
+	}
+	ControlTypes struct {
+		Items []ControlType
+	}
+	Targets struct {
+		Items []Target
+	}
+}
+
+type AttachGuardrailResponse struct {
+	Turbot TurbotResourceMetadata
+}
+
+type Account struct {
+	Turbot TurbotResourceMetadata
+}
+
+type ControlType struct {
+	Uri string
+}
+
+type Target struct {
+	Uri string
+}
