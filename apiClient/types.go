@@ -172,6 +172,21 @@ type PolicyValue struct {
 	Turbot     TurbotPolicyMetadata
 }
 
+// PolicyType
+type PolicyTypeResponse struct {
+	PolicyType PolicyType
+}
+
+type FindPolicyTypeResponse struct {
+	PolicyTypes struct {
+		Items []PolicyType
+	}
+}
+type PolicyType struct {
+	ModUri string
+	Turbot TurbotPolicyMetadata
+}
+
 // Mod
 type InstallModResponse struct {
 	Mod InstallModData

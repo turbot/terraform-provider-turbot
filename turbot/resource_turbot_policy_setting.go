@@ -123,7 +123,16 @@ func resourceTurbotPolicySettingCreate(d *schema.ResourceData, meta interface{})
 	policyTypeUri := d.Get("type").(string)
 	resourceAka := d.Get("resource").(string)
 
-	// first check if the folder exists - search by parent and foldere title
+	// check if the policy type is installed -- is the mod installed?
+	policyType, err := client.FindPolicyType(policyTypeUri)
+	if err != nil {
+		return err
+	}
+	if policyType.ModUri == "" {
+		return fmt.Errorf("policy type %s not found. Is the mod installed?", policyTypeUri)
+	}
+
+	// check if the folder exists - search by parent and folder title
 	existingSetting, err := client.FindPolicySetting(policyTypeUri, resourceAka)
 	if err != nil {
 		return err
