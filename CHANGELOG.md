@@ -4,6 +4,25 @@ FEATURES:
 
 * **New Resource:** `turbot_campaign` ([#195](https://github.com/turbot/terraform-provider-turbot/issues/195))
 
+## 1.12.3 (TBD)
+
+BUG FIXES:
+
+* There was an issue in the policySetting resource where the log message was not correctly formed when attempting to create policy settings for non-existent or uninstalled policy types. The log message is now more informative and precise. ([#214](https://github.com/turbot/terraform-provider-turbot/issues/214))
+
+## 1.12.2 (May 12, 2025)
+
+ENHANCEMENTS:
+
+* Improved sensitive data masking in log outputs to include additional value types. ([#210](https://github.com/turbot/terraform-provider-turbot/issues/210))
+
+## 1.12.1 (May 08, 2025)
+
+BUG FIXES:
+
+* Resolved an issue where parent updates in `resource_turbot_file` were silently ignored. These updates are now processed correctly to ensure changes are properly applied. ([#206](https://github.com/turbot/terraform-provider-turbot/issues/206))
+
+
 ## 1.12.0 (February 19, 2025)
 
 FEATURES:

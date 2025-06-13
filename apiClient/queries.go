@@ -193,6 +193,20 @@ func readPolicyValueQuery(policyTypeUri string, resourceId string) string {
 `, policyTypeUri, resourceId)
 }
 
+func findPolicyTypeQuery(policyTypeUri string) string {
+	return fmt.Sprintf(`{
+  policyTypes: policyTypes(filter: "policyTypeId:%s level:self") {
+    items {
+		modUri
+		turbot {
+			id
+		}
+    }
+  }
+}
+`, policyTypeUri)
+}
+
 // watch
 func createWatchMutation() string {
 	return fmt.Sprintf(`mutation CreateWatch($input: CreateWatchInput!) {

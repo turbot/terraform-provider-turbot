@@ -2,6 +2,7 @@ package turbot
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/turbot/terraform-provider-turbot/apiClient"
 	"github.com/turbot/terraform-provider-turbot/errors"
@@ -157,8 +158,19 @@ func resourceTurbotFileUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	input["id"] = id
+
+	// Check if parent actually changed
+	oldParent, newParent := d.GetChange("parent")
+	if oldParent != newParent {
+		// Only update parent if it actually changed
+		if err := updateParent(client, id, newParent.(string)); err != nil {
+			return err
+		}
+	}
+
 	// Delete `parent` from input because the putResource mutation does not expect `parent` in the input
 	delete(input, "parent")
+
 	turbotMetadata, err := client.PutResource(input)
 	if err != nil {
 		return err
@@ -194,6 +206,19 @@ func resourceTurbotFileImport(d *schema.ResourceData, meta interface{}) ([]*sche
 		return nil, err
 	}
 	return []*schema.ResourceData{d}, nil
+}
+
+// Helper function for parent updates
+func updateParent(client *apiClient.Client, id, parent string) error {
+	_, err := client.UpdateResource(map[string]interface{}{
+		"id":     id,
+		"parent": parent,
+		"data":   map[string]interface{}{},
+	})
+	if err != nil {
+		return fmt.Errorf("failed to update parent: %w", err)
+	}
+	return nil
 }
 
 func buildFileInput(d *schema.ResourceData, properties []interface{}) (map[string]interface{}, error) {
