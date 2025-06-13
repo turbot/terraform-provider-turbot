@@ -35,7 +35,7 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"turbot_campaign":                resourceTurbotCampaign(),
+			"turbot_rollout":                 resourceTurbotRollout(),
 			"turbot_control_mute":            resourceTurbotControlMute(),
 			"turbot_file":                    resourceTurbotFile(),
 			"turbot_folder":                  resourceTurbotFolder(),

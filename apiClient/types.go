@@ -536,12 +536,12 @@ type TurbotWatchMetadata struct {
 	FavoriteId string
 }
 
-// Campaign
-type CampaignResponse struct {
-	Campaign Campaign
+// Rollout
+type RolloutResponse struct {
+	Rollout Rollout
 }
 
-type Campaign struct {
+type Rollout struct {
 	Turbot      TurbotResourceMetadata
 	Description string
 	Status      string
@@ -557,18 +557,18 @@ type Campaign struct {
 			Turbot TurbotResourceMetadata
 		}
 	}
-	Phases CampaignPhases `json:"phases"`
+	Phases RolloutPhases `json:"phases"`
 }
 
-type CampaignPhases struct {
-	Draft   *TurbotCampaignDraftPhaseMetadata `json:"draft,omitempty"`
-	Preview *TurbotCampaignPhaseMetadata      `json:"preview,omitempty"`
-	Check   *TurbotCampaignPhaseMetadata      `json:"check,omitempty"`
-	Enforce *TurbotCampaignPhaseMetadata      `json:"enforce,omitempty"`
-	Detach  *TurbotCampaignPhaseMetadata      `json:"detach,omitempty"`
+type RolloutPhases struct {
+	Draft   *TurbotRolloutDraftPhaseMetadata   `json:"draft,omitempty"`
+	Preview *TurbotRolloutPreviewPhaseMetadata `json:"preview,omitempty"`
+	Check   *TurbotRolloutPhaseMetadata        `json:"check,omitempty"`
+	Enforce *TurbotRolloutPhaseMetadata        `json:"enforce,omitempty"`
+	Detach  *TurbotRolloutPhaseMetadata        `json:"detach,omitempty"`
 }
 
-type TurbotCampaignPhaseMetadata struct {
+type TurbotRolloutPhaseMetadata struct {
 	StartAt      string   `json:"startAt,omitempty"`
 	StartNotice  string   `json:"startNotice,omitempty"`
 	StartEarlyIf string   `json:"startEarlyIf,omitempty"`
@@ -576,6 +576,13 @@ type TurbotCampaignPhaseMetadata struct {
 	Recipients   []string `json:"recipients,omitempty"`
 }
 
-type TurbotCampaignDraftPhaseMetadata struct {
+type TurbotRolloutDraftPhaseMetadata struct {
 	StartAt string `json:"startAt,omitempty"`
+}
+
+type TurbotRolloutPreviewPhaseMetadata struct {
+	StartAt      string   `json:"startAt,omitempty"`
+	StartNotice  string   `json:"startNotice,omitempty"`
+	StartEarlyIf string   `json:"startEarlyIf,omitempty"`
+	Recipients   []string `json:"recipients,omitempty"`
 }

@@ -2,7 +2,7 @@
 
 FEATURES:
 
-* **New Resource:** `turbot_campaign` ([#195](https://github.com/turbot/terraform-provider-turbot/issues/195))
+* **New Resource:** `turbot_rollout` ([#195](https://github.com/turbot/terraform-provider-turbot/issues/195))
 
 ## 1.12.3 (TBD)
 

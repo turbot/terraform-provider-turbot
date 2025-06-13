@@ -747,11 +747,11 @@ func (client *Client) GetTurbotWorkspaceVersion() (*semver.Version, error) {
 	return version, nil
 }
 
-// campaign
+// rollout
 // filter and description are removed for a workaround, will be removed after a Core change.
-func createCampaignMutation() string {
-	return `mutation CreateCampaign($input: CreateCampaignInput!) {
-		campaign: createCampaign(input: $input) {
+func createRolloutMutation() string {
+	return `mutation CreateRollout($input: CreateRolloutInput!) {
+		rollout: createRollout(input: $input) {
 			title
 			status
 			description
@@ -781,9 +781,9 @@ func createCampaignMutation() string {
 	}`
 }
 
-func readCampaignQuery(id string) string {
+func readRolloutQuery(id string) string {
 	return fmt.Sprintf(`{
-		campaign(id: "%s") {
+		rollout(id: "%s") {
 			description
 			status
 			title
@@ -813,9 +813,9 @@ func readCampaignQuery(id string) string {
 	}`, id)
 }
 
-func updateCampaignMutation() string {
-	return `mutation UpdateCampaign($input: UpdateCampaignInput!) {
-		campaign: updateCampaign(input: $input) {
+func updateRolloutMutation() string {
+	return `mutation UpdateRollout($input: UpdateRolloutInput!) {
+		rollout: updateRollout(input: $input) {
 			title
 			status
 			description

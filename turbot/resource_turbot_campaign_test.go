@@ -11,27 +11,27 @@ import (
 )
 
 // test suites
-func TestAccCampaign_Basic(t *testing.T) {
-	resourceName := "turbot_campaign.test"
+func TestAccRollout_Basic(t *testing.T) {
+	resourceName := "turbot_rollout.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckCampaignDestroy,
+		CheckDestroy: testAccCheckRolloutDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCampaignConfig(),
+				Config: testAccRolloutConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCampaignExists("turbot_campaign.test"),
-					resource.TestCheckResourceAttr("turbot_campaign.test", "title", "Test Campaign Resource Created Through Terraform"),
-					resource.TestCheckResourceAttr("turbot_campaign.test", "description", "Campaign For Testing"),
+					testAccCheckRolloutExists("turbot_rollout.test"),
+					resource.TestCheckResourceAttr("turbot_rollout.test", "title", "Test Rollout Resource Created Through Terraform"),
+					resource.TestCheckResourceAttr("turbot_rollout.test", "description", "Rollout For Testing"),
 				),
 			},
 			{
-				Config: testAccCampaignUpdateDescConfig(),
+				Config: testAccRolloutUpdateDescConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCampaignExists("turbot_campaign.test"),
-					resource.TestCheckResourceAttr("turbot_campaign.test", "title", "Test Campaign Resource Created Through Terraform"),
-					resource.TestCheckResourceAttr("turbot_campaign.test", "description", "Campaign For Testing Updated"),
+					testAccCheckRolloutExists("turbot_rollout.test"),
+					resource.TestCheckResourceAttr("turbot_rollout.test", "title", "Test Rollout Resource Created Through Terraform"),
+					resource.TestCheckResourceAttr("turbot_rollout.test", "description", "Rollout For Testing Updated"),
 				),
 			},
 			{
@@ -45,12 +45,12 @@ func TestAccCampaign_Basic(t *testing.T) {
 }
 
 // configs
-func testAccCampaignConfig() string {
+func testAccRolloutConfig() string {
 	return `
-resource "turbot_campaign" "test" {
+resource "turbot_rollout" "test" {
 
-  title       = "Test Campaign Resource Created Through Terraform"
-  description = "Campaign For Testing"
+  title       = "Test Rollout Resource Created Through Terraform"
+  description = "Rollout For Testing"
 
   guardrails = ["348351678444334"]
   accounts   = ["330101957430965"]
@@ -64,12 +64,12 @@ resource "turbot_campaign" "test" {
 `
 }
 
-func testAccCampaignUpdateDescConfig() string {
+func testAccRolloutUpdateDescConfig() string {
 	return `
-resource "turbot_campaign" "test" {
+resource "turbot_rollout" "test" {
 
-  title       = "Test Campaign Resource Created Through Terraform"
-  description = "Campaign For Testing Updated"
+  title       = "Test Rollout Resource Created Through Terraform"
+  description = "Rollout For Testing Updated"
 
   guardrails = ["348351678444334"]
   accounts   = ["330101957430965"]
@@ -84,7 +84,7 @@ resource "turbot_campaign" "test" {
 }
 
 // helper functions
-func testAccCheckCampaignExists(resource string) resource.TestCheckFunc {
+func testAccCheckRolloutExists(resource string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[resource]
 		if !ok {
@@ -94,7 +94,7 @@ func testAccCheckCampaignExists(resource string) resource.TestCheckFunc {
 			return fmt.Errorf("no Record ID is set")
 		}
 		client := testAccProvider.Meta().(*apiClient.Client)
-		_, err := client.ReadCampaign(rs.Primary.ID)
+		_, err := client.ReadRollout(rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("error fetching item with resource %s. %s", resource, err)
 		}
@@ -102,11 +102,11 @@ func testAccCheckCampaignExists(resource string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckCampaignDestroy(s *terraform.State) error {
+func testAccCheckRolloutDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*apiClient.Client)
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type == "turbot_campaign" {
-			_, err := client.ReadCampaign(rs.Primary.ID)
+		if rs.Type == "turbot_rollout" {
+			_, err := client.ReadRollout(rs.Primary.ID)
 			if err == nil {
 				return fmt.Errorf("alert still exists")
 			}

@@ -8,22 +8,22 @@ import (
 )
 
 // properties which must be passed to a create/update call
-var campaignProperties = []interface{}{"title", "description", "status", "recipients", "preview", "check", "draft", "enforce", "detach", "guardrails", "accounts", "akas"}
+var rolloutProperties = []interface{}{"title", "description", "status", "recipients", "preview", "check", "draft", "enforce", "detach", "guardrails", "accounts", "akas"}
 
-func getCampaignUpdateProperties() []interface{} {
+func getRolloutUpdateProperties() []interface{} {
 	excludedProperties := []string{"guardrails", "preview", "check", "draft", "enforce", "detach", "akas"}
-	return helpers.RemoveProperties(campaignProperties, excludedProperties)
+	return helpers.RemoveProperties(rolloutProperties, excludedProperties)
 }
 
-func resourceTurbotCampaign() *schema.Resource {
+func resourceTurbotRollout() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceTurbotCampaignCreate,
-		Read:   resourceTurbotCampaignRead,
-		Update: resourceTurbotCampaignUpdate,
-		Delete: resourceTurbotCampaignDelete,
-		Exists: resourceTurbotCampaignExists,
+		Create: resourceTurbotRolloutCreate,
+		Read:   resourceTurbotRolloutRead,
+		Update: resourceTurbotRolloutUpdate,
+		Delete: resourceTurbotRolloutDelete,
+		Exists: resourceTurbotRolloutExists,
 		Importer: &schema.ResourceImporter{
-			State: resourceTurbotCampaignImport,
+			State: resourceTurbotRolloutImport,
 		},
 		Schema: map[string]*schema.Schema{
 			"guardrails": {
@@ -67,35 +67,35 @@ func resourceTurbotCampaign() *schema.Resource {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
-					Schema: campaignPhaseSchema(),
+					Schema: rolloutPhaseSchema(),
 				},
 			},
 			"detach": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
-					Schema: campaignPhaseSchema(),
+					Schema: rolloutPhaseSchema(),
 				},
 			},
 			"draft": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
-					Schema: campaignDraftSchema(),
+					Schema: rolloutDraftSchema(),
 				},
 			},
 			"enforce": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
-					Schema: campaignPhaseSchema(),
+					Schema: rolloutPhaseSchema(),
 				},
 			},
 			"preview": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
-					Schema: campaignPhaseSchema(),
+					Schema: rolloutPreviewSchema(),
 				},
 			},
 			"akas": {
@@ -110,7 +110,7 @@ func resourceTurbotCampaign() *schema.Resource {
 	}
 }
 
-func campaignPhaseSchema() map[string]*schema.Schema {
+func rolloutPhaseSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"start_at": {
 			Type:     schema.TypeString,
@@ -137,7 +137,7 @@ func campaignPhaseSchema() map[string]*schema.Schema {
 	}
 }
 
-func campaignDraftSchema() map[string]*schema.Schema {
+func rolloutDraftSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"start_at": {
 			Type:     schema.TypeString,
@@ -146,22 +146,44 @@ func campaignDraftSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceTurbotCampaignExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
+func rolloutPreviewSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"start_at": {
+			Type:     schema.TypeString,
+			Required: true,
+		},
+		"start_notice": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+		"start_early_if": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+		"recipients": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+	}
+}
+
+func resourceTurbotRolloutExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
 	client := meta.(*apiClient.Client)
 	id := d.Id()
 	return client.ResourceExists(id)
 }
 
-func resourceTurbotCampaignCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceTurbotRolloutCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
 
-	// build map of campaign properties
-	input := mapFromResourceData(d, campaignProperties)
+	// build map of rollout properties
+	input := mapFromResourceData(d, rolloutProperties)
 
 	// extract and set phase-related inputs
 	phases := make(map[string]interface{})
 
-	phaseKeys := []string{"preview", "check", "enforce", "detach"}
+	phaseKeys := []string{"check", "enforce", "detach"}
 	for _, key := range phaseKeys {
 		if !isNil(input[key]) {
 			phases[key] = setPhaseAttribute(input, key)
@@ -175,42 +197,47 @@ func resourceTurbotCampaignCreate(d *schema.ResourceData, meta interface{}) erro
 		delete(input, "draft")
 	}
 
+	if !isNil(input["preview"]) {
+		phases["preview"] = setPreviewInputAttribute(input, "preview")
+		delete(input, "preview")
+	}
+
 	input["phases"] = phases
 
-	// create the campaign
-	campaign, err := client.CreateCampaign(input)
+	// create the rollout
+	rollout, err := client.CreateRollout(input)
 	if err != nil {
 		return err
 	}
 
 	// assign the id
-	d.SetId(campaign.Turbot.Id)
+	d.SetId(rollout.Turbot.Id)
 
 	// TODO Remove Read call once schema changes are In.
-	return resourceTurbotCampaignRead(d, meta)
+	return resourceTurbotRolloutRead(d, meta)
 }
 
-func resourceTurbotCampaignUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceTurbotRolloutUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
 	id := d.Id()
 
 	// build map of folder properties
-	input := mapFromResourceData(d, getCampaignUpdateProperties())
+	input := mapFromResourceData(d, getRolloutUpdateProperties())
 	input["id"] = id
 
-	_, err := client.UpdateCampaign(input)
+	_, err := client.UpdateRollout(input)
 	if err != nil {
 		return err
 	}
 	// set 'Read' Properties
-	return resourceTurbotCampaignRead(d, meta)
+	return resourceTurbotRolloutRead(d, meta)
 }
 
-func resourceTurbotCampaignRead(d *schema.ResourceData, meta interface{}) error {
+func resourceTurbotRolloutRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
 	id := d.Id()
 
-	campaign, err := client.ReadCampaign(id)
+	rollout, err := client.ReadRollout(id)
 	if err != nil {
 		if errors.NotFoundError(err) {
 			// folder was not found - clear id
@@ -220,11 +247,11 @@ func resourceTurbotCampaignRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	// Set basic attributes
-	d.Set("description", campaign.Description)
-	d.Set("status", campaign.Status)
-	d.Set("title", campaign.Turbot.Title)
-	d.Set("recipients", campaign.Recipients)
-	d.Set("akas", campaign.Turbot.Akas)
+	d.Set("description", rollout.Description)
+	d.Set("status", rollout.Status)
+	d.Set("title", rollout.Turbot.Title)
+	d.Set("recipients", rollout.Recipients)
+	d.Set("akas", rollout.Turbot.Akas)
 
 	// helper to extract Turbot.Id from a slice of items
 	extractIds := func(items []struct {
@@ -237,14 +264,14 @@ func resourceTurbotCampaignRead(d *schema.ResourceData, meta interface{}) error 
 		return ids
 	}
 
-	if len(campaign.Accounts.Items) > 0 {
-		d.Set("accounts", extractIds(campaign.Accounts.Items))
+	if len(rollout.Accounts.Items) > 0 {
+		d.Set("accounts", extractIds(rollout.Accounts.Items))
 	}
-	if len(campaign.Guardrails.Items) > 0 {
-		d.Set("guardrails", extractIds(campaign.Guardrails.Items))
+	if len(rollout.Guardrails.Items) > 0 {
+		d.Set("guardrails", extractIds(rollout.Guardrails.Items))
 	}
-	if !isNil(campaign.Turbot.ParentId) {
-		d.Set("parent", campaign.Turbot.ParentId)
+	if !isNil(rollout.Turbot.ParentId) {
+		d.Set("parent", rollout.Turbot.ParentId)
 	}
 
 	// helper to set phase if it's not nil
@@ -254,16 +281,16 @@ func resourceTurbotCampaignRead(d *schema.ResourceData, meta interface{}) error 
 		}
 	}
 
-	setPhase("preview", campaign.Phases.Preview)
-	setPhase("check", campaign.Phases.Check)
-	setPhase("enforce", campaign.Phases.Enforce)
-	setPhase("detach", campaign.Phases.Detach)
-	setPhase("draft", campaign.Phases.Draft)
+	setPhase("preview", rollout.Phases.Preview)
+	setPhase("check", rollout.Phases.Check)
+	setPhase("enforce", rollout.Phases.Enforce)
+	setPhase("detach", rollout.Phases.Detach)
+	setPhase("draft", rollout.Phases.Draft)
 
 	return nil
 }
 
-func resourceTurbotCampaignDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceTurbotRolloutDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
 	id := d.Id()
 	err := client.DeleteResource(id)
@@ -277,8 +304,8 @@ func resourceTurbotCampaignDelete(d *schema.ResourceData, meta interface{}) erro
 	return nil
 }
 
-func resourceTurbotCampaignImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-	if err := resourceTurbotCampaignRead(d, meta); err != nil {
+func resourceTurbotRolloutImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	if err := resourceTurbotRolloutRead(d, meta); err != nil {
 		return nil, err
 	}
 	return []*schema.ResourceData{d}, nil
@@ -307,6 +334,21 @@ func setDraftInputAttribute(input map[string]interface{}, attributeName string) 
 
 		return map[string]interface{}{
 			"startAt": draft["start_at"].(string),
+		}
+	}
+	return nil
+}
+
+func setPreviewInputAttribute(input map[string]interface{}, attributeName string) map[string]interface{} {
+	previewInputs := input[attributeName].([]interface{})
+	if len(previewInputs) > 0 {
+		preview := previewInputs[0].(map[string]interface{})
+
+		return map[string]interface{}{
+			"startAt":      preview["start_at"].(string),
+			"startNotice":  preview["start_notice"].(string),
+			"startEarlyIf": preview["start_early_if"].(string),
+			"recipients":   preview["recipients"].([]interface{}),
 		}
 	}
 	return nil
