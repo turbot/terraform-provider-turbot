@@ -746,3 +746,101 @@ func (client *Client) GetTurbotWorkspaceVersion() (*semver.Version, error) {
 	}
 	return version, nil
 }
+
+// rollout
+// filter and description are removed for a workaround, will be removed after a Core change.
+func createRolloutMutation() string {
+	return `mutation CreateRollout($input: CreateRolloutInput!) {
+		rollout: createRollout(input: $input) {
+			title
+			status
+			description
+			recipients			
+			phases			
+			turbot {
+				id
+				parentId
+				akas
+				title
+			}
+			accounts {
+				items {
+					turbot {
+						id
+					}
+				}
+			}
+			guardrails {
+				items {
+					turbot {
+						id
+					}
+				}
+			}
+		}
+	}`
+}
+
+func readRolloutQuery(id string) string {
+	return fmt.Sprintf(`{
+		rollout(id: "%s") {
+			description
+			status
+			title
+			recipients
+			phases
+			accounts {
+				items {
+					turbot {
+						id
+					}
+				}
+			}
+			guardrails {
+				items {
+					turbot {
+						id
+					}
+				}
+			}
+			turbot {
+				id
+				akas
+				title
+				parentId
+			}
+		}
+	}`, id)
+}
+
+func updateRolloutMutation() string {
+	return `mutation UpdateRollout($input: UpdateRolloutInput!) {
+		rollout: updateRollout(input: $input) {
+			title
+			status
+			description
+			recipients
+			phases
+			turbot {
+				id
+				parentId
+				akas
+				title
+			}
+			accounts {
+				items {
+					turbot {
+						id
+					}
+				}
+			}
+			guardrails {
+				items {
+					turbot {
+						id
+					}
+				}
+			}
+		}
+	}`
+}

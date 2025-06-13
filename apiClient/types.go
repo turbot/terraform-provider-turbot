@@ -535,3 +535,54 @@ type TurbotWatchMetadata struct {
 	ResourceId string
 	FavoriteId string
 }
+
+// Rollout
+type RolloutResponse struct {
+	Rollout Rollout
+}
+
+type Rollout struct {
+	Turbot      TurbotResourceMetadata
+	Description string
+	Status      string
+	Title       string
+	Recipients  []string
+	Accounts    struct {
+		Items []struct {
+			Turbot TurbotResourceMetadata
+		}
+	}
+	Guardrails struct {
+		Items []struct {
+			Turbot TurbotResourceMetadata
+		}
+	}
+	Phases RolloutPhases `json:"phases"`
+}
+
+type RolloutPhases struct {
+	Draft   *TurbotRolloutDraftPhaseMetadata   `json:"draft,omitempty"`
+	Preview *TurbotRolloutPreviewPhaseMetadata `json:"preview,omitempty"`
+	Check   *TurbotRolloutPhaseMetadata        `json:"check,omitempty"`
+	Enforce *TurbotRolloutPhaseMetadata        `json:"enforce,omitempty"`
+	Detach  *TurbotRolloutPhaseMetadata        `json:"detach,omitempty"`
+}
+
+type TurbotRolloutPhaseMetadata struct {
+	StartAt      string   `json:"startAt,omitempty"`
+	StartNotice  string   `json:"startNotice,omitempty"`
+	StartEarlyIf string   `json:"startEarlyIf,omitempty"`
+	WarnAt       []string `json:"warnAt,omitempty"`
+	Recipients   []string `json:"recipients,omitempty"`
+}
+
+type TurbotRolloutDraftPhaseMetadata struct {
+	StartAt string `json:"startAt,omitempty"`
+}
+
+type TurbotRolloutPreviewPhaseMetadata struct {
+	StartAt      string   `json:"startAt,omitempty"`
+	StartNotice  string   `json:"startNotice,omitempty"`
+	StartEarlyIf string   `json:"startEarlyIf,omitempty"`
+	Recipients   []string `json:"recipients,omitempty"`
+}
