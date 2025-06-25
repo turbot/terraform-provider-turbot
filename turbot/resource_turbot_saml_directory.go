@@ -1,11 +1,12 @@
 package turbot
 
 import (
+	"strings"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/turbot/terraform-provider-turbot/apiClient"
 	"github.com/turbot/terraform-provider-turbot/errors"
 	"github.com/turbot/terraform-provider-turbot/helpers"
-	"strings"
 )
 
 // input properties which must be passed to a create/update call
@@ -14,7 +15,7 @@ var samlDirectoryInputProperties = []interface{}{"title", "description", "status
 // exclude properties from input map to make a create call
 func getSamlDirectoryProperties() []interface{} {
 	excludedProperties := []string{"group_id_template", "tags", "profile_id_template"}
-	return helpers.RemoveProperties(localDirectoryInputProperties, excludedProperties)
+	return helpers.RemoveProperties(samlDirectoryInputProperties, excludedProperties)
 }
 
 func resourceTurbotSamlDirectory() *schema.Resource {

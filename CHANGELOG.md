@@ -4,6 +4,8 @@ BUG FIXES:
 
 * There was an issue in the policySetting resource where the log message was not correctly formed when attempting to create policy settings for non-existent or uninstalled policy types. The log message is now more informative and precise. ([#214](https://github.com/turbot/terraform-provider-turbot/issues/214))
 
+* SAML certificate updates via Terraform applied successfully but didn't persist in the backend. These updates are now processed correctly. ([#216](https://github.com/turbot/terraform-provider-turbot/issues/216))
+
 ## 1.12.2 (May 12, 2025)
 
 ENHANCEMENTS:
