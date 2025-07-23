@@ -266,7 +266,7 @@ func deleteWatchMutation(id string) string {
 // smart folder
 // filter and description are removed for a workaround, will be removed after a Core change.
 func createSmartFolderMutation() string {
-	return fmt.Sprintf(`mutation CreateSmartFolder($input: CreateSmartFolderInput!) {
+	return `mutation CreateSmartFolder($input: CreateSmartFolderInput!) {
 		smartFolder: createSmartFolder(input: $input) {
 			turbot {
 				id
@@ -275,7 +275,7 @@ func createSmartFolderMutation() string {
 				title
 			}
 		}
-	}`)
+	}`
 }
 
 func readSmartFolderQuery(id string) string {
@@ -296,7 +296,7 @@ func readSmartFolderQuery(id string) string {
 }
 
 func updateSmartFolderMutation() string {
-	return fmt.Sprintf(`mutation UpdateSmartFolder($input: UpdateSmartFolderInput!) {
+	return `mutation UpdateSmartFolder($input: UpdateSmartFolderInput!) {
 		smartFolder: updateSmartFolder(input: $input) {
 			turbot {
 				id
@@ -304,27 +304,37 @@ func updateSmartFolderMutation() string {
 				akas
 			}
 		}
-	}`)
+	}`
+}
+
+func deleteSmartFolderMutation(id string) string {
+	return fmt.Sprintf(`mutation DeleteSmartFolder {
+		smartFolder: deleteSmartFolder(input: {id: %s}) {
+			turbot {
+				id
+			}
+		}
+	}`, id)
 }
 
 func createSmartFolderAttachmentMutation() string {
-	return fmt.Sprintf(`mutation AttachSmartFolder($input: AttachSmartFolderInput!) {
+	return `mutation AttachSmartFolder($input: AttachSmartFolderInput!) {
 		attachSmartFolders(input: $input) {
 			turbot {
 				id
 			}
 		}
-	}`)
+	}`
 }
 
 func detachSmartFolderAttachment() string {
-	return fmt.Sprintf(`mutation DetachSmartFolder($input: DetachSmartFolderInput!) {
+	return `mutation DetachSmartFolder($input: DetachSmartFolderInput!) {
 		detachSmartFolder: detachSmartFolders(input: $input) {
     		turbot {
 				id
 			}
   		}
-	}`)
+	}`
 }
 
 // mod

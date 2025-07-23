@@ -1,3 +1,11 @@
+## 1.12.4 (July 23, 2025)
+
+BUG FIXES:
+
+* Resolved a bug where destroying a policy pack via Terraform did not delete the policy pack if it was still attached to resources. The `terraform destroy` command now provides a clear and meaningful error message when such attachments exist. ([#220](https://github.com/turbot/terraform-provider-turbot/issues/220))
+
+Note: This fix requires Turbot Enterprise (TE) version 5.52.1 or later.
+
 ## 1.12.3 (June 25, 2025)
 
 BUG FIXES:

@@ -1,5 +1,7 @@
 package apiClient
 
+import "fmt"
+
 func (client *Client) CreateSmartFolder(input map[string]interface{}) (*SmartFolder, error) {
 	query := createSmartFolderMutation()
 	responseData := &SmartFolderResponse{}
@@ -36,4 +38,15 @@ func (client *Client) UpdateSmartFolder(input map[string]interface{}) (*SmartFol
 		return nil, client.handleUpdateError(err, input, "smart folder")
 	}
 	return &responseData.SmartFolder, nil
+}
+
+func (client *Client) DeleteSmartFolder(id string) error {
+	query := deleteSmartFolderMutation(id)
+	var responseData interface{}
+
+	// execute api call
+	if err := client.doRequest(query, nil, &responseData); err != nil {
+		return fmt.Errorf("error deleting resource: %s", err.Error())
+	}
+	return nil
 }

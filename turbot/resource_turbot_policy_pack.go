@@ -139,7 +139,7 @@ func resourceTurbotPolicyPackRead(d *schema.ResourceData, meta interface{}) erro
 func resourceTurbotPolicyPackDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
 	id := d.Id()
-	err := client.DeleteResource(id)
+	err := client.DeleteSmartFolder(id)
 	if err != nil {
 		return err
 	}
