@@ -1,3 +1,9 @@
+## 1.12.5 (TBD)
+
+BUG FIXES:
+
+* Fixed an issue in the `turbot_file` resource where removed keys in the content field were incorrectly sent as `"key": null` in the update payload. The provider now sends the content exactly as specified in the Terraform configuration, ensuring that only the intended keys appear in the Turbot console.. ([#224](https://github.com/turbot/terraform-provider-turbot/issues/224))
+
 ## 1.12.4 (July 23, 2025)
 
 BUG FIXES:

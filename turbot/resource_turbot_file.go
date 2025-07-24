@@ -153,7 +153,7 @@ func resourceTurbotFileUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	input["data"], err = buildInputDataMap(d)
+	input["data"], err = helpers.JsonStringToMap(d.Get("content").(string))
 	if err != nil {
 		return err
 	}
@@ -253,30 +253,4 @@ func buildInputMetadataMap(d *schema.ResourceData) map[string]interface{} {
 		metadataMap["description"] = new
 	}
 	return metadataMap
-}
-
-// build the data field of the mutation input from content attribute
-// any property which should be removed must be explicitly set to null in the mutation input
-func buildInputDataMap(d *schema.ResourceData) (map[string]interface{}, error) {
-	var oldContent, newContent map[string]interface{}
-	var err error
-	// fetch old(state-file) and new(config) content
-	if old, new := d.GetChange("content"); old != nil {
-		if oldContent, err = helpers.JsonStringToMap(old.(string)); err != nil {
-			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal content: \n%s\nerror: %s", old.(string), err.Error())
-		}
-		if newContent, err = helpers.JsonStringToMap(new.(string)); err != nil {
-			return nil, fmt.Errorf("error build resource mutation input, failed to unmarshal content: \n%s\nerror: %s", new.(string), err.Error())
-		}
-		// extract keys from old content not in new
-		excludeContentProperties := helpers.GetOldMapProperties(oldContent, newContent)
-		for _, key := range excludeContentProperties {
-			// set keys of old content to `nil` in new content
-			// any property which doesn't exist in config is set to nil
-			if _, ok := oldContent[key.(string)]; ok {
-				newContent[key.(string)] = nil
-			}
-		}
-	}
-	return newContent, nil
 }
