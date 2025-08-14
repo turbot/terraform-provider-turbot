@@ -8,7 +8,7 @@ import (
 )
 
 // properties which must be passed to a create/update call
-var policyPackProperties = []interface{}{"title", "description", "parent", "filter", "akas"}
+var policyPackProperties = []interface{}{"title", "description", "parent", "filter", "tags", "akas"}
 
 func getPolicyPackUpdateProperties() []interface{} {
 	excludedProperties := []string{"parent"}
@@ -55,6 +55,10 @@ func resourceTurbotPolicyPack() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"tags": {
+				Type:     schema.TypeMap,
+				Optional: true,
+			},
 			"akas": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -78,13 +82,13 @@ func resourceTurbotPolicyPackCreate(d *schema.ResourceData, meta interface{}) er
 	// build map of folder properties
 	input := mapFromResourceData(d, policyPackProperties)
 
-	smartFolder, err := client.CreateSmartFolder(input)
+	policyPack, err := client.CreateSmartFolder(input)
 	if err != nil {
 		return err
 	}
 
 	// assign the id
-	d.SetId(smartFolder.Turbot.Id)
+	d.SetId(policyPack.Turbot.Id)
 	// TODO Remove Read call once schema changes are In.
 	return resourceTurbotPolicyPackRead(d, meta)
 }
@@ -110,7 +114,7 @@ func resourceTurbotPolicyPackRead(d *schema.ResourceData, meta interface{}) erro
 	client := meta.(*apiClient.Client)
 	id := d.Id()
 
-	smartFolder, err := client.ReadSmartFolder(id)
+	policyPack, err := client.ReadSmartFolder(id)
 	if err != nil {
 		if errors.NotFoundError(err) {
 			// folder was not found - clear id
@@ -121,17 +125,18 @@ func resourceTurbotPolicyPackRead(d *schema.ResourceData, meta interface{}) erro
 
 	// assign results back into ResourceData
 	// set parent_akas property by loading resource and fetching the akas
-	if err := storeAkas(smartFolder.Turbot.ParentId, "parent_akas", d, meta); err != nil {
+	if err := storeAkas(policyPack.Turbot.ParentId, "parent_akas", d, meta); err != nil {
 		return err
 	}
 	// NOTE currently turbot accepts array of filters but only uses the first
-	if len(smartFolder.Filters) > 0 {
-		d.Set("filter", smartFolder.Filters[0])
+	if len(policyPack.Filters) > 0 {
+		d.Set("filter", policyPack.Filters[0])
 	}
-	d.Set("parent", smartFolder.Parent)
-	d.Set("title", smartFolder.Title)
-	d.Set("description", smartFolder.Description)
-	d.Set("akas", smartFolder.Turbot.Akas)
+	d.Set("parent", policyPack.Parent)
+	d.Set("title", policyPack.Title)
+	d.Set("description", policyPack.Description)
+	d.Set("tags", policyPack.Turbot.Tags)
+	d.Set("akas", policyPack.Turbot.Akas)
 
 	return nil
 }
