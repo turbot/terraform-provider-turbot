@@ -2,11 +2,12 @@ package errors
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 func NotFoundError(err error) bool {
@@ -18,6 +19,12 @@ func NotFoundError(err error) bool {
 func FailedValidationError(err error) bool {
 	dataValidationError := "(?i)data validation failed"
 	expectedErr := regexp.MustCompile(dataValidationError)
+	return expectedErr.Match([]byte(err.Error()))
+}
+
+func ForbiddenError(err error) bool {
+	forbiddenErr := "(?i)graphql: Forbidden: Insufficient permissions for resource(?i)"
+	expectedErr := regexp.MustCompile(forbiddenErr)
 	return expectedErr.Match([]byte(err.Error()))
 }
 
