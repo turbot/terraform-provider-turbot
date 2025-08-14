@@ -1,8 +1,10 @@
-## 1.12.6 (TBD)
+## 1.13.0 (August 14, 2025)
 
 ENHANCEMENTS:
 
 * Added support for `tags` to the `turbot_policy_pack` resource. ([#228](https://github.com/turbot/terraform-provider-turbot/issues/228))
+
+Note: This fix requires Turbot Enterprise (TE) version 5.52.3 or later.
 
 ## 1.12.5 (August 6, 2025)
 
