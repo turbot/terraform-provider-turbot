@@ -637,7 +637,7 @@ func updateSamlDirectoryMutation(properties []interface{}) string {
 // control
 func readControlQuery(args string) string {
 	return fmt.Sprintf(`{
-control(id:%s){
+control(%s){
 	type{
 		uri
 	}
