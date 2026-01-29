@@ -1,3 +1,9 @@
+## 1.13.1 (January 29, 2026)
+
+BUG FIXES:
+
+* Fixed a GraphQL syntax error when querying the `turbot_control` data source using control type and resource. ([#233](https://github.com/turbot/terraform-provider-turbot/issues/233))
+
 ## 1.13.0 (August 14, 2025)
 
 ENHANCEMENTS:
