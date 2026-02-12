@@ -13,7 +13,7 @@ The `Turbot Profile` resource adds support for creating user profiles. It is use
 
 ## Example Usage
 
-###Creating Your First Profile
+### Creating Your First Profile
 
 ```hcl
 resource "turbot_profile" "admin" {
