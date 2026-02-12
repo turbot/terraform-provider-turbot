@@ -1,3 +1,9 @@
+## 1.13.2 (February 12, 2026)
+
+DOCUMENTATION:
+
+* `resource/turbot_profile`: Fixed markdown formatting for the heading so it displays correctly in the Terraform registry documentation. ([#232](https://github.com/turbot/terraform-provider-turbot/issues/232))
+
 ## 1.13.1 (January 29, 2026)
 
 BUG FIXES:
