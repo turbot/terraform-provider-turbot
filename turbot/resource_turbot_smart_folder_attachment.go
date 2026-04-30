@@ -79,13 +79,16 @@ func resourceTurbotSmartFolderAttachmentCreate(d *schema.ResourceData, meta inte
 
 	// Resolve the smart_folder AKA or ID to its numeric Turbot ID.
 	// The attachSmartFolders mutation requires numeric IDs — AKA strings cause "not eligible for attachment" errors.
-	// ReadResource uses a typed turbot { id } query which correctly populates Turbot.Id,
-	// unlike ReadSmartFolder which uses get(path:"turbot") and does not parse Id reliably.
+	// ReadSmartFolder unmarshals directly to a typed struct and does not reliably populate Turbot.Id;
+	// ReadResource decodes via mapstructure from interface{} which handles it correctly.
 	sfResource, err := client.ReadResource(smartFolder, nil)
 	if err != nil {
 		return fmt.Errorf("error reading smart folder %q: %s", smartFolder, err.Error())
 	}
 	resolvedSmartFolderId := sfResource.Turbot.Id
+	if resolvedSmartFolderId == "" {
+		return fmt.Errorf("smart folder %q resolved to an empty ID", smartFolder)
+	}
 
 	input := map[string]interface{}{
 		"resource":     resource,
@@ -101,10 +104,12 @@ func resourceTurbotSmartFolderAttachmentCreate(d *schema.ResourceData, meta inte
 	if err := storeAkas(resource, "resource_akas", d, meta); err != nil {
 		return err
 	}
-	// Store smart folder AKAs for DiffSuppressFunc on the smart_folder field
-	if err := storeAkas(resolvedSmartFolderId, "smart_folder_akas", d, meta); err != nil {
-		return err
+	// Reuse AKAs from the already-fetched smart folder resource to avoid a second round-trip
+	smartFolderAkas := sfResource.Turbot.Akas
+	if smartFolderAkas == nil {
+		smartFolderAkas = []string{resolvedSmartFolderId}
 	}
+	d.Set("smart_folder_akas", smartFolderAkas)
 
 	// Always store the resolved numeric ID in state and the state ID so parseSmartFolderId
 	// (which splits on the first underscore) works correctly for all input formats.

@@ -48,6 +48,46 @@ resource "turbot_policy_pack_attachment" "test" {
 `
 }
 
+func TestAccPolicyPackAttachment_Aka(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPolicyPackAttachmentDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccPolicyPackAttachmentAkaConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPolicyPackAttachmentExists("turbot_policy_pack_attachment.test_aka"),
+				),
+			},
+		},
+	})
+}
+
+// configs
+func testAccPolicyPackAttachmentAkaConfig() string {
+	return `
+resource "turbot_folder" "test_aka" {
+  parent      = "tmod:@turbot/turbot#/"
+  title       = "provider_test_aka"
+  description = "test folder for aka attachment"
+}
+
+resource "turbot_policy_pack" "test_aka" {
+  filter      = "resourceType:181381985925765 $.turbot.tags.a:b"
+  description = "Policy Pack AKA Testing"
+  title       = "policy_pack_aka"
+  akas        = ["test_policy_pack_aka_acceptance"]
+}
+
+resource "turbot_policy_pack_attachment" "test_aka" {
+  resource    = turbot_folder.test_aka.id
+  policy_pack = "test_policy_pack_aka_acceptance"
+  depends_on  = [turbot_policy_pack.test_aka]
+}
+`
+}
+
 // helper functions
 func testAccCheckPolicyPackAttachmentExists(resource string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {

@@ -60,8 +60,8 @@ The above example attaches a smart folder (`smart_folder`) to a resource (`my_re
 
 The following arguments are supported:
 
-- `resource` - (Required) The id of the resource to which a smart folder will be attached.
-- `smart_folder` - (Required) The id of the smart folder to be attached.
+- `resource` - (Required) The id or AKA of the resource to which a smart folder will be attached.
+- `smart_folder` - (Required) The id or AKA of the smart folder to be attached.
 
 ## Attributes Reference
 

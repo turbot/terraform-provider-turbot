@@ -80,13 +80,16 @@ func resourceTurbotPolicyPackAttachmentCreate(d *schema.ResourceData, meta inter
 
 	// Resolve the policy_pack AKA or ID to its numeric Turbot ID.
 	// The attachSmartFolders mutation requires numeric IDs — AKA strings cause "not eligible for attachment" errors.
-	// ReadResource uses a typed turbot { id } query which correctly populates Turbot.Id,
-	// unlike ReadSmartFolder which uses get(path:"turbot") and does not parse Id reliably.
+	// ReadSmartFolder unmarshals directly to a typed struct and does not reliably populate Turbot.Id;
+	// ReadResource decodes via mapstructure from interface{} which handles it correctly.
 	policyPackResource, err := client.ReadResource(policyPack, nil)
 	if err != nil {
 		return fmt.Errorf("error reading policy pack %q: %s", policyPack, err.Error())
 	}
 	resolvedPolicyPackId := policyPackResource.Turbot.Id
+	if resolvedPolicyPackId == "" {
+		return fmt.Errorf("policy pack %q resolved to an empty ID", policyPack)
+	}
 
 	input := map[string]interface{}{
 		"resource":     resource,
@@ -102,10 +105,12 @@ func resourceTurbotPolicyPackAttachmentCreate(d *schema.ResourceData, meta inter
 	if err := storeAkas(resource, "resource_akas", d, meta); err != nil {
 		return err
 	}
-	// Store policy pack AKAs for DiffSuppressFunc on the policy_pack field
-	if err := storeAkas(resolvedPolicyPackId, "policy_pack_akas", d, meta); err != nil {
-		return err
+	// Reuse AKAs from the already-fetched policy pack resource to avoid a second round-trip
+	policyPackAkas := policyPackResource.Turbot.Akas
+	if policyPackAkas == nil {
+		policyPackAkas = []string{resolvedPolicyPackId}
 	}
+	d.Set("policy_pack_akas", policyPackAkas)
 
 	// Always store the resolved numeric ID in state and the state ID so parsePolicyPackId
 	// (which splits on the first underscore) works correctly for all input formats.

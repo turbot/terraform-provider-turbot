@@ -57,8 +57,8 @@ The above example attaches a policy pack (`policy_pack`) to a resource (`my_reso
 
 The following arguments are supported:
 
-- `policy_pack` - (Required) The id of the policy pack to be attached.
-- `resource` - (Required) The id of the resource to which a policy pack will be attached.
+- `policy_pack` - (Required) The id or AKA of the policy pack to be attached.
+- `resource` - (Required) The id or AKA of the resource to which a policy pack will be attached.
 
 ## Attributes Reference
 

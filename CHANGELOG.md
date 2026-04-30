@@ -1,3 +1,10 @@
+## 1.13.3 (Unreleased)
+
+BUG FIXES:
+
+* `resource/turbot_policy_pack_attachment`: Fixed an error where passing an AKA string (e.g. `enforce_gcp_storage_bucket_policy_trusted_access`) for `policy_pack` caused `"smart folder ids not eligible for attachment"`. The AKA is now resolved to a numeric Turbot ID before calling the mutation. Also suppresses spurious plan diffs when the config uses an AKA but state holds the resolved numeric ID. ([#241](https://github.com/turbot/terraform-provider-turbot/pull/241))
+* `resource/turbot_smart_folder_attachment`: Same fix applied — AKA strings in `smart_folder` are now resolved to numeric IDs before attachment. ([#241](https://github.com/turbot/terraform-provider-turbot/pull/241))
+
 ## 1.13.2 (February 12, 2026)
 
 DOCUMENTATION:
