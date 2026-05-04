@@ -8,11 +8,6 @@ import (
 	"github.com/turbot/terraform-provider-turbot/apiClient"
 )
 
-var policyPackAttachProperties = map[string]string{
-	"resource":    "resource",
-	"policy_pack": "smartFolders",
-}
-
 func resourceTurbotPolicyPackAttachment() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceTurbotPolicyPackAttachmentCreate,
@@ -30,11 +25,21 @@ func resourceTurbotPolicyPackAttachment() *schema.Resource {
 				DiffSuppressFunc: suppressIfAkaMatches("resource_akas"),
 			},
 			"policy_pack": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: suppressIfAkaMatches("policy_pack_akas"),
 			},
 			"resource_akas": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			// Stores the policy pack's AKAs so suppressIfAkaMatches can suppress diffs
+			// when the user provides an AKA but the state holds the resolved numeric ID.
+			"policy_pack_akas": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Schema{
@@ -72,22 +77,46 @@ func resourceTurbotPolicyPackAttachmentCreate(d *schema.ResourceData, meta inter
 	client := meta.(*apiClient.Client)
 	resource := d.Get("resource").(string)
 	policyPack := d.Get("policy_pack").(string)
-	input := mapFromResourceDataWithPropertyMap(d, policyPackAttachProperties)
 
-	_, err := client.CreateSmartFolderAttachment(input)
+	// Resolve the policy_pack AKA or ID to its numeric Turbot ID.
+	// The attachSmartFolders mutation requires numeric IDs — AKA strings cause "not eligible for attachment" errors.
+	// ReadSmartFolder unmarshals directly to a typed struct and does not reliably populate Turbot.Id;
+	// ReadResource decodes via mapstructure from interface{} which handles it correctly.
+	policyPackResource, err := client.ReadResource(policyPack, nil)
+	if err != nil {
+		return fmt.Errorf("error reading policy pack %q: %s", policyPack, err.Error())
+	}
+	resolvedPolicyPackId := policyPackResource.Turbot.Id
+	if resolvedPolicyPackId == "" {
+		return fmt.Errorf("policy pack %q resolved to an empty ID", policyPack)
+	}
+
+	input := map[string]interface{}{
+		"resource":     resource,
+		"smartFolders": resolvedPolicyPackId,
+	}
+
+	_, err = client.CreateSmartFolderAttachment(input)
 	if err != nil {
 		return err
 	}
 
-	// set resource_akas property by loading resource and fetching the akas
+	// Store resource AKAs for DiffSuppressFunc on the resource field
 	if err := storeAkas(resource, "resource_akas", d, meta); err != nil {
 		return err
 	}
-	// assign the id
-	var stateId = buildPolicyPackId(policyPack, resource)
-	d.SetId(stateId)
+	// Reuse AKAs from the already-fetched policy pack resource to avoid a second round-trip
+	policyPackAkas := policyPackResource.Turbot.Akas
+	if policyPackAkas == nil {
+		policyPackAkas = []string{resolvedPolicyPackId}
+	}
+	d.Set("policy_pack_akas", policyPackAkas)
+
+	// Always store the resolved numeric ID in state and the state ID so parsePolicyPackId
+	// (which splits on the first underscore) works correctly for all input formats.
+	d.SetId(buildPolicyPackId(resolvedPolicyPackId, resource))
 	d.Set("resource", resource)
-	d.Set("policy_pack", policyPack)
+	d.Set("policy_pack", resolvedPolicyPackId)
 	return nil
 }
 
@@ -104,6 +133,10 @@ func resourceTurbotPolicyPackAttachmentRead(d *schema.ResourceData, meta interfa
 	if err := storeAkas(turbotResource.Turbot.Id, "resource_akas", d, meta); err != nil {
 		return err
 	}
+	// set policy_pack_akas property for DiffSuppressFunc
+	if err := storeAkas(policyPack, "policy_pack_akas", d, meta); err != nil {
+		return err
+	}
 	// assign results directly back into ResourceData
 	d.Set("resource", resource)
 	d.Set("policy_pack", policyPack)
@@ -112,7 +145,11 @@ func resourceTurbotPolicyPackAttachmentRead(d *schema.ResourceData, meta interfa
 
 func resourceTurbotPolicyPackAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
-	input := mapFromResourceDataWithPropertyMap(d, policyPackAttachProperties)
+	policyPack, resource := parsePolicyPackId(d.Id())
+	input := map[string]interface{}{
+		"resource":     resource,
+		"smartFolders": policyPack,
+	}
 	err := client.DeleteSmartFolderAttachment(input)
 	if err != nil {
 		return err

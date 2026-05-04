@@ -7,11 +7,6 @@ import (
 	"strings"
 )
 
-var smartFolderAttachProperties = map[string]string{
-	"resource":     "resource",
-	"smart_folder": "smartFolders",
-}
-
 func resourceTurbotSmartFolderAttachemnt() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceTurbotSmartFolderAttachmentCreate,
@@ -29,11 +24,21 @@ func resourceTurbotSmartFolderAttachemnt() *schema.Resource {
 				DiffSuppressFunc: suppressIfAkaMatches("resource_akas"),
 			},
 			"smart_folder": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: suppressIfAkaMatches("smart_folder_akas"),
 			},
 			"resource_akas": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			// Stores the smart folder's AKAs so suppressIfAkaMatches can suppress diffs
+			// when the user provides an AKA but the state holds the resolved numeric ID.
+			"smart_folder_akas": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Schema{
@@ -71,22 +76,46 @@ func resourceTurbotSmartFolderAttachmentCreate(d *schema.ResourceData, meta inte
 	client := meta.(*apiClient.Client)
 	resource := d.Get("resource").(string)
 	smartFolder := d.Get("smart_folder").(string)
-	input := mapFromResourceDataWithPropertyMap(d, smartFolderAttachProperties)
 
-	_, err := client.CreateSmartFolderAttachment(input)
+	// Resolve the smart_folder AKA or ID to its numeric Turbot ID.
+	// The attachSmartFolders mutation requires numeric IDs — AKA strings cause "not eligible for attachment" errors.
+	// ReadSmartFolder unmarshals directly to a typed struct and does not reliably populate Turbot.Id;
+	// ReadResource decodes via mapstructure from interface{} which handles it correctly.
+	sfResource, err := client.ReadResource(smartFolder, nil)
+	if err != nil {
+		return fmt.Errorf("error reading smart folder %q: %s", smartFolder, err.Error())
+	}
+	resolvedSmartFolderId := sfResource.Turbot.Id
+	if resolvedSmartFolderId == "" {
+		return fmt.Errorf("smart folder %q resolved to an empty ID", smartFolder)
+	}
+
+	input := map[string]interface{}{
+		"resource":     resource,
+		"smartFolders": resolvedSmartFolderId,
+	}
+
+	_, err = client.CreateSmartFolderAttachment(input)
 	if err != nil {
 		return err
 	}
 
-	// set resource_akas property by loading resource and fetching the akas
+	// Store resource AKAs for DiffSuppressFunc on the resource field
 	if err := storeAkas(resource, "resource_akas", d, meta); err != nil {
 		return err
 	}
-	// assign the id
-	var stateId = buildId(smartFolder, resource)
-	d.SetId(stateId)
+	// Reuse AKAs from the already-fetched smart folder resource to avoid a second round-trip
+	smartFolderAkas := sfResource.Turbot.Akas
+	if smartFolderAkas == nil {
+		smartFolderAkas = []string{resolvedSmartFolderId}
+	}
+	d.Set("smart_folder_akas", smartFolderAkas)
+
+	// Always store the resolved numeric ID in state and the state ID so parseSmartFolderId
+	// (which splits on the first underscore) works correctly for all input formats.
+	d.SetId(buildId(resolvedSmartFolderId, resource))
 	d.Set("resource", resource)
-	d.Set("smart_folder", smartFolder)
+	d.Set("smart_folder", resolvedSmartFolderId)
 	return nil
 }
 
@@ -103,6 +132,10 @@ func resourceTurbotSmartFolderAttachmentRead(d *schema.ResourceData, meta interf
 	if err := storeAkas(turbotResource.Turbot.Id, "resource_akas", d, meta); err != nil {
 		return err
 	}
+	// set smart_folder_akas property for DiffSuppressFunc
+	if err := storeAkas(smartFolder, "smart_folder_akas", d, meta); err != nil {
+		return err
+	}
 	// assign results directly back into ResourceData
 	d.Set("resource", resource)
 	d.Set("smart_folder", smartFolder)
@@ -111,7 +144,11 @@ func resourceTurbotSmartFolderAttachmentRead(d *schema.ResourceData, meta interf
 
 func resourceTurbotSmartFolderAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*apiClient.Client)
-	input := mapFromResourceDataWithPropertyMap(d, smartFolderAttachProperties)
+	smartFolder, resource := parseSmartFolderId(d.Id())
+	input := map[string]interface{}{
+		"resource":     resource,
+		"smartFolders": smartFolder,
+	}
 	err := client.DeleteSmartFolderAttachment(input)
 	if err != nil {
 		return err
@@ -136,6 +173,6 @@ func buildId(smartFolder, resource string) string {
 func parseSmartFolderId(id string) (smartFolder, resource string) {
 	segments := strings.Split(id, "_")
 	smartFolder = segments[0]
-	resource = segments[1]
+	resource = strings.Join(segments[1:], "_")
 	return
 }
