@@ -756,3 +756,37 @@ func (client *Client) GetTurbotWorkspaceVersion() (*semver.Version, error) {
 	}
 	return version, nil
 }
+
+// readPolicyPackIdentityQuery resolves a policy pack by id or aka.
+//
+// Uses `policyPack(id:)` rather than `resource(id:)` on purpose: policy packs live at the
+// Turbot root, and `resource(id:)` on a pack requires a grant there. `policyPack(id:)` is the
+// query the Guardrails console uses and is authorized for an identity holding permissions only
+// on the attachment target. It accepts either a numeric id or an aka.
+func readPolicyPackIdentityQuery(policyPackAka string) string {
+	return fmt.Sprintf(`{
+	policyPack(id:"%s") {
+		turbot {
+			id
+			akas
+		}
+	}
+}`, policyPackAka)
+}
+
+// readAttachedPolicyPacksQuery lists the policy packs attached to a resource, read from the
+// resource side so it only needs permissions on that resource. Accepts a numeric id or an aka.
+func readAttachedPolicyPacksQuery(resourceAka string) string {
+	return fmt.Sprintf(`{
+	resource(id:"%s") {
+		attachedSmartFolders {
+			items {
+				turbot {
+					id
+					akas
+				}
+			}
+		}
+	}
+}`, resourceAka)
+}

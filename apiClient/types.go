@@ -535,3 +535,24 @@ type TurbotWatchMetadata struct {
 	ResourceId string
 	FavoriteId string
 }
+
+// Policy pack attachment reads
+//
+// These back the `policyPack(id:)` and `resource(id:).attachedSmartFolders` queries used by
+// the attachment resources. Both are typed structs (not interface{}) because the queries
+// select `turbot { id akas }` directly rather than via a `get(path:)` resolver.
+type PolicyPackIdentityResponse struct {
+	PolicyPack struct {
+		Turbot TurbotResourceMetadata
+	}
+}
+
+type AttachedPolicyPacksResponse struct {
+	Resource struct {
+		AttachedSmartFolders struct {
+			Items []struct {
+				Turbot TurbotResourceMetadata
+			}
+		}
+	}
+}

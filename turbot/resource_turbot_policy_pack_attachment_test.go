@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/turbot/terraform-provider-turbot/apiClient"
 	"github.com/turbot/terraform-provider-turbot/errors"
+	"regexp"
 	"testing"
 )
 
@@ -100,9 +101,30 @@ func testAccCheckPolicyPackAttachmentExists(resource string) resource.TestCheckF
 		}
 		client := testAccProvider.Meta().(*apiClient.Client)
 		policyPackId, resource := parsePolicyPackId(rs.Primary.ID)
-		_, err := client.ReadSmartFolder(policyPackId)
+		// Verify the ATTACHMENT from the resource side, matching what Exists() does. Reading the
+		// pack (the old check) only proves the pack exists, and needs a grant on the pack.
+		attached, err := client.PolicyPackAttached(resource, policyPackId)
 		if err != nil {
-			return fmt.Errorf("error fetching item with resource %s. %s", resource, err)
+			return fmt.Errorf("error fetching attachment for resource %s. %s", resource, err)
+		}
+		if !attached {
+			return fmt.Errorf("policy pack %s is not attached to resource %s", policyPackId, resource)
+		}
+		return nil
+	}
+}
+
+// testAccCheckPolicyPackAttachmentDetached asserts the pack is NOT attached to the resource.
+// Pairs with the Exists() path: a detached attachment must drop out of state rather than linger.
+func testAccCheckPolicyPackAttachmentDetached(policyPack, resource string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		client := testAccProvider.Meta().(*apiClient.Client)
+		attached, err := client.PolicyPackAttached(resource, policyPack)
+		if err != nil {
+			return fmt.Errorf("error reading attachments for resource %s. %s", resource, err)
+		}
+		if attached {
+			return fmt.Errorf("policy pack %s is still attached to resource %s", policyPack, resource)
 		}
 		return nil
 	}
@@ -122,4 +144,129 @@ func testAccCheckPolicyPackAttachmentDestroy(s *terraform.State) error {
 		}
 	}
 	return nil
+}
+
+// TestAccPolicyPackAttachment_IdAkaMatrix covers every combination of identifying the pack and
+// the target by numeric id or by aka. All four must attach, and `policy_pack` must always
+// settle to the resolved numeric id in state (the attachSmartFolders mutation rejects akas),
+// while `policy_pack_akas` carries the akas so suppressIfAkaMatches prevents a perpetual diff.
+func TestAccPolicyPackAttachment_IdAkaMatrix(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPolicyPackAttachmentDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccPolicyPackAttachmentMatrixConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPolicyPackAttachmentExists("turbot_policy_pack_attachment.id_id"),
+					testAccCheckPolicyPackAttachmentExists("turbot_policy_pack_attachment.aka_id"),
+					testAccCheckPolicyPackAttachmentExists("turbot_policy_pack_attachment.id_aka"),
+					testAccCheckPolicyPackAttachmentExists("turbot_policy_pack_attachment.aka_aka"),
+					// an aka in config must still resolve to the numeric id in state
+					resource.TestMatchResourceAttr("turbot_policy_pack_attachment.aka_aka", "policy_pack",
+						regexp.MustCompile(`^[0-9]+$`)),
+					resource.TestMatchResourceAttr("turbot_policy_pack_attachment.aka_id", "policy_pack",
+						regexp.MustCompile(`^[0-9]+$`)),
+					// the akas list must be populated so the diff suppressor has something to match
+					resource.TestCheckResourceAttr("turbot_policy_pack_attachment.aka_aka", "policy_pack_akas.0",
+						"test_pack_matrix_aka"),
+				),
+			},
+			{
+				// re-planning the same config must produce no diff, proving the aka/id
+				// suppression survives a round-trip through state
+				Config:   testAccPolicyPackAttachmentMatrixConfig(),
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
+func testAccPolicyPackAttachmentMatrixConfig() string {
+	// Each combination needs its OWN target folder: attaching the same pack to the same
+	// resource twice is a duplicate attachment, not a second test case.
+	return `
+resource "turbot_policy_pack" "matrix" {
+  filter      = "resourceType:181381985925765 $.turbot.tags.a:b"
+  description = "Policy Pack id/aka matrix testing"
+  title       = "policy_pack_matrix"
+  akas        = ["test_pack_matrix_aka"]
+}
+
+resource "turbot_folder" "m1" {
+  parent      = "tmod:@turbot/turbot#/"
+  title       = "provider_test_matrix_1"
+  description = "matrix target: pack id, resource id"
+  akas        = ["test_folder_matrix_1"]
+}
+
+resource "turbot_folder" "m2" {
+  parent      = "tmod:@turbot/turbot#/"
+  title       = "provider_test_matrix_2"
+  description = "matrix target: pack aka, resource id"
+  akas        = ["test_folder_matrix_2"]
+}
+
+resource "turbot_folder" "m3" {
+  parent      = "tmod:@turbot/turbot#/"
+  title       = "provider_test_matrix_3"
+  description = "matrix target: pack id, resource aka"
+  akas        = ["test_folder_matrix_3"]
+}
+
+resource "turbot_folder" "m4" {
+  parent      = "tmod:@turbot/turbot#/"
+  title       = "provider_test_matrix_4"
+  description = "matrix target: pack aka, resource aka"
+  akas        = ["test_folder_matrix_4"]
+}
+
+resource "turbot_policy_pack_attachment" "id_id" {
+  policy_pack = turbot_policy_pack.matrix.id
+  resource    = turbot_folder.m1.id
+}
+
+resource "turbot_policy_pack_attachment" "aka_id" {
+  policy_pack = "test_pack_matrix_aka"
+  resource    = turbot_folder.m2.id
+  depends_on  = [turbot_policy_pack.matrix]
+}
+
+resource "turbot_policy_pack_attachment" "id_aka" {
+  policy_pack = turbot_policy_pack.matrix.id
+  resource    = "test_folder_matrix_3"
+  depends_on  = [turbot_folder.m3]
+}
+
+resource "turbot_policy_pack_attachment" "aka_aka" {
+  policy_pack = "test_pack_matrix_aka"
+  resource    = "test_folder_matrix_4"
+  depends_on  = [turbot_policy_pack.matrix, turbot_folder.m4]
+}
+`
+}
+
+// TestAccPolicyPackAttachment_Import verifies the import path, which routes through Read() and
+// therefore through the policy pack aka lookup that this fix changed.
+func TestAccPolicyPackAttachment_Import(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPolicyPackAttachmentDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccPolicyPackAttachmentConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPolicyPackAttachmentExists("turbot_policy_pack_attachment.test"),
+				),
+			},
+			{
+				Config:            testAccPolicyPackAttachmentConfig(),
+				ResourceName:      "turbot_policy_pack_attachment.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
 }
