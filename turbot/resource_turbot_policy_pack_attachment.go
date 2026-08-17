@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/turbot/terraform-provider-turbot/apiClient"
-	"github.com/turbot/terraform-provider-turbot/errors"
 )
 
 func resourceTurbotPolicyPackAttachment() *schema.Resource {
@@ -62,10 +61,14 @@ func resourceTurbotPolicyPackAttachmentExists(d *schema.ResourceData, meta inter
 	// resource instead of depending on a pack-wide list that may span the whole hierarchy.
 	attached, err := client.PolicyPackAttached(resource, policyPackId)
 	if err != nil {
-		// A deleted target takes its attachments with it. helper/schema aborts the whole refresh
-		// on any error from Exists, so returning one here would force the operator to
+		// A deleted target takes its attachments with it. helper/schema aborts the whole refresh on
+		// any error from Exists, so returning one here would force the operator to
 		// `terraform state rm`; returning false instead drops the attachment and lets it replan.
-		if errors.NotFoundError(err) {
+		//
+		// Decided from the response shape via apiClient.ErrTargetNotFound, NOT from matching "not
+		// found" in the error text - an unrelated not-found would otherwise drop a live attachment
+		// out of state.
+		if apiClient.IsTargetNotFound(err) {
 			return false, nil
 		}
 		return false, fmt.Errorf("error reading policy pack attachment: %s", err.Error())

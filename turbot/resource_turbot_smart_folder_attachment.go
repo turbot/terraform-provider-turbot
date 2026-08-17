@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/turbot/terraform-provider-turbot/apiClient"
-	"github.com/turbot/terraform-provider-turbot/errors"
 	"strings"
 )
 
@@ -60,9 +59,14 @@ func resourceTurbotSmartFolderAttachmentExists(d *schema.ResourceData, meta inte
 	// holds permissions on the attachment target. See apiClient/policy_pack.go.
 	attached, err := client.PolicyPackAttached(resource, smartFolderId)
 	if err != nil {
-		// A deleted target takes its attachments with it - see the equivalent note in
-		// resource_turbot_policy_pack_attachment.go.
-		if errors.NotFoundError(err) {
+		// A deleted target takes its attachments with it. helper/schema aborts the whole refresh on
+		// any error from Exists, so returning one here would force the operator to
+		// `terraform state rm`; returning false instead drops the attachment and lets it replan.
+		//
+		// Decided from the response shape via apiClient.ErrTargetNotFound, NOT from matching "not
+		// found" in the error text - an unrelated not-found would otherwise drop a live attachment
+		// out of state.
+		if apiClient.IsTargetNotFound(err) {
 			return false, nil
 		}
 		return false, fmt.Errorf("error reading smart folder attachment: %s", err.Error())

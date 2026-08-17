@@ -778,8 +778,12 @@ func readPolicyPackIdentityQuery() string {
 // resource side so it only needs permissions on that resource. Accepts a numeric id or an aka,
 // passed as a GraphQL variable - see readPolicyPackIdentityQuery.
 func readAttachedPolicyPacksQuery() string {
+	// notFound: RETURN_NULL makes a missing target arrive as `resource: null` instead of an error,
+	// while "all other errors are returned" per the schema. That lets Exists distinguish "the target
+	// is gone" from "the read failed" by response SHAPE, rather than by matching error text - see
+	// ErrTargetNotFound.
 	return `query ReadAttachedPolicyPacks($id: ID!) {
-	resource(id: $id) {
+	resource(id: $id, options: {notFound: RETURN_NULL}) {
 		attachedSmartFolders {
 			paging {
 				next

@@ -1,6 +1,25 @@
 package apiClient
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+// ErrTargetNotFound reports that the attachment TARGET does not exist. It is determined from the
+// response shape - `resource: null`, via the query's notFound: RETURN_NULL option - and never from
+// error text. Exists uses it to drop an attachment whose target is gone.
+//
+// The alternative, errors.NotFoundError, matches `(?i)not found` anywhere in an error string, so an
+// unrelated not-found ("policy type not found") would also drop the attachment from state and have
+// Terraform recreate it. That helper is used across the provider and is left alone; this narrows
+// only the decision that governs state membership for attachments.
+var ErrTargetNotFound = errors.New("attachment target not found")
+
+// IsTargetNotFound reports whether err is ErrTargetNotFound. Provided so callers in the turbot
+// package need not import stdlib errors alongside the provider's own errors package.
+func IsTargetNotFound(err error) bool {
+	return errors.Is(err, ErrTargetNotFound)
+}
 
 // Policy pack reads used by the policy pack / smart folder attachment resources.
 //
@@ -53,6 +72,11 @@ func (client *Client) ReadAttachedPolicyPacks(resourceAka string) ([]TurbotResou
 	// execute api call
 	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, false, client.handleReadError(err, resourceAka, "attached policy packs")
+	}
+
+	if responseData.Resource == nil {
+		// notFound: RETURN_NULL - the target itself does not exist.
+		return nil, false, fmt.Errorf("%w: %s", ErrTargetNotFound, resourceAka)
 	}
 
 	attached := responseData.Resource.AttachedSmartFolders
