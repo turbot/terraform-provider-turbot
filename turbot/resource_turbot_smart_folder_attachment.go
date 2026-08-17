@@ -56,7 +56,8 @@ func resourceTurbotSmartFolderAttachmentExists(d *schema.ResourceData, meta inte
 
 	// Check the attachment from the RESOURCE side rather than reading the smart folder and
 	// enumerating everything attached to it. Reading the smart folder requires a grant on it
-	// (smart folders live at the Turbot root by default), whereas the caller necessarily holds permissions
+	// (smart folders live at the Turbot root by default), whereas the caller necessarily
+	// holds permissions
 	// on the attachment target. See apiClient/policy_pack.go.
 	attached, err := client.PolicyPackAttached(resource, smartFolderId)
 	if err != nil {

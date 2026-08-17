@@ -57,7 +57,8 @@ func resourceTurbotPolicyPackAttachmentExists(d *schema.ResourceData, meta inter
 
 	// Check the attachment from the RESOURCE side rather than reading the policy pack and
 	// enumerating everything attached to it. Reading the pack requires a grant on the pack
-	// (packs live at the Turbot root by default), whereas the caller necessarily holds permissions on
+	// (packs live at the Turbot root by default), whereas the caller necessarily
+	// holds permissions on
 	// the attachment target. This also keeps the answer scoped to this one resource instead
 	// of depending on a pack-wide list that may span the whole hierarchy.
 	attached, err := client.PolicyPackAttached(resource, policyPackId)

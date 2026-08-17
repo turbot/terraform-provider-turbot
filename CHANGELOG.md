@@ -4,6 +4,8 @@ BUG FIXES:
 
 * `resource/turbot_policy_pack_attachment`: Fixed `Forbidden: Insufficient permissions` for identities holding permissions only on the attachment target. Policy packs live at the Turbot root by default, and the provider resolved them through the generic `resource(id:)` query, which Guardrails authorizes against the pack wherever it sits. The pack is now resolved through `policyPack(id:)` — the query the Guardrails console uses — and `Exists` checks the attachment from the resource side via `attachedSmartFolders` instead of reading the pack. Both numeric IDs and AKAs continue to work for `policy_pack` and `resource`. ([#244](https://github.com/turbot/terraform-provider-turbot/issues/244))
 * `resource/turbot_smart_folder_attachment`: Same fix applied. ([#244](https://github.com/turbot/terraform-provider-turbot/issues/244))
+* `resource/turbot_policy_pack_attachment`: Fixed attachments being silently dropped when several policy packs are attached to the same resource in one apply. The `attachSmartFolders` mutation is read-modify-write on the target's attachment list, so concurrent calls for the same target lost updates — attaching six packs to one folder reported success for all six and persisted four, with no error, leaving the difference to surface as drift on a later plan. Attachment writes are now serialised per target resource, and a write that does not persist fails loudly instead of being reported as created. ([#244](https://github.com/turbot/terraform-provider-turbot/issues/244))
+* `resource/turbot_smart_folder_attachment`: Same fix applied. ([#244](https://github.com/turbot/terraform-provider-turbot/issues/244))
 
 ## 1.13.3 (May 4, 2026)
 

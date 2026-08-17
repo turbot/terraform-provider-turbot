@@ -1,6 +1,7 @@
 package apiClient
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 
@@ -9,7 +10,8 @@ import (
 
 // The whole point of readPolicyPackIdentityQuery is that it does NOT use the generic
 // `resource(id:)` query, which Guardrails authorizes against the pack itself. Packs live at
-// the Turbot root by default, so `resource(id:)` requires a grant wherever the pack sits, while attaching a pack
+// the Turbot root by default, so `resource(id:)` requires a grant wherever the pack sits, while
+// attaching a pack
 // only requires permissions on the attachment target. Assert the distinction directly so a
 // future refactor back to `resource(id:)` fails loudly rather than silently reintroducing
 // the permission regression.
@@ -124,18 +126,30 @@ func TestPolicyPackQueriesRemainWellFormedForValidIdentifiers(t *testing.T) {
 	}
 }
 
-// A truncated attachment list would make Exists report "not attached" for an attachment that
-// exists, and Terraform would recreate it on every plan. Since attachedSmartFolders accepts no
-// paging arguments, the only defence is to notice paging.next and fail loudly.
+// Under truncation only ABSENCE is ambiguous, so PolicyPackAttached errors on absent-and-truncated
+// and answers true whenever the pack is in the page it did read. The guard's whole correctness
+// rests on paging.next decoding onto Paging.Next, so exercise the real JSON mapping rather than a
+// struct assignment - a renamed field must fail this test, not slip through it.
 func TestAttachedPolicyPacksTruncationIsDetectable(t *testing.T) {
-	// The response type must carry Paging.Next, otherwise the guard in
-	// ReadAttachedPolicyPacks can never fire regardless of what the server returns.
-	var response AttachedPolicyPacksResponse
-	response.Resource.AttachedSmartFolders.Paging.Next = "cursor-token"
-	assert.Equal(t, "cursor-token", response.Resource.AttachedSmartFolders.Paging.Next,
-		"AttachedPolicyPacksResponse must decode paging.next")
+	// A cursor must decode, or the guard can never fire.
+	var truncated AttachedPolicyPacksResponse
+	err := json.Unmarshal([]byte(`{"resource":{"attachedSmartFolders":{"paging":{"next":"cursor-abc"},"items":[]}}}`), &truncated)
+	assert.NoError(t, err)
+	assert.Equal(t, "cursor-abc", truncated.Resource.AttachedSmartFolders.Paging.Next,
+		"paging.next must decode onto Paging.Next")
 
-	// An untruncated response leaves it empty, which is what the guard treats as complete.
+	// A complete list sends null, which must land as empty - what the guard reads as complete.
 	var complete AttachedPolicyPacksResponse
+	err = json.Unmarshal([]byte(`{"resource":{"attachedSmartFolders":{"paging":{"next":null},"items":[]}}}`), &complete)
+	assert.NoError(t, err)
 	assert.Equal(t, "", complete.Resource.AttachedSmartFolders.Paging.Next)
+
+	// And the items alongside a cursor must still decode, since a pack found in a truncated page
+	// is a definitive yes.
+	var withItems AttachedPolicyPacksResponse
+	err = json.Unmarshal([]byte(`{"resource":{"attachedSmartFolders":{"paging":{"next":"c"},"items":[{"turbot":{"id":"123","akas":["my_pack"]}}]}}}`), &withItems)
+	assert.NoError(t, err)
+	assert.Len(t, withItems.Resource.AttachedSmartFolders.Items, 1)
+	assert.Equal(t, "123", withItems.Resource.AttachedSmartFolders.Items[0].Turbot.Id)
+	assert.Equal(t, []string{"my_pack"}, withItems.Resource.AttachedSmartFolders.Items[0].Turbot.Akas)
 }

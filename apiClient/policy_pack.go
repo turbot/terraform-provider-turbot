@@ -6,11 +6,10 @@ import "fmt"
 //
 // These deliberately avoid the generic `resource(id:)` query. Guardrails authorizes
 // `resource(id:)` against the resource being read, and policy packs live at the Turbot root by
-// default, so `resource(id:)` on a pack requires a grant wherever the pack sits. Attaching
-// a pack only requires permissions on the attachment *target*, and the Guardrails console
-// reads packs through `policyPack(id:)`, which is authorized for such an identity. Using the
-// same queries as the console keeps Terraform working for callers that hold permissions on
-// the target resource alone.
+// default, so `resource(id:)` on a pack requires a grant wherever the pack sits. Attaching a pack
+// only requires permissions on the attachment *target*, and the Guardrails console reads packs
+// through `policyPack(id:)`, which is authorized for such an identity. Using the same queries as
+// the console keeps Terraform working for callers that hold permissions on the target alone.
 
 // ReadPolicyPackIdentity resolves a policy pack by id OR aka and returns its Turbot metadata
 // (numeric id + akas). Uses the `policyPack(id:)` query so it does not require a grant on the
@@ -39,43 +38,48 @@ func (client *Client) ReadPolicyPackIdentity(policyPackAka, resourceType string)
 // effective set instead, a nested resource would report an attachment nothing created.
 //
 // `attachedSmartFolders` accepts no paging arguments, so it returns whatever the server default
-// allows. A truncated list would make `Exists` report "not attached" for an attachment that
-// exists, and Terraform would then recreate it on every plan. Selecting `paging.next` turns that
-// into an explicit error rather than silent churn.
+// allows. The second return value reports whether the server truncated the list, which callers
+// need because only ABSENCE is ambiguous under truncation - see PolicyPackAttached.
 //
-// Caveat: this guard is defensive and unproven. Because the field takes no arguments, a truncated
-// response cannot be forced, so it has never been observed firing. What is confirmed is that
-// `paging.next` exists and is null for complete lists. If the server ever truncates WITHOUT
-// setting a cursor, this will not catch it.
-func (client *Client) ReadAttachedPolicyPacks(resourceAka string) ([]TurbotResourceMetadata, error) {
+// Caveat: truncation cannot be forced, since the field takes no arguments, so a truncated
+// response has never been observed. What is confirmed is that `paging.next` decodes and is empty
+// for complete lists. If the server ever truncates WITHOUT setting a cursor, this will not catch it.
+func (client *Client) ReadAttachedPolicyPacks(resourceAka string) ([]TurbotResourceMetadata, bool, error) {
 	query := readAttachedPolicyPacksQuery(resourceAka)
 	responseData := &AttachedPolicyPacksResponse{}
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, client.handleReadError(err, resourceAka, "attached policy packs")
+		return nil, false, client.handleReadError(err, resourceAka, "attached policy packs")
 	}
 
 	attached := responseData.Resource.AttachedSmartFolders
-	if attached.Paging.Next != "" {
-		return nil, fmt.Errorf("error reading attached policy packs: resource %s reports more attachments than a single page returns, so attachment state cannot be determined reliably", resourceAka)
-	}
-
 	packs := make([]TurbotResourceMetadata, 0, len(attached.Items))
 	for _, item := range attached.Items {
 		packs = append(packs, item.Turbot)
 	}
-	return packs, nil
+	return packs, attached.Paging.Next != "", nil
 }
 
 // PolicyPackAttached reports whether policyPack (matched by numeric id or by any aka) is
 // currently attached to resourceAka.
 func (client *Client) PolicyPackAttached(resourceAka, policyPack string) (bool, error) {
-	attached, err := client.ReadAttachedPolicyPacks(resourceAka)
+	attached, truncated, err := client.ReadAttachedPolicyPacks(resourceAka)
 	if err != nil {
 		return false, err
 	}
-	return policyPackInList(attached, policyPack), nil
+	// Found it: truncation is irrelevant, a later page cannot un-attach it.
+	if policyPackInList(attached, policyPack) {
+		return true, nil
+	}
+	// Absent AND truncated is the only ambiguous case. Erroring on truncation alone would make
+	// every attachment on a heavily-attached resource unrefreshable, including ones sitting in the
+	// page we already read - strictly worse than the churn it is meant to prevent, because churn
+	// self-corrects and a refresh error blocks every plan until someone hand-edits state.
+	if truncated {
+		return false, fmt.Errorf("error reading attached policy packs: resource %s reports more attachments than a single page returns, so attachment state cannot be determined reliably", resourceAka)
+	}
+	return false, nil
 }
 
 // policyPackInList reports whether policyPack identifies any pack in list, matching on the

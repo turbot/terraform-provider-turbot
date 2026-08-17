@@ -342,6 +342,14 @@ func TestAccPolicyPackAttachment_TargetDeleted(t *testing.T) {
 				// this step calls Exists against the deleted target: it must report "not attached"
 				// and drop the attachment, not error out.
 				Config: testAccPolicyPackAttachmentTargetDeletedTeardownConfig(),
+				// A refresh error would already fail the step, but assert the intended outcome too:
+				// the attachment must have LEFT state rather than lingering in it.
+				Check: func(state *terraform.State) error {
+					if _, ok := state.RootModule().Resources["turbot_policy_pack_attachment.doomed"]; ok {
+						return fmt.Errorf("attachment still in state after its target was deleted out-of-band")
+					}
+					return nil
+				},
 			},
 		},
 	})
