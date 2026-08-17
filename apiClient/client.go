@@ -240,19 +240,19 @@ func basicAuthHeader(username, password string) string {
 }
 
 func (client *Client) BuildPropertiesFromUpdateSchema(resourceId string, properties []interface{}) ([]interface{}, error) {
-	getResourceQuery := getResourceTypeIdQuery(resourceId)
+	getResourceQuery := getResourceTypeIdQuery()
 	responseData := &ResourceResponse{}
 	// execute api call
-	if err := client.doRequest(getResourceQuery, nil, &responseData); err != nil {
+	if err := client.doRequest(getResourceQuery, map[string]interface{}{"id": resourceId}, &responseData); err != nil {
 		return nil, fmt.Errorf("error reading resource type id: %s", err.Error())
 	}
 
 	resourceTypeId := responseData.Resource.Turbot.ResourceTypeId
 
-	query := readResourceQuery(resourceTypeId, properties)
+	query := readResourceQuery(properties)
 	response := &ResourceSchema{}
 	// execute api call
-	if err := client.doRequest(query, nil, &response); err != nil {
+	if err := client.doRequest(query, map[string]interface{}{"id": resourceTypeId}, &response); err != nil {
 		return nil, fmt.Errorf("error reading resource type id: %s", err.Error())
 	}
 

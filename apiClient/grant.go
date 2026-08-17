@@ -20,11 +20,11 @@ func (client *Client) CreateGrant(input map[string]interface{}) (*TurbotGrantMet
 }
 
 func (client *Client) ReadGrant(id string) (*Grant, error) {
-	query := readGrantQuery(id)
+	query := readGrantQuery()
 	responseData := &ReadGrantResponse{}
 
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	if err := client.doRequest(query, map[string]interface{}{"id": id}, responseData); err != nil {
 		return nil, client.handleReadError(err, id, "grant")
 	}
 	return &responseData.Grant, nil

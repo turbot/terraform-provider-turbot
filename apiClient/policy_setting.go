@@ -19,11 +19,11 @@ func (client *Client) CreatePolicySetting(input map[string]interface{}) (*Policy
 }
 
 func (client *Client) ReadPolicySetting(id string) (*PolicySetting, error) {
-	query := readPolicySettingQuery(id)
+	query := readPolicySettingQuery()
 	responseData := &PolicySettingResponse{}
 
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	if err := client.doRequest(query, map[string]interface{}{"id": id}, responseData); err != nil {
 		return nil, client.handleReadError(err, id, "policy setting")
 	}
 	return &responseData.PolicySetting, nil

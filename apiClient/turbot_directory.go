@@ -26,10 +26,10 @@ func (client *Client) CreateTurbotDirectory(input map[string]interface{}) (*Turb
 
 func (client *Client) ReadTurbotDirectory(id string) (*TurbotDirectory, error) {
 	// create a map of the properties we want the graphql query to return
-	query := readResourceQuery(id, turbotDirectoryProperties)
+	query := readResourceQuery(turbotDirectoryProperties)
 	responseData := &TurbotDirectoryResponse{}
 	// execute api call
-	if err := client.doRequest(query, nil, &responseData); err != nil {
+	if err := client.doRequest(query, map[string]interface{}{"id": id}, &responseData); err != nil {
 		return nil, client.handleReadError(err, id, "turbot directory")
 	}
 	return &responseData.Resource, nil

@@ -31,10 +31,10 @@ func (client *Client) CreateLocalDirectoryUser(input map[string]interface{}) (*L
 
 func (client *Client) ReadLocalDirectoryUser(id string) (*LocalDirectoryUser, error) {
 
-	query := readResourceQuery(id, localDirectoryUserProperties)
+	query := readResourceQuery(localDirectoryUserProperties)
 	responseData := &LocalDirectoryUserResponse{}
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	if err := client.doRequest(query, map[string]interface{}{"id": id}, responseData); err != nil {
 		return nil, client.handleReadError(err, id, "local directory user")
 	}
 	return &responseData.Resource, nil

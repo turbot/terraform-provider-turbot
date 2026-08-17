@@ -21,11 +21,11 @@ func (client *Client) InstallMod(input map[string]interface{}) (*InstallModData,
 }
 
 func (client *Client) ReadMod(id string) (*Mod, error) {
-	query := readModQuery(id)
+	query := readModQuery()
 	responseData := &ReadModResponse{}
 
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	if err := client.doRequest(query, map[string]interface{}{"id": id}, responseData); err != nil {
 		return nil, client.handleReadError(err, id, "mod")
 	}
 

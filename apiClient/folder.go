@@ -29,11 +29,11 @@ func (client *Client) CreateFolder(input map[string]interface{}) (*Folder, error
 func (client *Client) ReadFolder(id string) (*Folder, error) {
 	// create a map of the properties we want the graphql query to return
 
-	query := readResourceQuery(id, folderProperties)
+	query := readResourceQuery(folderProperties)
 	responseData := &FolderResponse{}
 
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	if err := client.doRequest(query, map[string]interface{}{"id": id}, responseData); err != nil {
 		return nil, client.handleReadError(err, id, "folder")
 	}
 	return &responseData.Resource, nil

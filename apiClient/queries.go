@@ -81,9 +81,14 @@ func createPolicySettingMutation() string {
 
 }
 
-func readPolicySettingQuery(policySettingId string) string {
-	return fmt.Sprintf(`{
-policySetting(id:"%s") {
+// The id is passed as a GraphQL variable, never interpolated into the document. Interpolating a
+// caller-supplied identifier into a string literal lets a value containing a double quote escape
+// the literal and append attacker-chosen GraphQL, executed with the provider's credentials (see
+// TestReadBuildersDoNotInterpolateIdentifier). policySetting.id is a nullable ID; a non-null
+// variable is assignable to it.
+func readPolicySettingQuery() string {
+	return `query ReadPolicySetting($id: ID!) {
+policySetting(id: $id) {
 	type {
 		uri
 	}
@@ -102,7 +107,7 @@ policySetting(id:"%s") {
 		resourceId
 	}
 }
-}`, policySettingId)
+}`
 }
 
 func updatePolicySettingMutation() string {
@@ -223,9 +228,9 @@ func createWatchMutation() string {
 	}`)
 }
 
-func readWatchQuery(id string) string {
-	return fmt.Sprintf(`query MyQuery {
-		watch(id: %s) {
+func readWatchQuery() string {
+	return `query ReadWatch($id: ID!) {
+		watch(id: $id) {
 			description
 			filters
 			handler
@@ -235,7 +240,7 @@ func readWatchQuery(id string) string {
 				favoriteId
 			}
 		}
-	}`, id)
+	}`
 }
 
 func updateWatchMutation() string {
@@ -253,14 +258,14 @@ func updateWatchMutation() string {
 	}`)
 }
 
-func deleteWatchMutation(id string) string {
-	return fmt.Sprintf(`mutation DeleteMyWatch {
-		deleteWatch(input: {id: %s}) {
+func deleteWatchMutation() string {
+	return `mutation DeleteMyWatch($id: ID!) {
+		deleteWatch(input: {id: $id}) {
 			handler
 			filters
 		}
 	}
-	`, id)
+	`
 }
 
 // smart folder
@@ -278,16 +283,16 @@ func createSmartFolderMutation() string {
 	}`
 }
 
-func readSmartFolderQuery(id string) string {
-	return fmt.Sprintf(`{
-	smartFolder: resource(id:"%s") {
+func readSmartFolderQuery() string {
+	return `query ReadSmartFolder($id: ID!) {
+	smartFolder: resource(id: $id) {
 		title: get(path:"turbot.title")
 		description: get(path:"description")
 		filters: get(path:"filters")
 		parent:	get(path:"turbot.parentId")
 		turbot: get(path:"turbot")
 	}
-}`, id)
+}`
 }
 
 func updateSmartFolderMutation() string {
@@ -302,14 +307,14 @@ func updateSmartFolderMutation() string {
 	}`
 }
 
-func deleteSmartFolderMutation(id string) string {
-	return fmt.Sprintf(`mutation DeleteSmartFolder {
-		smartFolder: deleteSmartFolder(input: {id: %s}) {
+func deleteSmartFolderMutation() string {
+	return `mutation DeleteSmartFolder($id: ID!) {
+		smartFolder: deleteSmartFolder(input: {id: $id}) {
 			turbot {
 				id
 			}
 		}
-	}`, id)
+	}`
 }
 
 func createSmartFolderAttachmentMutation() string {
@@ -346,14 +351,14 @@ func installModMutation() string {
 }`
 }
 
-func readModQuery(modId string) string {
-	return fmt.Sprintf(`{
-	mod: resource(id:"%s") {
+func readModQuery() string {
+	return `query ReadMod($id: ID!) {
+	mod: resource(id: $id) {
 		uri: get(path: "turbot.akas.0")
 		parent: get(path: "turbot.parentId")
 		version: get(path: "version")
 	}
-}`, modId)
+}`
 }
 
 func uninstallModMutation() string {
@@ -412,26 +417,30 @@ func deleteResourceMutation() string {
 }
 
 // support properties array of Interface
-func readResourceQuery(aka string, properties []interface{}) string {
-	return fmt.Sprintf(`{
-	resource(id:"%s") {
+//
+// The id is a GraphQL variable ($id), never interpolated. Only the property selection - built
+// internally by buildResourceProperties from a fixed list, never from caller input - is
+// interpolated. See TestReadBuildersDoNotInterpolateIdentifier.
+func readResourceQuery(properties []interface{}) string {
+	return fmt.Sprintf(`query ReadResource($id: ID!) {
+	resource(id: $id) {
 		type {
 			uri
 		}
 %s
 		turbot: get(path:"turbot")
   	}
-}`, aka, buildResourceProperties(properties))
+}`, buildResourceProperties(properties))
 }
 
-func getResourceTypeIdQuery(aka string) string {
-	return fmt.Sprintf(`{
-	resource(id:"%s") {
+func getResourceTypeIdQuery() string {
+	return `query GetResourceTypeId($id: ID!) {
+	resource(id: $id) {
 		turbot {
 			resourceTypeId
 		}
   	}
-}`, aka)
+}`
 }
 
 func readResourceListQuery(filter string, properties map[string]string) string {
@@ -451,22 +460,22 @@ func readResourceListQuery(filter string, properties map[string]string) string {
 }`, filter, propertiesString.String())
 }
 
-func readFullResourceQuery(aka string) string {
-	return fmt.Sprintf(`{
-  resource(id:"%s") {
+func readFullResourceQuery() string {
+	return `query ReadFullResource($id: ID!) {
+  resource(id: $id) {
 	type {
 		uri
 	}
     data
     turbot: get(path:"turbot")
   }
-}`, aka)
+}`
 }
 
 // google directory read query
-func readGoogleDirectoryQuery(aka string) string {
-	return fmt.Sprintf(`{
-	directory: resource(id:"%s") {
+func readGoogleDirectoryQuery() string {
+	return `query ReadGoogleDirectory($id: ID!) {
+	directory: resource(id: $id) {
 		title:             	get(path:"title")
 		parent:            	get(path:"turbot.parentId")
 		description:       	get(path:"description")
@@ -480,18 +489,20 @@ func readGoogleDirectoryQuery(aka string) string {
 		hostedDomain:       get(path:"hostedDomain")
 		turbot: 			get(path:"turbot")
 	}
-}`, aka)
+}`
 }
 
 // grant
-func readGrantQuery(aka string) string {
-	return fmt.Sprintf(`{
-	grant: grant(id:"%s") {
+// The id is a GraphQL variable; only the metadata fragment (a fixed internal selection) is
+// interpolated. See TestReadBuildersDoNotInterpolateIdentifier.
+func readGrantQuery() string {
+	return fmt.Sprintf(`query ReadGrant($id: ID!) {
+	grant: grant(id: $id) {
 		permissionTypeId
 		permissionLevelId
 		%s
 	}
-  }`, aka, turbotGrantMetadataFragment("\t\t"))
+  }`, turbotGrantMetadataFragment("\t\t"))
 }
 
 func createGrantMutation() string {
@@ -511,12 +522,12 @@ func deleteGrantMutation() string {
 }
 
 // active grant
-func readActiveGrantQuery(aka string) string {
-	return fmt.Sprintf(`{
-	activeGrant: activeGrant(id:"%s"){
+func readActiveGrantQuery() string {
+	return fmt.Sprintf(`query ReadActiveGrant($id: ID!) {
+	activeGrant: activeGrant(id: $id){
 %s
 	}
-}`, aka, turbotActiveGrantMetadataFragment("\t\t"))
+}`, turbotActiveGrantMetadataFragment("\t\t"))
 }
 
 func activateGrantMutation() string {

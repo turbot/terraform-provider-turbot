@@ -34,11 +34,11 @@ func (client *Client) CreateProfile(input map[string]interface{}) (*Profile, err
 func (client *Client) ReadProfile(id string) (*Profile, error) {
 	// create a map of the properties we want the graphql query to return
 
-	query := readResourceQuery(id, profileProperties)
+	query := readResourceQuery(profileProperties)
 	responseData := &ProfileResponse{}
 
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	if err := client.doRequest(query, map[string]interface{}{"id": id}, responseData); err != nil {
 		return nil, client.handleReadError(err, id, "profile")
 	}
 	return &responseData.Resource, nil
