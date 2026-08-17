@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/turbot/terraform-provider-turbot/apiClient"
+	"github.com/turbot/terraform-provider-turbot/errors"
 )
 
 func resourceTurbotPolicyPackAttachment() *schema.Resource {
@@ -53,24 +54,23 @@ func resourceTurbotPolicyPackAttachment() *schema.Resource {
 func resourceTurbotPolicyPackAttachmentExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
 	client := meta.(*apiClient.Client)
 	policyPackId, resource := parsePolicyPackId(d.Id())
-	// execute api call
-	smartFolder, err := client.ReadSmartFolder(policyPackId)
-	if err != nil {
-		return false, fmt.Errorf("error reading policy pack: %s", err.Error())
-	}
 
-	// find resource aka in list of attached resources
-	for _, attachedResource := range smartFolder.AttachedResources.Items {
-		if resource == attachedResource.Turbot.Id {
-			return true, nil
+	// Check the attachment from the RESOURCE side rather than reading the policy pack and
+	// enumerating everything attached to it. Reading the pack requires a grant on the pack
+	// (packs live at the Turbot root by default), whereas the caller necessarily holds
+	// permissions on the attachment target. This also keeps the answer scoped to this one
+	// resource instead of depending on a pack-wide list that may span the whole hierarchy.
+	attached, err := client.PolicyPackAttached(resource, policyPackId)
+	if err != nil {
+		// A deleted target takes its attachments with it. helper/schema aborts the whole refresh
+		// on any error from Exists, so returning one here would force the operator to
+		// `terraform state rm`; returning false instead drops the attachment and lets it replan.
+		if errors.NotFoundError(err) {
+			return false, nil
 		}
-		for _, aka := range attachedResource.Turbot.Akas {
-			if aka == resource {
-				return true, nil
-			}
-		}
+		return false, fmt.Errorf("error reading policy pack attachment: %s", err.Error())
 	}
-	return false, nil
+	return attached, nil
 }
 
 func resourceTurbotPolicyPackAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
@@ -80,13 +80,13 @@ func resourceTurbotPolicyPackAttachmentCreate(d *schema.ResourceData, meta inter
 
 	// Resolve the policy_pack AKA or ID to its numeric Turbot ID.
 	// The attachSmartFolders mutation requires numeric IDs — AKA strings cause "not eligible for attachment" errors.
-	// ReadSmartFolder unmarshals directly to a typed struct and does not reliably populate Turbot.Id;
-	// ReadResource decodes via mapstructure from interface{} which handles it correctly.
-	policyPackResource, err := client.ReadResource(policyPack, nil)
+	// ReadPolicyPackIdentity uses `policyPack(id:)`, which accepts either form and, unlike the
+	// generic `resource(id:)`, does not require a grant on the pack itself. See apiClient/policy_pack.go.
+	policyPackIdentity, err := client.ReadPolicyPackIdentity(policyPack, "policy pack")
 	if err != nil {
-		return fmt.Errorf("error reading policy pack %q: %s", policyPack, err.Error())
+		return err
 	}
-	resolvedPolicyPackId := policyPackResource.Turbot.Id
+	resolvedPolicyPackId := policyPackIdentity.Id
 	if resolvedPolicyPackId == "" {
 		return fmt.Errorf("policy pack %q resolved to an empty ID", policyPack)
 	}
@@ -105,9 +105,9 @@ func resourceTurbotPolicyPackAttachmentCreate(d *schema.ResourceData, meta inter
 	if err := storeAkas(resource, "resource_akas", d, meta); err != nil {
 		return err
 	}
-	// Reuse AKAs from the already-fetched policy pack resource to avoid a second round-trip
-	policyPackAkas := policyPackResource.Turbot.Akas
-	if policyPackAkas == nil {
+	// Reuse AKAs from the already-fetched policy pack identity to avoid a second round-trip
+	policyPackAkas := policyPackIdentity.Akas
+	if len(policyPackAkas) == 0 {
 		policyPackAkas = []string{resolvedPolicyPackId}
 	}
 	d.Set("policy_pack_akas", policyPackAkas)
@@ -133,10 +133,18 @@ func resourceTurbotPolicyPackAttachmentRead(d *schema.ResourceData, meta interfa
 	if err := storeAkas(turbotResource.Turbot.Id, "resource_akas", d, meta); err != nil {
 		return err
 	}
-	// set policy_pack_akas property for DiffSuppressFunc
-	if err := storeAkas(policyPack, "policy_pack_akas", d, meta); err != nil {
+	// set policy_pack_akas property for DiffSuppressFunc. Read via `policyPack(id:)` rather
+	// than storeAkas (which goes through `resource(id:)`) so this does not require a grant on
+	// the pack — see apiClient/policy_pack.go.
+	policyPackIdentity, err := client.ReadPolicyPackIdentity(policyPack, "policy pack")
+	if err != nil {
 		return err
 	}
+	policyPackAkas := policyPackIdentity.Akas
+	if len(policyPackAkas) == 0 {
+		policyPackAkas = []string{policyPack}
+	}
+	d.Set("policy_pack_akas", policyPackAkas)
 	// assign results directly back into ResourceData
 	d.Set("resource", resource)
 	d.Set("policy_pack", policyPack)

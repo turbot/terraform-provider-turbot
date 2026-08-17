@@ -12,10 +12,16 @@ jobs:
   test:
     env:
       GOFLAGS: "-mod=vendor"
-      TURBOT_WORKSPACE: ${{ secrets.WORKSPACE }}
-      TURBOT_ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
-      TURBOT_SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      # No TURBOT_* credentials here on purpose. This job runs `make vet` and `make test`, and
+      # `make test` is unit tests only - the acceptance tests self-skip without TF_ACC=1, which
+      # only `make testacc` sets. Injecting live workspace credentials into every matrix leg was
+      # standing exposure for no benefit. If acceptance tests are wanted in CI they belong in a
+      # separate workflow scoped to a GitHub Environment with required reviewers and a throwaway
+      # workspace, not in the unit-test matrix on every PR.
     strategy:
+      # without this a single platform failing cancels the others, which masks whether the
+      # failure is platform-specific
+      fail-fast: false
       matrix:
         platform: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.platform }}
@@ -30,7 +36,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@bfdd3570ce990073878bf10f6b2d79082de49492 # v2
         with:
-          go-version: 1.22
+          go-version: "1.24"
 
       - name: Checkout code
         uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
