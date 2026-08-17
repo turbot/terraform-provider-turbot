@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/machinebox/graphql"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -200,4 +201,25 @@ func TestAttachmentLockKeyUnifiesIdAndAka(t *testing.T) {
 	}
 	unlock()
 	<-acquired
+}
+
+// The read-failure branch had no coverage, which is how a spurious failure lived in it: with every
+// read erroring, the loop exhausted its budget and then reported "the API reported success but []
+// is not attached", naming no packs because none were ever compared. An unreadable target must
+// return nil - a mutation the server accepted is not failed because the check could not run.
+func TestVerifyReturnsNilWhenTargetUnreadable(t *testing.T) {
+	// shrink the budget so the test does not burn the real backoff twice
+	defer func(attempts int, delay time.Duration) {
+		verifyAttachmentAttempts, verifyAttachmentBaseDelay = attempts, delay
+	}(verifyAttachmentAttempts, verifyAttachmentBaseDelay)
+	verifyAttachmentAttempts, verifyAttachmentBaseDelay = 3, time.Millisecond
+
+	// 127.0.0.1:1 refuses immediately, so every confirmation read errors
+	client := &Client{Graphql: graphql.NewClient("http://127.0.0.1:1/graphql")}
+	input := map[string]interface{}{"resource": "12345", "smartFolders": "678"}
+
+	assert.NoError(t, client.verifyAttachmentState(input, true),
+		"an unreadable target must not fail an attach the server accepted")
+	assert.NoError(t, client.verifyAttachmentState(input, false),
+		"an unreadable target must not fail a detach the server accepted")
 }

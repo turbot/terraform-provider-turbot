@@ -58,7 +58,10 @@ func attachmentTarget(input map[string]interface{}) string {
 // on the first pass. Caching also makes the fallback STICKY, which matters for correctness: without
 // it a transient read failure on one goroutine gives that writer the raw string while its siblings
 // get the numeric id, so they take different locks and the race is live for exactly that window.
-// Caching the first answer makes every writer agree, which is the whole point of normalising.
+// Caching the first answer makes every writer NAMING THE TARGET THE SAME WAY agree. Across forms it
+// can still diverge - if resolution fails for an aka while succeeding for the id, those two land on
+// different keys - which needs a transient read failure and a config mixing both forms and
+// concurrent writes to one target, and is backstopped by verification below.
 //
 // Safe to cache for the life of the process: a resource's numeric id never changes, and the
 // provider process is short-lived, so staleness has no window in which to matter.
@@ -81,7 +84,9 @@ func (client *Client) attachmentLockKey(target string) string {
 // 250ms -> 500ms -> 1s -> 2s (3.75s total) rather than sitting at a flat 2s: a retry is the
 // expected path rather than the exceptional one, and the wait is paid while holding the target's
 // lock, so a coarse first backoff would queue every same-target write behind it.
-const (
+// Vars rather than consts purely so tests can shrink the budget; nothing in the provider reassigns
+// them.
+var (
 	verifyAttachmentAttempts  = 5
 	verifyAttachmentBaseDelay = 250 * time.Millisecond
 )
@@ -201,9 +206,9 @@ func (client *Client) verifyAttachmentState(input map[string]interface{}, wantAt
 		}
 		if err != nil {
 			// Retryable: a blip on the confirmation read should cost one attempt, not abandon
-			// verification entirely. If the target stays unreadable for the whole budget, `wrong`
-			// is never populated, so the loop falls through to nil below - which preserves the
-			// rule that a mutation the server accepted is not failed because the check could not run.
+			// verification entirely. If the target stays unreadable for the whole budget the guard
+			// after the loop returns nil, preserving the rule that a mutation the server accepted is
+			// not failed merely because the check could not run.
 			continue
 		}
 		wrong = nil
@@ -215,6 +220,13 @@ func (client *Client) verifyAttachmentState(input map[string]interface{}, wantAt
 		if len(wrong) == 0 {
 			return nil
 		}
+	}
+
+	if len(wrong) == 0 {
+		// Every read failed, so nothing was ever compared - `wrong` is empty because the check never
+		// ran, not because the write landed. Reporting a failure here would fail an apply that the
+		// server accepted, which is exactly what the retry above exists to avoid.
+		return nil
 	}
 
 	if wantAttached {
