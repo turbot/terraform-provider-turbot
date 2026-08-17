@@ -23,13 +23,11 @@ func TestCredentialsPrecedence(t *testing.T) {
 		{
 			"Config has credentials",
 			ClientConfig{
-				ClientCredentials{
+				Credentials: ClientCredentials{
 					"xxbd857-XXXX-XXXX-XXXX-xxxxx039ff1x",
 					"36xxb4f-XXXX-XXXX-XXXX-c91f44axx4f6",
 					"https://example.com/",
 				},
-				"",
-				"",
 			},
 			expected{
 				true,
@@ -64,13 +62,11 @@ func TestCredentialsPrecedence(t *testing.T) {
 		{
 			"Empty Config",
 			ClientConfig{
-				ClientCredentials{
+				Credentials: ClientCredentials{
 					"",
 					"",
 					"",
 				},
-				"",
-				"",
 			},
 			expected{
 				true,

@@ -4,6 +4,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"log"
+	"regexp"
 	"testing"
 )
 
@@ -80,5 +81,83 @@ func TestExtractErrorCode(t *testing.T) {
 		errCode, err := ExtractErrorCode(errors.Errorf(test.err))
 		assert.Equal(t, test.expected.code, errCode)
 		assert.ObjectsAreEqual(test.expected.err, err)
+	}
+}
+
+// The strings below were captured verbatim from a live Guardrails workspace (the punisher
+// workspace) while validating Defect 4, plus the provider's own wrappings of them. NotFoundError
+// MUST recognise every one, or a genuinely-deleted resource would fail to drop from state.
+func TestNotFoundErrorMatchesGenuineNotFound(t *testing.T) {
+	genuine := []string{
+		// raw Guardrails errors, as returned by the API for a missing item
+		"graphql: Not Found: Resource not found or not accessible",
+		`graphql: Not Found: Table "punisher_turbot.policy_settings" column "id" with value "999999999999999"`,
+		`graphql: Not Found: Table "punisher_turbot.grants" column "id" with value "999999999999999"`,
+		`graphql: Not Found: "policy_values" query results. Values: ["173249879813121",["tmod:@turbot/nonexistent#/policy/types/nope"]]`,
+		"graphql:Not Found: Not found error for rocketeer_turbot.grants ",
+		// provider wrappings (handleReadError / handleUpdateError / handleCreateError)
+		"error reading resource: resource not found: 173249879813121",
+		"error updating policy pack: resource not found: 12345",
+		"error creating smart folder attachment: parent resource not found: 999",
+		// lower-case variants, since the match is case-insensitive
+		"not found: whatever",
+	}
+	for _, s := range genuine {
+		assert.True(t, NotFoundError(errors.New(s)), "must be recognised as not-found: %q", s)
+	}
+}
+
+// The core of the defect: an error that merely mentions a missing DEPENDENCY, or any other error
+// that happens to contain the word, must NOT be read as "the resource is gone". Several of these
+// are strings the provider itself produces.
+func TestNotFoundErrorRejectsUnrelated(t *testing.T) {
+	unrelated := []string{
+		// real provider string, resource_turbot_policy_setting.go — the artifact's example, and
+		// the regression this fix exists to prevent
+		"policy type tmod:@turbot/aws#/policy/types/foo not found. Is the mod installed?",
+		// other real Guardrails / provider errors that are not a missing resource
+		`graphql: Cannot query field "thisFieldDoesNotExist" on type "TurbotResourceMetadata".`,
+		"graphql: Permission Denied: Insufficient Permissions for rocketeer_turbot.grants",
+		"graphql: Data Validation Failed: value is not valid",
+		"A policy setting for policy type: 'x', resource: 'y' already exists",
+		"the mod could not be found in the registry", // "found" but not the not-found verdict
+		"connection refused",
+	}
+	for _, s := range unrelated {
+		assert.False(t, NotFoundError(errors.New(s)), "must NOT be read as a missing resource: %q", s)
+	}
+}
+
+func TestNotFoundErrorNilIsSafe(t *testing.T) {
+	assert.False(t, NotFoundError(nil), "a nil error is not a not-found")
+}
+
+// The new matcher must be a STRICT SUBSET of the old `(?i)not found`, so it can only ever match
+// fewer errors — guaranteeing it introduces no new false negatives for the genuine not-found
+// errors the many existing callers already rely on. Prove it over a corpus that mixes genuine
+// not-founds, unrelated errors, and adversarial near-misses.
+func TestNotFoundErrorIsStrictSubsetOfOldMatcher(t *testing.T) {
+	old := regexp.MustCompile(`(?i)not found`) // the pre-fix behaviour
+	corpus := []string{
+		"graphql: Not Found: Resource not found or not accessible",
+		"resource not found: 12345",
+		"parent resource not found: 999",
+		"policy type foo not found. Is the mod installed?",
+		"NOT FOUND:",
+		"not found",
+		"Not Found",
+		"nothing was found here",
+		"found it",
+		"Cannot query field",
+		"Permission Denied",
+		"",
+		"NotFound", // no space — matches neither
+		"not_found",
+	}
+	for _, s := range corpus {
+		if NotFoundError(errors.New(s)) {
+			assert.True(t, old.MatchString(s),
+				"new matcher accepted %q that the old one rejected — not a strict subset", s)
+		}
 	}
 }

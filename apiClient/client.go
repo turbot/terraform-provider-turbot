@@ -17,13 +17,23 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+	"time"
 )
+
+// DefaultRequestTimeout bounds a single GraphQL request when the provider does not configure one.
+// Deliberately generous: Guardrails harvest and control operations can legitimately run for
+// minutes, and a too-tight default would break working configs by cancelling a slow-but-healthy
+// call. It exists to stop an indefinitely-hung connection, not to enforce a latency SLA.
+const DefaultRequestTimeout = 15 * time.Minute
 
 // Turbot API Client
 type Client struct {
 	AccessKey string
 	SecretKey string
 	Graphql   *graphql.Client
+	// RequestTimeout bounds every doRequest. Zero means no deadline; CreateClient installs
+	// DefaultRequestTimeout when the config leaves it unset.
+	RequestTimeout time.Duration
 }
 
 func CreateClient(config ClientConfig) (*Client, error) {
@@ -34,10 +44,15 @@ func CreateClient(config ClientConfig) (*Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get credentials, error: %s", err.Error())
 	}
+	timeout := config.RequestTimeout
+	if timeout <= 0 {
+		timeout = DefaultRequestTimeout
+	}
 	return &Client{
-		AccessKey: credentials.AccessKey,
-		SecretKey: credentials.SecretKey,
-		Graphql:   graphql.NewClient(credentials.Workspace),
+		AccessKey:      credentials.AccessKey,
+		SecretKey:      credentials.SecretKey,
+		Graphql:        graphql.NewClient(credentials.Workspace),
+		RequestTimeout: timeout,
 	}, nil
 }
 
@@ -278,8 +293,18 @@ func (client *Client) doRequest(query string, vars map[string]interface{}, respo
 	req.Header.Set("Cache-Control", "no-cache")
 	req.Header.Set("Authorization", basicAuthHeader(client.AccessKey, client.SecretKey))
 
-	// define a Context for the request
+	// Bound every request with a deadline. Without one, a hung connection hangs the whole apply
+	// indefinitely - and since attachment writes now serialise per target (see
+	// smart_folder_attachment.go), a hung call also holds that target's lock and stalls every
+	// sibling write. A zero timeout means "no deadline"; CreateClient installs a default so a
+	// client built through the provider is always bounded, but a hand-built Client (e.g. in tests)
+	// opts in explicitly.
 	ctx := context.Background()
+	if client.RequestTimeout > 0 {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, client.RequestTimeout)
+		defer cancel()
+	}
 
 	// run it and capture the response
 	if err := client.Graphql.Run(ctx, req, &responseData); err != nil {

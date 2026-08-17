@@ -9,10 +9,35 @@ import (
 	"strings"
 )
 
+// notFoundRegex matches the two shapes a genuinely-missing resource actually produces:
+//
+//   - "Not Found:" — the structured prefix Guardrails returns for a missing item, verified live
+//     against the workspace ("Not Found: Resource not found or not accessible",
+//     `Not Found: Table "..." column "id" with value "..."`, etc.).
+//   - "resource not found" — the provider's own wrapping of that error in handleReadError /
+//     handleUpdateError / handleCreateError ("error reading X: resource not found: <id>").
+//
+// Both are matched case-insensitively. The colon in "Not Found:" and the word "resource" are the
+// load-bearing anchors: they keep an incidental mention of some OTHER missing thing from being read
+// as "the resource is gone". The provider itself emits such strings — e.g.
+// resource_turbot_policy_setting.go returns "policy type %s not found. Is the mod installed?" — and
+// the previous matcher, `(?i)not found` anywhere, would have treated that as a missing resource and
+// dropped a live resource from Terraform state.
+//
+// This pattern is a strict subset of the old one: every string it matches contains "not found", so
+// it can only ever match FEWER errors, never more. That guarantees it introduces no new false
+// negatives for the genuine not-found errors callers already rely on.
+//
+// The complete fix for state membership is to decide from response shape rather than error text
+// (see apiClient.ErrTargetNotFound and the `notFound: RETURN_NULL` reads). This narrows the
+// text-based fallback that the many callers still using it depend on.
+var notFoundRegex = regexp.MustCompile(`(?i)not found:|resource not found`)
+
 func NotFoundError(err error) bool {
-	notFoundErr := "(?i)not Found"
-	expectedErr := regexp.MustCompile(notFoundErr)
-	return expectedErr.Match([]byte(err.Error()))
+	if err == nil {
+		return false
+	}
+	return notFoundRegex.MatchString(err.Error())
 }
 
 func FailedValidationError(err error) bool {

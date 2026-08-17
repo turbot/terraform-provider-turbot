@@ -3,6 +3,7 @@ package turbot
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
@@ -29,6 +30,14 @@ func Provider() terraform.ResourceProvider {
 				Optional: true,
 			},
 			"credentials_file": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			// request_timeout bounds a single GraphQL request. Accepts a Go duration string
+			// ("30s", "10m"). Empty falls back to apiClient.DefaultRequestTimeout. Guardrails
+			// operations can be genuinely slow, so this exists to stop an indefinitely-hung
+			// connection, not to enforce a tight latency budget.
+			"request_timeout": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
@@ -77,6 +86,19 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		},
 		Profile:         d.Get("profile").(string),
 		CredentialsPath: d.Get("credentials_file").(string),
+	}
+
+	// Parse the optional request_timeout duration. An invalid value is a config error rather than
+	// a silent fallback: silently ignoring a mistyped timeout would hide the operator's intent.
+	if raw := d.Get("request_timeout").(string); raw != "" {
+		timeout, err := time.ParseDuration(raw)
+		if err != nil {
+			return nil, fmt.Errorf("invalid request_timeout %q: %s", raw, err.Error())
+		}
+		if timeout < 0 {
+			return nil, fmt.Errorf("invalid request_timeout %q: must not be negative", raw)
+		}
+		config.RequestTimeout = timeout
 	}
 
 	client, err := apiClient.CreateClient(config)
