@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/turbot/terraform-provider-turbot/apiClient"
+	"github.com/turbot/terraform-provider-turbot/errors"
 	"strings"
 )
 
@@ -55,10 +56,15 @@ func resourceTurbotSmartFolderAttachmentExists(d *schema.ResourceData, meta inte
 
 	// Check the attachment from the RESOURCE side rather than reading the smart folder and
 	// enumerating everything attached to it. Reading the smart folder requires a grant on it
-	// (smart folders live at the Turbot root), whereas the caller necessarily holds permissions
+	// (smart folders live at the Turbot root by default), whereas the caller necessarily holds permissions
 	// on the attachment target. See apiClient/policy_pack.go.
 	attached, err := client.PolicyPackAttached(resource, smartFolderId)
 	if err != nil {
+		// A deleted target takes its attachments with it - see the equivalent note in
+		// resource_turbot_policy_pack_attachment.go.
+		if errors.NotFoundError(err) {
+			return false, nil
+		}
 		return false, fmt.Errorf("error reading smart folder attachment: %s", err.Error())
 	}
 	return attached, nil
@@ -74,7 +80,7 @@ func resourceTurbotSmartFolderAttachmentCreate(d *schema.ResourceData, meta inte
 	// ReadPolicyPackIdentity uses `policyPack(id:)`, which accepts either form and, unlike the
 	// generic `resource(id:)`, does not require a grant on the smart folder itself. A smart folder
 	// and a policy pack are the same underlying resource type. See apiClient/policy_pack.go.
-	sfIdentity, err := client.ReadPolicyPackIdentity(smartFolder)
+	sfIdentity, err := client.ReadPolicyPackIdentity(smartFolder, "smart folder")
 	if err != nil {
 		return err
 	}
@@ -99,7 +105,7 @@ func resourceTurbotSmartFolderAttachmentCreate(d *schema.ResourceData, meta inte
 	}
 	// Reuse AKAs from the already-fetched smart folder identity to avoid a second round-trip
 	smartFolderAkas := sfIdentity.Akas
-	if smartFolderAkas == nil {
+	if len(smartFolderAkas) == 0 {
 		smartFolderAkas = []string{resolvedSmartFolderId}
 	}
 	d.Set("smart_folder_akas", smartFolderAkas)
@@ -128,12 +134,12 @@ func resourceTurbotSmartFolderAttachmentRead(d *schema.ResourceData, meta interf
 	// set smart_folder_akas property for DiffSuppressFunc. Read via `policyPack(id:)` rather than
 	// storeAkas (which goes through `resource(id:)`) so this does not require a grant on the smart
 	// folder — see apiClient/policy_pack.go.
-	sfIdentity, err := client.ReadPolicyPackIdentity(smartFolder)
+	sfIdentity, err := client.ReadPolicyPackIdentity(smartFolder, "smart folder")
 	if err != nil {
 		return err
 	}
 	smartFolderAkas := sfIdentity.Akas
-	if smartFolderAkas == nil {
+	if len(smartFolderAkas) == 0 {
 		smartFolderAkas = []string{smartFolder}
 	}
 	d.Set("smart_folder_akas", smartFolderAkas)

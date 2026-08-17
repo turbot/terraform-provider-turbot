@@ -1,34 +1,52 @@
 package apiClient
 
+import "fmt"
+
 // Policy pack reads used by the policy pack / smart folder attachment resources.
 //
 // These deliberately avoid the generic `resource(id:)` query. Guardrails authorizes
-// `resource(id:)` against the resource being read, and policy packs live at the Turbot
-// root, so `resource(id:)` on a pack requires a root-level grant. Attaching a pack only
-// requires permissions on the attachment *target*, and the Guardrails console reads packs
-// through `policyPack(id:)`, which is authorized for such an identity. Using the same
-// queries as the console keeps Terraform working for callers that hold permissions on the
-// target resource alone.
+// `resource(id:)` against the resource being read, and policy packs live at the Turbot root by
+// default, so `resource(id:)` on a pack requires a grant wherever the pack sits. Attaching
+// a pack only requires permissions on the attachment *target*, and the Guardrails console
+// reads packs through `policyPack(id:)`, which is authorized for such an identity. Using the
+// same queries as the console keeps Terraform working for callers that hold permissions on
+// the target resource alone.
 
-// ReadPolicyPackIdentity resolves a policy pack by id OR aka and returns its Turbot
-// metadata (numeric id + akas). Uses the `policyPack(id:)` query so it does not require a
-// grant on the pack itself.
-func (client *Client) ReadPolicyPackIdentity(policyPackAka string) (*TurbotResourceMetadata, error) {
+// ReadPolicyPackIdentity resolves a policy pack by id OR aka and returns its Turbot metadata
+// (numeric id + akas). Uses the `policyPack(id:)` query so it does not require a grant on the
+// pack itself. resourceType names the concept in error messages, so callers managing smart
+// folders report "smart folder" rather than "policy pack".
+func (client *Client) ReadPolicyPackIdentity(policyPackAka, resourceType string) (*TurbotResourceMetadata, error) {
 	query := readPolicyPackIdentityQuery(policyPackAka)
 	responseData := &PolicyPackIdentityResponse{}
 
 	// execute api call
 	if err := client.doRequest(query, nil, responseData); err != nil {
-		return nil, client.handleReadError(err, policyPackAka, "policy pack")
+		return nil, client.handleReadError(err, policyPackAka, resourceType)
 	}
 	return &responseData.PolicyPack.Turbot, nil
 }
 
-// ReadAttachedPolicyPacks returns the policy packs attached to the given resource, read
-// from the resource side via `resource(id:).attachedSmartFolders`. The caller necessarily
-// holds permissions on the attachment target, so this is authorized wherever the attach
-// itself is. It also scopes the answer to this one resource rather than enumerating every
-// resource the pack is attached to across the whole hierarchy.
+// ReadAttachedPolicyPacks returns the policy packs attached to the given resource, read from
+// the resource side via `resource(id:).attachedSmartFolders`. The caller necessarily holds
+// permissions on the attachment target, so this is authorized wherever the attach itself is.
+//
+// The list is DIRECT attachments only — it does not include packs attached to an ancestor.
+// (Pack policies still propagate down the hierarchy; the attachment list does not.) Verified
+// against a live workspace: with a pack attached only at a grandparent folder, the child and
+// grandchild both report an empty list. Detaching from a child while an ancestor attachment
+// remains correctly empties the child's list. `Exists` depends on this: were the list the
+// effective set instead, a nested resource would report an attachment nothing created.
+//
+// `attachedSmartFolders` accepts no paging arguments, so it returns whatever the server default
+// allows. A truncated list would make `Exists` report "not attached" for an attachment that
+// exists, and Terraform would then recreate it on every plan. Selecting `paging.next` turns that
+// into an explicit error rather than silent churn.
+//
+// Caveat: this guard is defensive and unproven. Because the field takes no arguments, a truncated
+// response cannot be forced, so it has never been observed firing. What is confirmed is that
+// `paging.next` exists and is null for complete lists. If the server ever truncates WITHOUT
+// setting a cursor, this will not catch it.
 func (client *Client) ReadAttachedPolicyPacks(resourceAka string) ([]TurbotResourceMetadata, error) {
 	query := readAttachedPolicyPacksQuery(resourceAka)
 	responseData := &AttachedPolicyPacksResponse{}
@@ -38,8 +56,13 @@ func (client *Client) ReadAttachedPolicyPacks(resourceAka string) ([]TurbotResou
 		return nil, client.handleReadError(err, resourceAka, "attached policy packs")
 	}
 
-	packs := make([]TurbotResourceMetadata, 0, len(responseData.Resource.AttachedSmartFolders.Items))
-	for _, item := range responseData.Resource.AttachedSmartFolders.Items {
+	attached := responseData.Resource.AttachedSmartFolders
+	if attached.Paging.Next != "" {
+		return nil, fmt.Errorf("error reading attached policy packs: resource %s reports more attachments than a single page returns, so attachment state cannot be determined reliably", resourceAka)
+	}
+
+	packs := make([]TurbotResourceMetadata, 0, len(attached.Items))
+	for _, item := range attached.Items {
 		packs = append(packs, item.Turbot)
 	}
 	return packs, nil

@@ -286,11 +286,6 @@ func readSmartFolderQuery(id string) string {
 		filters: get(path:"filters")
 		parent:	get(path:"turbot.parentId")
 		turbot: get(path:"turbot")
-   		attachedResources{
-			items{
-				turbot: get(path:"turbot")
-			}
-		}
 	}
 }`, id)
 }
@@ -760,7 +755,8 @@ func (client *Client) GetTurbotWorkspaceVersion() (*semver.Version, error) {
 // readPolicyPackIdentityQuery resolves a policy pack by id or aka.
 //
 // Uses `policyPack(id:)` rather than `resource(id:)` on purpose: policy packs live at the
-// Turbot root, and `resource(id:)` on a pack requires a grant there. `policyPack(id:)` is the
+// Turbot root by default, and `resource(id:)` on a pack requires a grant wherever it sits.
+// `policyPack(id:)` is the
 // query the Guardrails console uses and is authorized for an identity holding permissions only
 // on the attachment target. It accepts either a numeric id or an aka.
 func readPolicyPackIdentityQuery(policyPackAka string) string {
@@ -780,6 +776,9 @@ func readAttachedPolicyPacksQuery(resourceAka string) string {
 	return fmt.Sprintf(`{
 	resource(id:"%s") {
 		attachedSmartFolders {
+			paging {
+				next
+			}
 			items {
 				turbot {
 					id

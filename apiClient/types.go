@@ -312,16 +312,11 @@ type SmartFolderResponse struct {
 }
 
 type SmartFolder struct {
-	Turbot            TurbotResourceMetadata
-	Title             string
-	Description       string
-	Filters           []string
-	Parent            string
-	AttachedResources struct {
-		Items []struct {
-			Turbot TurbotResourceMetadata
-		}
-	}
+	Turbot      TurbotResourceMetadata
+	Title       string
+	Description string
+	Filters     []string
+	Parent      string
 }
 
 // Smart folder attachment
@@ -550,6 +545,12 @@ type PolicyPackIdentityResponse struct {
 type AttachedPolicyPacksResponse struct {
 	Resource struct {
 		AttachedSmartFolders struct {
+			// Next is non-empty when the server truncated the list. attachedSmartFolders takes
+			// no paging arguments, so this is the only way to tell a complete list from a
+			// truncated one - see ReadAttachedPolicyPacks.
+			Paging struct {
+				Next string
+			}
 			Items []struct {
 				Turbot TurbotResourceMetadata
 			}

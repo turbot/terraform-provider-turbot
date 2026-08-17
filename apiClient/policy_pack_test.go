@@ -9,7 +9,7 @@ import (
 
 // The whole point of readPolicyPackIdentityQuery is that it does NOT use the generic
 // `resource(id:)` query, which Guardrails authorizes against the pack itself. Packs live at
-// the Turbot root, so `resource(id:)` requires a root-level grant, while attaching a pack
+// the Turbot root by default, so `resource(id:)` requires a grant wherever the pack sits, while attaching a pack
 // only requires permissions on the attachment target. Assert the distinction directly so a
 // future refactor back to `resource(id:)` fails loudly rather than silently reintroducing
 // the permission regression.
@@ -64,6 +64,11 @@ func TestReadAttachedPolicyPacksQuery(t *testing.T) {
 				"attachedResources is the pack-side list and spans the hierarchy")
 			assert.NotContains(t, query, "policyPack(id:",
 				"Exists must not need to read the pack at all")
+			// attachedSmartFolders takes no paging arguments, so paging.next is the only signal
+			// that the list was truncated - a truncated list would make Exists false-negative
+			assert.Contains(t, query, "paging",
+				"must select paging so truncation can be detected")
+			assert.Contains(t, query, "next")
 		})
 	}
 }
@@ -101,10 +106,13 @@ func TestPolicyPackInList(t *testing.T) {
 	}
 }
 
-// The queries are built with fmt.Sprintf, so guard against a caller-supplied identifier
-// breaking out of the string literal and corrupting the query shape.
-func TestPolicyPackQueriesRemainWellFormed(t *testing.T) {
-	for _, id := range []string{"343645598782139", "aws_s3_bucket_versioning_enabled"} {
+// Both builders interpolate the identifier with fmt.Sprintf, as every other builder in
+// queries.go does. This asserts the query shape stays intact for well-formed identifiers -
+// balanced braces and exactly one quoted identifier. It does NOT cover an identifier
+// containing a double quote, which would break out of the literal; no builder in this package
+// escapes its input, so that would be a package-wide change rather than a local one.
+func TestPolicyPackQueriesRemainWellFormedForValidIdentifiers(t *testing.T) {
+	for _, id := range []string{"343645598782139", "aws_s3_bucket_versioning_enabled", "tmod:@turbot/turbot#/x"} {
 		identity := readPolicyPackIdentityQuery(id)
 		attached := readAttachedPolicyPacksQuery(id)
 		for name, query := range map[string]string{"identity": identity, "attached": attached} {
@@ -114,4 +122,20 @@ func TestPolicyPackQueriesRemainWellFormed(t *testing.T) {
 				"%s query must contain exactly one quoted identifier", name)
 		}
 	}
+}
+
+// A truncated attachment list would make Exists report "not attached" for an attachment that
+// exists, and Terraform would recreate it on every plan. Since attachedSmartFolders accepts no
+// paging arguments, the only defence is to notice paging.next and fail loudly.
+func TestAttachedPolicyPacksTruncationIsDetectable(t *testing.T) {
+	// The response type must carry Paging.Next, otherwise the guard in
+	// ReadAttachedPolicyPacks can never fire regardless of what the server returns.
+	var response AttachedPolicyPacksResponse
+	response.Resource.AttachedSmartFolders.Paging.Next = "cursor-token"
+	assert.Equal(t, "cursor-token", response.Resource.AttachedSmartFolders.Paging.Next,
+		"AttachedPolicyPacksResponse must decode paging.next")
+
+	// An untruncated response leaves it empty, which is what the guard treats as complete.
+	var complete AttachedPolicyPacksResponse
+	assert.Equal(t, "", complete.Resource.AttachedSmartFolders.Paging.Next)
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/turbot/terraform-provider-turbot/apiClient"
 	"github.com/turbot/terraform-provider-turbot/errors"
 	"regexp"
+	"strconv"
 	"testing"
 )
 
@@ -168,8 +169,10 @@ func TestAccPolicyPackAttachment_IdAkaMatrix(t *testing.T) {
 						regexp.MustCompile(`^[0-9]+$`)),
 					resource.TestMatchResourceAttr("turbot_policy_pack_attachment.aka_id", "policy_pack",
 						regexp.MustCompile(`^[0-9]+$`)),
-					// the akas list must be populated so the diff suppressor has something to match
-					resource.TestCheckResourceAttr("turbot_policy_pack_attachment.aka_aka", "policy_pack_akas.0",
+					// the akas list must be non-empty so the diff suppressor has something to match.
+					// Asserting a specific index would pin an ordering the API does not guarantee,
+					// and suppressIfAkaMatches scans the whole list rather than one element.
+					testAccCheckAkasContain("turbot_policy_pack_attachment.aka_aka", "policy_pack_akas",
 						"test_pack_matrix_aka"),
 				),
 			},
@@ -269,4 +272,108 @@ func TestAccPolicyPackAttachment_Import(t *testing.T) {
 			},
 		},
 	})
+}
+
+// testAccCheckAkasContain asserts the named akas list is non-empty and contains want, without
+// depending on the order the API returns akas in.
+func testAccCheckAkasContain(resourceName, attr, want string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		rs, ok := state.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("Not found: %s", resourceName)
+		}
+		count := rs.Primary.Attributes[attr+".#"]
+		if count == "" || count == "0" {
+			return fmt.Errorf("%s.%s is empty; suppressIfAkaMatches would have nothing to match", resourceName, attr)
+		}
+		n, err := strconv.Atoi(count)
+		if err != nil {
+			return fmt.Errorf("could not parse %s.%s.#: %s", resourceName, attr, err)
+		}
+		for i := 0; i < n; i++ {
+			if rs.Primary.Attributes[fmt.Sprintf("%s.%d", attr, i)] == want {
+				return nil
+			}
+		}
+		return fmt.Errorf("%s.%s does not contain %q", resourceName, attr, want)
+	}
+}
+
+// TestAccPolicyPackAttachment_TargetDeleted covers the drift that Exists must survive: the
+// attachment TARGET is removed out-of-band. Reading the attachment from the resource side means
+// a missing target yields Not Found, and helper/schema aborts the whole refresh on any error from
+// Exists — so this must map to "not attached" and drop the attachment from state instead.
+//
+// The target has to be deleted OUT-OF-BAND to reach that path. Simply removing it from the config
+// does not: Terraform destroys the attachment before the folder, so the target still exists at
+// every point Exists runs. Step 2's PreConfig therefore deletes the folder through the API client,
+// behind Terraform's back, before the refresh that begins the step.
+func TestAccPolicyPackAttachment_TargetDeleted(t *testing.T) {
+	var targetId string
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPolicyPackAttachmentDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccPolicyPackAttachmentTargetDeletedConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPolicyPackAttachmentExists("turbot_policy_pack_attachment.doomed"),
+					// capture the target id so the next step can delete it out-of-band
+					func(state *terraform.State) error {
+						rs, ok := state.RootModule().Resources["turbot_folder.doomed"]
+						if !ok {
+							return fmt.Errorf("Not found: turbot_folder.doomed")
+						}
+						targetId = rs.Primary.ID
+						return nil
+					},
+				),
+			},
+			{
+				PreConfig: func() {
+					client := testAccProvider.Meta().(*apiClient.Client)
+					if err := client.DeleteResource(targetId); err != nil {
+						t.Fatalf("could not delete target %s out-of-band: %s", targetId, err)
+					}
+				},
+				// The attachment is still in state but its target is gone. The refresh that opens
+				// this step calls Exists against the deleted target: it must report "not attached"
+				// and drop the attachment, not error out.
+				Config: testAccPolicyPackAttachmentTargetDeletedTeardownConfig(),
+			},
+		},
+	})
+}
+
+func testAccPolicyPackAttachmentTargetDeletedConfig() string {
+	return `
+resource "turbot_policy_pack" "doomed" {
+  filter      = "resourceType:181381985925765 $.turbot.tags.a:b"
+  description = "Policy Pack target-deletion testing"
+  title       = "policy_pack_target_deleted"
+}
+
+resource "turbot_folder" "doomed" {
+  parent      = "tmod:@turbot/turbot#/"
+  title       = "provider_test_target_deleted"
+  description = "target that gets deleted out from under the attachment"
+}
+
+resource "turbot_policy_pack_attachment" "doomed" {
+  policy_pack = turbot_policy_pack.doomed.id
+  resource    = turbot_folder.doomed.id
+}
+`
+}
+
+func testAccPolicyPackAttachmentTargetDeletedTeardownConfig() string {
+	return `
+resource "turbot_policy_pack" "doomed" {
+  filter      = "resourceType:181381985925765 $.turbot.tags.a:b"
+  description = "Policy Pack target-deletion testing"
+  title       = "policy_pack_target_deleted"
+}
+`
 }
