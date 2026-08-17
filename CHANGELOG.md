@@ -1,4 +1,4 @@
-## 1.13.4 (Unreleased)
+## 1.13.4 (August 17, 2026)
 
 BUG FIXES:
 
