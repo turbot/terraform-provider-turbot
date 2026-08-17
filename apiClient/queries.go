@@ -758,22 +758,28 @@ func (client *Client) GetTurbotWorkspaceVersion() (*semver.Version, error) {
 // Turbot root by default, and `resource(id:)` on a pack requires a grant wherever it sits.
 // `policyPack(id:)` is the query the Guardrails console uses and is authorized for an identity
 // holding permissions only on the attachment target. It accepts either a numeric id or an aka.
-func readPolicyPackIdentityQuery(policyPackAka string) string {
-	return fmt.Sprintf(`{
-	policyPack(id:"%s") {
+//
+// The identifier is passed as a GraphQL variable rather than interpolated, matching what every
+// mutation in this client already does. Interpolating it would let a config-supplied value
+// containing a double quote escape the string literal and append arbitrary GraphQL, executed with
+// the provider's credentials.
+func readPolicyPackIdentityQuery() string {
+	return `query ReadPolicyPackIdentity($id: ID!) {
+	policyPack(id: $id) {
 		turbot {
 			id
 			akas
 		}
 	}
-}`, policyPackAka)
+}`
 }
 
 // readAttachedPolicyPacksQuery lists the policy packs attached to a resource, read from the
-// resource side so it only needs permissions on that resource. Accepts a numeric id or an aka.
-func readAttachedPolicyPacksQuery(resourceAka string) string {
-	return fmt.Sprintf(`{
-	resource(id:"%s") {
+// resource side so it only needs permissions on that resource. Accepts a numeric id or an aka,
+// passed as a GraphQL variable - see readPolicyPackIdentityQuery.
+func readAttachedPolicyPacksQuery() string {
+	return `query ReadAttachedPolicyPacks($id: ID!) {
+	resource(id: $id) {
 		attachedSmartFolders {
 			paging {
 				next
@@ -786,5 +792,5 @@ func readAttachedPolicyPacksQuery(resourceAka string) string {
 			}
 		}
 	}
-}`, resourceAka)
+}`
 }

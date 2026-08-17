@@ -16,63 +16,41 @@ import (
 // future refactor back to `resource(id:)` fails loudly rather than silently reintroducing
 // the permission regression.
 func TestReadPolicyPackIdentityQuery(t *testing.T) {
-	var tests = []struct {
-		name       string
-		policyPack string
-	}{
-		{"numeric id", "343645598782139"},
-		{"aka", "aws_s3_bucket_versioning_enabled"},
-		{"mod-style aka", "tmod:@turbot/turbot#/my-pack"},
-	}
+	query := readPolicyPackIdentityQuery()
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			query := readPolicyPackIdentityQuery(test.policyPack)
-
-			assert.Contains(t, query, "policyPack(id:\""+test.policyPack+"\")",
-				"query must address the pack through policyPack(id:)")
-			assert.NotContains(t, query, "resource(id:",
-				"query must NOT use resource(id:) — that requires a grant on the pack itself")
-			// both fields are required: id resolves the attach mutation input, akas feed
-			// suppressIfAkaMatches so an aka in config does not diff against an id in state
-			assert.Contains(t, query, "id")
-			assert.Contains(t, query, "akas")
-		})
-	}
+	assert.Contains(t, query, "policyPack(id: $id)",
+		"query must address the pack through policyPack(id:)")
+	assert.NotContains(t, query, "resource(id:",
+		"query must NOT use resource(id:) - that requires a grant on the pack itself")
+	// both fields are required: id resolves the attach mutation input, akas feed
+	// suppressIfAkaMatches so an aka in config does not diff against an id in state
+	assert.Contains(t, query, "id")
+	assert.Contains(t, query, "akas")
+	// the identifier must arrive as a variable, never interpolated
+	assert.Contains(t, query, "$id: ID!")
 }
 
 // Exists() answers "is this pack attached to this resource" from the resource side. Reading
 // the pack instead would need a grant on the pack, and would depend on a pack-wide list that
 // can span the whole hierarchy.
 func TestReadAttachedPolicyPacksQuery(t *testing.T) {
-	var tests = []struct {
-		name     string
-		resource string
-	}{
-		{"numeric id", "191926035367605"},
-		{"aka", "my_bu_folder"},
-		{"arn-style aka", "arn:aws:::111122223333"},
-	}
+	query := readAttachedPolicyPacksQuery()
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			query := readAttachedPolicyPacksQuery(test.resource)
-
-			assert.Contains(t, query, "resource(id:\""+test.resource+"\")",
-				"query must be anchored on the attachment target, not the pack")
-			assert.Contains(t, query, "attachedSmartFolders",
-				"must read the packs attached to the resource")
-			assert.NotContains(t, query, "attachedResources",
-				"attachedResources is the pack-side list and spans the hierarchy")
-			assert.NotContains(t, query, "policyPack(id:",
-				"Exists must not need to read the pack at all")
-			// attachedSmartFolders takes no paging arguments, so paging.next is the only signal
-			// that the list was truncated - a truncated list would make Exists false-negative
-			assert.Contains(t, query, "paging",
-				"must select paging so truncation can be detected")
-			assert.Contains(t, query, "next")
-		})
-	}
+	assert.Contains(t, query, "resource(id: $id)",
+		"query must be anchored on the attachment target, not the pack")
+	assert.Contains(t, query, "attachedSmartFolders",
+		"must read the packs attached to the resource")
+	assert.NotContains(t, query, "attachedResources",
+		"attachedResources is the pack-side list and spans the hierarchy")
+	assert.NotContains(t, query, "policyPack(id:",
+		"Exists must not need to read the pack at all")
+	// attachedSmartFolders takes no paging arguments, so paging.next is the only signal
+	// that the list was truncated - a truncated list would make Exists false-negative
+	assert.Contains(t, query, "paging",
+		"must select paging so truncation can be detected")
+	assert.Contains(t, query, "next")
+	// the identifier must arrive as a variable, never interpolated
+	assert.Contains(t, query, "$id: ID!")
 }
 
 // A pack may be identified in state or config by its numeric id or by any of its akas, so
@@ -108,21 +86,34 @@ func TestPolicyPackInList(t *testing.T) {
 	}
 }
 
-// Both builders interpolate the identifier with fmt.Sprintf, as every other builder in
-// queries.go does. This asserts the query shape stays intact for well-formed identifiers -
-// balanced braces and exactly one quoted identifier. It does NOT cover an identifier
-// containing a double quote, which would break out of the literal; no builder in this package
-// escapes its input, so that would be a package-wide change rather than a local one.
-func TestPolicyPackQueriesRemainWellFormedForValidIdentifiers(t *testing.T) {
-	for _, id := range []string{"343645598782139", "aws_s3_bucket_versioning_enabled", "tmod:@turbot/turbot#/x"} {
-		identity := readPolicyPackIdentityQuery(id)
-		attached := readAttachedPolicyPacksQuery(id)
-		for name, query := range map[string]string{"identity": identity, "attached": attached} {
-			assert.Equal(t, strings.Count(query, "{"), strings.Count(query, "}"),
-				"%s query braces must balance", name)
-			assert.Equal(t, 2, strings.Count(query, "\""),
-				"%s query must contain exactly one quoted identifier", name)
-		}
+// Both read builders pass the identifier as a GraphQL variable, so no caller-supplied value can
+// reach the query document at all. This is the regression guard for that: previously the builders
+// interpolated with fmt.Sprintf, and an identifier containing a double quote escaped the string
+// literal and appended attacker-chosen GraphQL, executed with the provider's credentials.
+//
+// The payload below is the proof-of-concept from review. Against the old interpolating builders it
+// produced a valid document with two top-level fields - and it kept braces balanced (5 open / 5
+// close), so a brace-balance assertion passed it. Only the queries being identifier-free makes the
+// class impossible, which is what this asserts.
+func TestReadBuildersCannotBeInjected(t *testing.T) {
+	payload := `x") { turbot { id } } deleteMe: resource(id:"12345`
+
+	for name, query := range map[string]string{
+		"identity": readPolicyPackIdentityQuery(),
+		"attached": readAttachedPolicyPacksQuery(),
+	} {
+		// the document is a constant: nothing a caller supplies can appear in it
+		assert.NotContains(t, query, payload, "%s query must not embed caller input", name)
+		assert.NotContains(t, query, "deleteMe", "%s query must not embed injected fields", name)
+		assert.NotContains(t, query, "12345", "%s query must not embed caller input", name)
+
+		// exactly one top-level selection, so no second field can be smuggled in
+		assert.Equal(t, 1, strings.Count(query, "$id: ID!"), "%s query declares one variable", name)
+		assert.Equal(t, strings.Count(query, "{"), strings.Count(query, "}"),
+			"%s query braces must balance", name)
+
+		// no string literals at all - the only way to interpolate is to add one
+		assert.NotContains(t, query, `"`, "%s query must contain no string literal", name)
 	}
 }
 

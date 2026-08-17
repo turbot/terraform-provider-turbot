@@ -16,11 +16,12 @@ import "fmt"
 // pack itself. resourceType names the concept in error messages, so callers managing smart
 // folders report "smart folder" rather than "policy pack".
 func (client *Client) ReadPolicyPackIdentity(policyPackAka, resourceType string) (*TurbotResourceMetadata, error) {
-	query := readPolicyPackIdentityQuery(policyPackAka)
+	query := readPolicyPackIdentityQuery()
 	responseData := &PolicyPackIdentityResponse{}
+	variables := map[string]interface{}{"id": policyPackAka}
 
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, client.handleReadError(err, policyPackAka, resourceType)
 	}
 	return &responseData.PolicyPack.Turbot, nil
@@ -45,11 +46,12 @@ func (client *Client) ReadPolicyPackIdentity(policyPackAka, resourceType string)
 // response has never been observed. What is confirmed is that `paging.next` decodes and is empty
 // for complete lists. If the server ever truncates WITHOUT setting a cursor, this will not catch it.
 func (client *Client) ReadAttachedPolicyPacks(resourceAka string) ([]TurbotResourceMetadata, bool, error) {
-	query := readAttachedPolicyPacksQuery(resourceAka)
+	query := readAttachedPolicyPacksQuery()
 	responseData := &AttachedPolicyPacksResponse{}
+	variables := map[string]interface{}{"id": resourceAka}
 
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, false, client.handleReadError(err, resourceAka, "attached policy packs")
 	}
 
