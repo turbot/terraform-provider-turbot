@@ -543,7 +543,9 @@ type PolicyPackIdentityResponse struct {
 }
 
 type AttachedPolicyPacksResponse struct {
-	Resource struct {
+	// Pointer so a `resource: null` reply (a missing target, via notFound: RETURN_NULL) is
+	// distinguishable from a target that exists with no attachments.
+	Resource *struct {
 		AttachedSmartFolders struct {
 			// Next is non-empty when the server truncated the list. attachedSmartFolders takes
 			// no paging arguments, so this is the only way to tell a complete list from a

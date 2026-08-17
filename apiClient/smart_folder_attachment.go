@@ -193,6 +193,12 @@ func (client *Client) verifyAttachmentState(input map[string]interface{}, wantAt
 			// detach, truncation can only hide a pack that is still attached.
 			return nil
 		}
+		if IsTargetNotFound(err) {
+			// The target is gone, so there is nothing to verify and no point retrying. Not an error:
+			// the mutation was accepted, and a target that no longer exists takes its attachments
+			// with it - which Exists reports on the next refresh.
+			return nil
+		}
 		if err != nil {
 			// Retryable: a blip on the confirmation read should cost one attempt, not abandon
 			// verification entirely. If the target stays unreadable for the whole budget, `wrong`

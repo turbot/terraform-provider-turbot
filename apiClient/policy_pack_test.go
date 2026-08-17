@@ -2,6 +2,8 @@ package apiClient
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -36,7 +38,7 @@ func TestReadPolicyPackIdentityQuery(t *testing.T) {
 func TestReadAttachedPolicyPacksQuery(t *testing.T) {
 	query := readAttachedPolicyPacksQuery()
 
-	assert.Contains(t, query, "resource(id: $id)",
+	assert.Contains(t, query, "resource(id: $id",
 		"query must be anchored on the attachment target, not the pack")
 	assert.Contains(t, query, "attachedSmartFolders",
 		"must read the packs attached to the resource")
@@ -143,4 +145,52 @@ func TestAttachedPolicyPacksTruncationIsDetectable(t *testing.T) {
 	assert.Len(t, withItems.Resource.AttachedSmartFolders.Items, 1)
 	assert.Equal(t, "123", withItems.Resource.AttachedSmartFolders.Items[0].Turbot.Id)
 	assert.Equal(t, []string{"my_pack"}, withItems.Resource.AttachedSmartFolders.Items[0].Turbot.Akas)
+}
+
+// Exists decides state membership from this, so it must be driven by response SHAPE rather than by
+// matching "not found" in error text. errors.NotFoundError matches `(?i)not found` anywhere, so an
+// unrelated not-found would drop a live attachment out of state and have Terraform recreate it.
+func TestTargetNotFoundIsTypedNotTextMatched(t *testing.T) {
+	// The sentinel is recognised through wrapping, which is how ReadAttachedPolicyPacks returns it.
+	wrapped := fmt.Errorf("%w: %s", ErrTargetNotFound, "391406345032847")
+	assert.True(t, IsTargetNotFound(wrapped), "wrapped sentinel must be recognised")
+	assert.Contains(t, wrapped.Error(), "391406345032847", "the identifier stays in the message")
+
+	// Errors that merely mention "not found" must NOT be treated as a missing target - this is the
+	// regression this replaces.
+	for _, text := range []string{
+		"policy type not found",
+		"error reading attached policy packs: mod not found",
+		"Not Found: something entirely unrelated",
+	} {
+		assert.False(t, IsTargetNotFound(errors.New(text)),
+			"%q must not be read as a missing target", text)
+	}
+
+	// And a nil error is not a missing target.
+	assert.False(t, IsTargetNotFound(nil))
+}
+
+// A `resource: null` reply is the only thing that means "target missing", so the response type must
+// be able to represent it - a value struct would decode null as a zero struct with no attachments,
+// which is a completely different fact.
+func TestAttachedPolicyPacksDecodesNullResource(t *testing.T) {
+	var missing AttachedPolicyPacksResponse
+	err := json.Unmarshal([]byte(`{"resource":null}`), &missing)
+	assert.NoError(t, err)
+	assert.Nil(t, missing.Resource, "a null resource must decode as nil, not as an empty struct")
+
+	var present AttachedPolicyPacksResponse
+	err = json.Unmarshal([]byte(`{"resource":{"attachedSmartFolders":{"paging":{"next":null},"items":[]}}}`), &present)
+	assert.NoError(t, err)
+	assert.NotNil(t, present.Resource, "an existing target with no attachments is not nil")
+	assert.Empty(t, present.Resource.AttachedSmartFolders.Items)
+}
+
+// The query must actually ask for RETURN_NULL, or a missing target arrives as an error and the
+// typed check above can never fire.
+func TestReadAttachedPolicyPacksQueryRequestsNullOnMissing(t *testing.T) {
+	query := readAttachedPolicyPacksQuery()
+	assert.Contains(t, query, "options: {notFound: RETURN_NULL}",
+		"a missing target must come back as null, not as an error")
 }
