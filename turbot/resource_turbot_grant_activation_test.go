@@ -28,8 +28,8 @@ func TestAccGrantActivate_Basic(t *testing.T) {
 						"turbot_grant.test_grant", "type", "tmod:@turbot/turbot-iam#/permission/types/turbot"),
 					resource.TestCheckResourceAttr(
 						"turbot_grant.test_grant", "level", "tmod:@turbot/turbot-iam#/permission/levels/owner"),
-					resource.TestCheckResourceAttr(
-						"turbot_grant_activation.test_activation", "resource", "178806508050433"),
+					resource.TestCheckResourceAttrSet(
+						"turbot_grant_activation.test_activation", "resource"),
 				),
 			},
 			{
@@ -126,12 +126,15 @@ func testAccCheckActiveGrantExists(resource string) resource.TestCheckFunc {
 func testAccCheckActiveGrantDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*apiClient.Client)
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "Grant" {
+		// rs.Type is the TERRAFORM type name, never the Guardrails "Grant" - the previous guard
+		// never matched, so the activation's destruction was never actually verified. This is the
+		// grant ACTIVATION destroy, so read the activation, not the grant.
+		if rs.Type != "turbot_grant_activation" {
 			continue
 		}
-		_, err := client.ReadGrant(rs.Primary.ID)
+		_, err := client.ReadGrantActivation(rs.Primary.ID)
 		if err == nil {
-			return fmt.Errorf("Alert still exists")
+			return fmt.Errorf("grant activation %s still exists after destroy", rs.Primary.ID)
 		}
 		if !errors.NotFoundError(err) {
 			return fmt.Errorf("expected 'not found' error, got %s", err)

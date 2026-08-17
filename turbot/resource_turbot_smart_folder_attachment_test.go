@@ -5,7 +5,6 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/turbot/terraform-provider-turbot/apiClient"
-	"github.com/turbot/terraform-provider-turbot/errors"
 	"regexp"
 	"testing"
 )
@@ -77,15 +76,23 @@ func testAccCheckSmartFolderAttachmentExists(resource string) resource.TestCheck
 func testAccCheckSmartFolderAttachmentDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*apiClient.Client)
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "smartFolder" {
+		// rs.Type is the TERRAFORM type name, never the Guardrails "smartFolder" - the previous
+		// guard never matched, so destruction was never actually verified.
+		if rs.Type != "turbot_smart_folder_attachment" {
 			continue
 		}
-		_, err := client.ReadSmartFolder(rs.Primary.ID)
-		if err == nil {
-			return fmt.Errorf("alert still exists")
+		// id is "<smartFolderId>_<resource>"; check from the resource side.
+		smartFolderId, resource := parseSmartFolderId(rs.Primary.ID)
+		attached, err := client.PolicyPackAttached(resource, smartFolderId)
+		if err != nil {
+			// The target resource is destroyed alongside the attachment - a successful destroy.
+			if apiClient.IsTargetNotFound(err) {
+				continue
+			}
+			return fmt.Errorf("error checking smart folder attachment destroy: %s", err)
 		}
-		if !errors.NotFoundError(err) {
-			return fmt.Errorf("expected 'not found' error, got %s", err)
+		if attached {
+			return fmt.Errorf("smart folder %s is still attached to resource %s after destroy", smartFolderId, resource)
 		}
 	}
 	return nil
