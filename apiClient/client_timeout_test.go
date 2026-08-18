@@ -4,6 +4,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
 	"time"
 
@@ -18,23 +19,26 @@ func TestDoRequestHonoursTimeout(t *testing.T) {
 	// A listener that accepts connections and holds them open without ever writing a response.
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	assert.NoError(t, err)
-	defer listener.Close()
 
-	accepted := make(chan net.Conn, 16)
+	// The accept goroutine is the only producer. It must stop before we stop tracking its
+	// connections, or it can touch a closed channel and panic. So it owns the connections itself
+	// (closing them when it exits) and we join it via the WaitGroup: close the listener to unblock
+	// Accept, then wait for the goroutine to return.
+	var wg sync.WaitGroup
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		for {
 			conn, err := listener.Accept()
 			if err != nil {
 				return
 			}
-			accepted <- conn // hold the connection open; never respond
+			defer conn.Close() // hold it open; never respond; close when this goroutine exits
 		}
 	}()
 	defer func() {
-		close(accepted)
-		for conn := range accepted {
-			conn.Close()
-		}
+		listener.Close() // unblock Accept so the producer exits...
+		wg.Wait()        // ...and only then is it safe to return
 	}()
 
 	client := &Client{

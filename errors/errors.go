@@ -3,6 +3,7 @@ package errors
 import (
 	"fmt"
 	"github.com/pkg/errors"
+	"log"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -26,7 +27,16 @@ import (
 //
 // This pattern is a strict subset of the old one: every string it matches contains "not found", so
 // it can only ever match FEWER errors, never more. That guarantees it introduces no new false
-// negatives for the genuine not-found errors callers already rely on.
+// POSITIVES — it will never newly classify an unrelated error as not-found. It says nothing about
+// false NEGATIVES: matching fewer strings means a genuine not-found shape this list does not
+// recognise would be missed. The recognised shapes are those observed live against a workspace, so
+// completeness across TE versions is not proven here.
+//
+// The direction of that trade is the safe one. A miss degrades to a hard error on refresh (Exists
+// returns the error, which blocks the apply) — loud and recoverable. The old behaviour degraded the
+// other way: an incidental "not found" silently dropped a live resource from state and recreated it,
+// which for a policy setting or grant is destructive. A missed shape is surfaced by the DEBUG log in
+// NotFoundError below, so it is greppable rather than invisible.
 //
 // The complete fix for state membership is to decide from response shape rather than error text
 // (see apiClient.ErrTargetNotFound and the `notFound: RETURN_NULL` reads). This narrows the
@@ -37,7 +47,16 @@ func NotFoundError(err error) bool {
 	if err == nil {
 		return false
 	}
-	return notFoundRegex.MatchString(err.Error())
+	if notFoundRegex.MatchString(err.Error()) {
+		return true
+	}
+	// The error mentions "not found" but does not match a shape we recognise as a missing resource.
+	// We treat it as a real error (the safe default), but log it so a shape we have not seen — for
+	// example from a different TE version — is discoverable under TF_LOG=DEBUG rather than silent.
+	if strings.Contains(strings.ToLower(err.Error()), "not found") {
+		log.Printf("[DEBUG] error mentions 'not found' but does not match a known missing-resource shape; treating as a real error: %s", err)
+	}
+	return false
 }
 
 func FailedValidationError(err error) bool {

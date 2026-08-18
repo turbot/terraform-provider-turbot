@@ -133,9 +133,11 @@ func TestNotFoundErrorNilIsSafe(t *testing.T) {
 }
 
 // The new matcher must be a STRICT SUBSET of the old `(?i)not found`, so it can only ever match
-// fewer errors — guaranteeing it introduces no new false negatives for the genuine not-found
-// errors the many existing callers already rely on. Prove it over a corpus that mixes genuine
-// not-founds, unrelated errors, and adversarial near-misses.
+// fewer errors. That proves it introduces no new false POSITIVES (it never newly classifies an
+// unrelated error as not-found). It does NOT prove the absence of new false negatives — matching
+// fewer strings is exactly what could miss a genuine not-found shape; that half rests on the
+// captured `genuine` corpus, not on this property. Prove the subset relation over a corpus that
+// mixes genuine not-founds, unrelated errors, and adversarial near-misses.
 func TestNotFoundErrorIsStrictSubsetOfOldMatcher(t *testing.T) {
 	old := regexp.MustCompile(`(?i)not found`) // the pre-fix behaviour
 	corpus := []string{
