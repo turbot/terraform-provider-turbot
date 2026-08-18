@@ -11,11 +11,11 @@ func (client *Client) ReadGoogleDirectory(id string) (*GoogleDirectory, error) {
 		not from get() resolver.
 		That's why we used separate query and not readResourceQuery()
 	*/
-	query := readGoogleDirectoryQuery(id)
+	query := readGoogleDirectoryQuery()
 	responseData := &ReadGoogleDirectoryResponse{}
 
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	if err := client.doRequest(query, map[string]interface{}{"id": id}, responseData); err != nil {
 		return nil, client.handleReadError(err, id, "google")
 	}
 	return &responseData.Directory, nil

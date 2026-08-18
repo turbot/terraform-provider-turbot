@@ -17,11 +17,11 @@ func (client *Client) CreateSmartFolder(input map[string]interface{}) (*SmartFol
 }
 
 func (client *Client) ReadSmartFolder(id string) (*SmartFolder, error) {
-	query := readSmartFolderQuery(id)
+	query := readSmartFolderQuery()
 	responseData := &SmartFolderResponse{}
 
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	if err := client.doRequest(query, map[string]interface{}{"id": id}, responseData); err != nil {
 		return nil, client.handleReadError(err, id, "smart folder")
 	}
 	return &responseData.SmartFolder, nil
@@ -41,11 +41,11 @@ func (client *Client) UpdateSmartFolder(input map[string]interface{}) (*SmartFol
 }
 
 func (client *Client) DeleteSmartFolder(id string) error {
-	query := deleteSmartFolderMutation(id)
+	query := deleteSmartFolderMutation()
 	var responseData interface{}
 
 	// execute api call
-	if err := client.doRequest(query, nil, &responseData); err != nil {
+	if err := client.doRequest(query, map[string]interface{}{"id": id}, &responseData); err != nil {
 		return fmt.Errorf("error deleting resource: %s", err.Error())
 	}
 	return nil

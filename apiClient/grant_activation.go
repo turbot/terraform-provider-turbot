@@ -20,10 +20,10 @@ func (client *Client) CreateGrantActivation(input map[string]interface{}) (*Turb
 }
 
 func (client *Client) ReadGrantActivation(id string) (*ActiveGrant, error) {
-	query := readActiveGrantQuery(id)
+	query := readActiveGrantQuery()
 	responseData := &ReadActiveGrantResponse{}
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	if err := client.doRequest(query, map[string]interface{}{"id": id}, responseData); err != nil {
 		return nil, client.handleReadError(err, id, "grant activation")
 	}
 	return &responseData.ActiveGrant, nil

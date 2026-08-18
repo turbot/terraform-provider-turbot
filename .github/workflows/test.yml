@@ -46,3 +46,23 @@ jobs:
 
       - name: Test
         run: make test
+
+  # The race detector has never run in CI. Since #247 the provider carries a package-level keyed
+  # mutex, a sync.Map and per-target write serialisation, so a data race there would be a real
+  # user-facing bug that `make test` (no -race) cannot catch. -race roughly doubles runtime, so it
+  # runs once on ubuntu rather than across the full platform matrix - a race is not platform-specific.
+  race:
+    env:
+      GOFLAGS: "-mod=vendor"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@bfdd3570ce990073878bf10f6b2d79082de49492 # v2
+        with:
+          go-version: "1.24"
+
+      - name: Checkout code
+        uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
+
+      - name: Race
+        run: make race

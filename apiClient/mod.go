@@ -21,11 +21,11 @@ func (client *Client) InstallMod(input map[string]interface{}) (*InstallModData,
 }
 
 func (client *Client) ReadMod(id string) (*Mod, error) {
-	query := readModQuery(id)
+	query := readModQuery()
 	responseData := &ReadModResponse{}
 
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	if err := client.doRequest(query, map[string]interface{}{"id": id}, responseData); err != nil {
 		return nil, client.handleReadError(err, id, "mod")
 	}
 
@@ -71,11 +71,12 @@ func (client *Client) UninstallMod(modId string) error {
 }
 
 func (client *Client) GetModVersions(org, mod string) ([]ModRegistryVersion, error) {
-	query := modVersionsQuery(org, mod)
+	query := modVersionsQuery()
 	responseData := &ModVersionResponse{}
+	variables := map[string]interface{}{"orgName": org, "modName": mod}
 
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error fetching mod versions mod: %s", err.Error())
 	}
 

@@ -20,6 +20,13 @@ test: fmtcheck
 	echo $(TEST) | \
 		xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4
 
+# Unit tests under the race detector. The provider carries concurrency of its own since #247
+# (a package-level keyed mutex, a sync.Map and per-target write serialisation), so a data race
+# there would be a real user-facing bug. `make test` does not pass -race, so it cannot catch one.
+# -race roughly doubles runtime, hence a separate target rather than folding it into `test`.
+race: fmtcheck
+	go test -race -timeout=120s $(TEST)
+
 testacc: fmtcheck
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -parallel 1 -timeout 120m
 
@@ -66,5 +73,5 @@ ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))
 endif
 	@$(MAKE) -C $(GOPATH)/src/$(WEBSITE_REPO) website-provider-test PROVIDER_PATH=$(shell pwd) PROVIDER_NAME=$(PKG_NAME)
 
-.PHONY: build test testacc vet fmt fmtcheck errcheck vendor-status test-compile website website-test
+.PHONY: build test race testacc vet fmt fmtcheck errcheck vendor-status test-compile website website-test
 

@@ -95,3 +95,4 @@ The following arguments are used:
 * `secret_key` - Turbot Guardrails secret key, e.g. `b90xxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxnp`. May also be set via the `TURBOT_SECRET_KEY` environment variable.
 * `profile`    - Turbot Guardrails workspace profile, e.g. `testProfile`. May also be set via the `TURBOT_PROFILE` environment variable.
 * `credentials_file`    - Turbot Guardrails shared credentials path, e.g. `user/testUser/{{credential_file_path}}`. May also be set via the `TURBOT_SHARED_CREDENTIALS_PATH` environment variable.
+* `request_timeout`    - Maximum duration for a single Guardrails API request, as a Go duration string, e.g. `"30s"`, `"10m"`. Defaults to `15m`. Raise it if you manage resources whose operations legitimately run long (for example large harvests); an exhausted timeout fails the request rather than hanging the apply indefinitely.

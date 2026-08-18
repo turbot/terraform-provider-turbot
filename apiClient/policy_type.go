@@ -1,12 +1,17 @@
 package apiClient
 
+import "fmt"
+
 func (client *Client) FindPolicyType(policyTypeUri string) (PolicyType, error) {
 	responseData := &FindPolicyTypeResponse{}
 
-	query := findPolicyTypeQuery(policyTypeUri)
+	query := findPolicyTypeQuery()
+	variables := map[string]interface{}{
+		"filter": []string{fmt.Sprintf("policyTypeId:%s level:self", policyTypeUri)},
+	}
 
 	// execute api call
-	if err := client.doRequest(query, nil, &responseData); err != nil {
+	if err := client.doRequest(query, variables, &responseData); err != nil {
 		return PolicyType{}, client.handleReadError(err, policyTypeUri, "policy type")
 	}
 

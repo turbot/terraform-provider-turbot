@@ -37,11 +37,11 @@ func (client *Client) WatchExists(id string) (bool, error) {
 }
 
 func (client *Client) ReadWatch(id string) (*Watch, error) {
-	query := readWatchQuery(id)
+	query := readWatchQuery()
 	var responseData = &WatchResponse{}
 
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	if err := client.doRequest(query, map[string]interface{}{"id": id}, responseData); err != nil {
 		return nil, client.handleReadError(err, id, "watch")
 	}
 
@@ -63,11 +63,11 @@ func (client *Client) UpdateWatch(input map[string]interface{}) (*Watch, error) 
 
 func (client *Client) DeleteWatch(id string) error {
 	log.Printf("Deleting watch: %s", id)
-	query := deleteWatchMutation(id)
+	query := deleteWatchMutation()
 	var responseData interface{}
 
 	// execute api call
-	if err := client.doRequest(query, nil, &responseData); err != nil {
+	if err := client.doRequest(query, map[string]interface{}{"id": id}, &responseData); err != nil {
 		return fmt.Errorf("error deleting grant: %s", err.Error())
 	}
 	log.Printf("Watch deleted: %s", id)

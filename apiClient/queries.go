@@ -81,9 +81,14 @@ func createPolicySettingMutation() string {
 
 }
 
-func readPolicySettingQuery(policySettingId string) string {
-	return fmt.Sprintf(`{
-policySetting(id:"%s") {
+// The id is passed as a GraphQL variable, never interpolated into the document. Interpolating a
+// caller-supplied identifier into a string literal lets a value containing a double quote escape
+// the literal and append attacker-chosen GraphQL, executed with the provider's credentials (see
+// TestReadBuildersDoNotInterpolateIdentifier). policySetting.id is a nullable ID; a non-null
+// variable is assignable to it.
+func readPolicySettingQuery() string {
+	return `query ReadPolicySetting($id: ID!) {
+policySetting(id: $id) {
 	type {
 		uri
 	}
@@ -102,7 +107,7 @@ policySetting(id:"%s") {
 		resourceId
 	}
 }
-}`, policySettingId)
+}`
 }
 
 func updatePolicySettingMutation() string {
@@ -147,9 +152,13 @@ func deletePolicySettingMutation() string {
 }`
 }
 
-func findPolicySettingQuery(policyTypeUri, resourceAka string) string {
-	return fmt.Sprintf(`{
-  policySettings: policySettingList(filter: "policyType:%s resource:%s") {
+// The filter is passed as a GraphQL variable (built by the caller from config values), never
+// interpolated into the document - policyType and resource are both config-reachable. Building the
+// filter string in Go and passing it as data keeps a value containing a double quote from escaping
+// the query. See TestNoBuilderInterpolatesIntoQuotedArg.
+func findPolicySettingQuery() string {
+	return `query FindPolicySetting($filter: [String!]) {
+  policySettings: policySettingList(filter: $filter) {
     items {
       	value: secretValue
 		valueSource: secretValueSource
@@ -166,13 +175,17 @@ func findPolicySettingQuery(policyTypeUri, resourceAka string) string {
     }
   }
 }
-`, policyTypeUri, resourceAka)
+`
 }
 
 // policy value
-func readPolicyValueQuery(policyTypeUri string, resourceId string) string {
-	return fmt.Sprintf(`{
-	policyValue(uri:"%s", resourceId:"%s"){
+//
+// uri and resourceId are passed as GraphQL variables, never interpolated - both are config-reachable
+// (turbot_policy_value data source). uri is a nullable String, resourceId a nullable ID (confirmed by
+// introspection). See TestNoBuilderInterpolatesIntoQuotedArg.
+func readPolicyValueQuery() string {
+	return `query ReadPolicyValue($uri: String, $resourceId: ID) {
+	policyValue(uri: $uri, resourceId: $resourceId){
 		value: secretValue
 		secretValue
 		precedence
@@ -190,12 +203,15 @@ func readPolicyValueQuery(policyTypeUri string, resourceId string) string {
 		}
 	}
 }
-`, policyTypeUri, resourceId)
+`
 }
 
-func findPolicyTypeQuery(policyTypeUri string) string {
-	return fmt.Sprintf(`{
-  policyTypes: policyTypes(filter: "policyTypeId:%s level:self") {
+// The filter is passed as a GraphQL variable (built by the caller from the config-reachable
+// policyTypeUri), never interpolated. policyTypes.filter is [String!] (confirmed by introspection).
+// See TestNoBuilderInterpolatesIntoQuotedArg.
+func findPolicyTypeQuery() string {
+	return `query FindPolicyType($filter: [String!]) {
+  policyTypes: policyTypes(filter: $filter) {
     items {
 		modUri
 		turbot {
@@ -204,7 +220,7 @@ func findPolicyTypeQuery(policyTypeUri string) string {
     }
   }
 }
-`, policyTypeUri)
+`
 }
 
 // watch
@@ -223,9 +239,9 @@ func createWatchMutation() string {
 	}`)
 }
 
-func readWatchQuery(id string) string {
-	return fmt.Sprintf(`query MyQuery {
-		watch(id: %s) {
+func readWatchQuery() string {
+	return `query ReadWatch($id: ID!) {
+		watch(id: $id) {
 			description
 			filters
 			handler
@@ -235,7 +251,7 @@ func readWatchQuery(id string) string {
 				favoriteId
 			}
 		}
-	}`, id)
+	}`
 }
 
 func updateWatchMutation() string {
@@ -253,14 +269,14 @@ func updateWatchMutation() string {
 	}`)
 }
 
-func deleteWatchMutation(id string) string {
-	return fmt.Sprintf(`mutation DeleteMyWatch {
-		deleteWatch(input: {id: %s}) {
+func deleteWatchMutation() string {
+	return `mutation DeleteMyWatch($id: ID!) {
+		deleteWatch(input: {id: $id}) {
 			handler
 			filters
 		}
 	}
-	`, id)
+	`
 }
 
 // smart folder
@@ -278,16 +294,16 @@ func createSmartFolderMutation() string {
 	}`
 }
 
-func readSmartFolderQuery(id string) string {
-	return fmt.Sprintf(`{
-	smartFolder: resource(id:"%s") {
+func readSmartFolderQuery() string {
+	return `query ReadSmartFolder($id: ID!) {
+	smartFolder: resource(id: $id) {
 		title: get(path:"turbot.title")
 		description: get(path:"description")
 		filters: get(path:"filters")
 		parent:	get(path:"turbot.parentId")
 		turbot: get(path:"turbot")
 	}
-}`, id)
+}`
 }
 
 func updateSmartFolderMutation() string {
@@ -302,14 +318,14 @@ func updateSmartFolderMutation() string {
 	}`
 }
 
-func deleteSmartFolderMutation(id string) string {
-	return fmt.Sprintf(`mutation DeleteSmartFolder {
-		smartFolder: deleteSmartFolder(input: {id: %s}) {
+func deleteSmartFolderMutation() string {
+	return `mutation DeleteSmartFolder($id: ID!) {
+		smartFolder: deleteSmartFolder(input: {id: $id}) {
 			turbot {
 				id
 			}
 		}
-	}`, id)
+	}`
 }
 
 func createSmartFolderAttachmentMutation() string {
@@ -346,14 +362,14 @@ func installModMutation() string {
 }`
 }
 
-func readModQuery(modId string) string {
-	return fmt.Sprintf(`{
-	mod: resource(id:"%s") {
+func readModQuery() string {
+	return `query ReadMod($id: ID!) {
+	mod: resource(id: $id) {
 		uri: get(path: "turbot.akas.0")
 		parent: get(path: "turbot.parentId")
 		version: get(path: "version")
 	}
-}`, modId)
+}`
 }
 
 func uninstallModMutation() string {
@@ -364,15 +380,17 @@ func uninstallModMutation() string {
 }`
 }
 
-func modVersionsQuery(org, mod string) string {
-	return fmt.Sprintf(`{
-	versions: modVersionList(orgName: "%s", modName: "%s") {
+// orgName and modName are passed as GraphQL variables, never interpolated - both are reachable from
+// turbot_mod config via getLatestCompatibleVersion. See TestNoBuilderInterpolatesIntoQuotedArg.
+func modVersionsQuery() string {
+	return `query ModVersions($orgName: String, $modName: String) {
+	versions: modVersionList(orgName: $orgName, modName: $modName) {
 		items {
 			status
 			version
 		}
 	}
-}`, org, mod)
+}`
 }
 
 // resource
@@ -412,61 +430,69 @@ func deleteResourceMutation() string {
 }
 
 // support properties array of Interface
-func readResourceQuery(aka string, properties []interface{}) string {
-	return fmt.Sprintf(`{
-	resource(id:"%s") {
+//
+// The id is a GraphQL variable ($id), never interpolated. Only the property selection - built
+// internally by buildResourceProperties from a fixed list, never from caller input - is
+// interpolated. See TestReadBuildersDoNotInterpolateIdentifier.
+func readResourceQuery(properties []interface{}) string {
+	return fmt.Sprintf(`query ReadResource($id: ID!) {
+	resource(id: $id) {
 		type {
 			uri
 		}
 %s
 		turbot: get(path:"turbot")
   	}
-}`, aka, buildResourceProperties(properties))
+}`, buildResourceProperties(properties))
 }
 
-func getResourceTypeIdQuery(aka string) string {
-	return fmt.Sprintf(`{
-	resource(id:"%s") {
+func getResourceTypeIdQuery() string {
+	return `query GetResourceTypeId($id: ID!) {
+	resource(id: $id) {
 		turbot {
 			resourceTypeId
 		}
   	}
-}`, aka)
+}`
 }
 
-func readResourceListQuery(filter string, properties map[string]string) string {
+// The filter is passed as a GraphQL variable (config-reachable via turbot_shadow_resource), never
+// interpolated. resourceList.filter is [String!]. Only the property selection - built internally
+// from a caller-supplied field-name map, never from a config identifier - is interpolated into
+// get(path:"..."). See TestNoBuilderInterpolatesIntoQuotedArg.
+func readResourceListQuery(properties map[string]string) string {
 	var propertiesString bytes.Buffer
 	if properties != nil {
 		for alias, propertyPath := range properties {
 			propertiesString.WriteString(fmt.Sprintf("\t\t\t%s: get(path: \"%s\")\n", alias, propertyPath))
 		}
 	}
-	return fmt.Sprintf(`{
-	resourceList(filter:"%s") {
+	return fmt.Sprintf(`query ReadResourceList($filter: [String!]) {
+	resourceList(filter: $filter) {
 		items{
 %s
 			turbot: get(path:"turbot")
 		}
 	}
-}`, filter, propertiesString.String())
+}`, propertiesString.String())
 }
 
-func readFullResourceQuery(aka string) string {
-	return fmt.Sprintf(`{
-  resource(id:"%s") {
+func readFullResourceQuery() string {
+	return `query ReadFullResource($id: ID!) {
+  resource(id: $id) {
 	type {
 		uri
 	}
     data
     turbot: get(path:"turbot")
   }
-}`, aka)
+}`
 }
 
 // google directory read query
-func readGoogleDirectoryQuery(aka string) string {
-	return fmt.Sprintf(`{
-	directory: resource(id:"%s") {
+func readGoogleDirectoryQuery() string {
+	return `query ReadGoogleDirectory($id: ID!) {
+	directory: resource(id: $id) {
 		title:             	get(path:"title")
 		parent:            	get(path:"turbot.parentId")
 		description:       	get(path:"description")
@@ -480,18 +506,20 @@ func readGoogleDirectoryQuery(aka string) string {
 		hostedDomain:       get(path:"hostedDomain")
 		turbot: 			get(path:"turbot")
 	}
-}`, aka)
+}`
 }
 
 // grant
-func readGrantQuery(aka string) string {
-	return fmt.Sprintf(`{
-	grant: grant(id:"%s") {
+// The id is a GraphQL variable; only the metadata fragment (a fixed internal selection) is
+// interpolated. See TestReadBuildersDoNotInterpolateIdentifier.
+func readGrantQuery() string {
+	return fmt.Sprintf(`query ReadGrant($id: ID!) {
+	grant: grant(id: $id) {
 		permissionTypeId
 		permissionLevelId
 		%s
 	}
-  }`, aka, turbotGrantMetadataFragment("\t\t"))
+  }`, turbotGrantMetadataFragment("\t\t"))
 }
 
 func createGrantMutation() string {
@@ -511,12 +539,12 @@ func deleteGrantMutation() string {
 }
 
 // active grant
-func readActiveGrantQuery(aka string) string {
-	return fmt.Sprintf(`{
-	activeGrant: activeGrant(id:"%s"){
+func readActiveGrantQuery() string {
+	return fmt.Sprintf(`query ReadActiveGrant($id: ID!) {
+	activeGrant: activeGrant(id: $id){
 %s
 	}
-}`, aka, turbotActiveGrantMetadataFragment("\t\t"))
+}`, turbotActiveGrantMetadataFragment("\t\t"))
 }
 
 func activateGrantMutation() string {
@@ -736,10 +764,14 @@ func deleteLdapDirectory() string {
 
 // get turbot workspace version
 func (client *Client) GetTurbotWorkspaceVersion() (*semver.Version, error) {
-	query := readPolicyValueQuery("tmod:@turbot/turbot#/policy/types/workspaceVersion", "tmod:@turbot/turbot#/")
+	query := readPolicyValueQuery()
 	responseData := &PolicyValueResponse{}
+	variables := map[string]interface{}{
+		"uri":        "tmod:@turbot/turbot#/policy/types/workspaceVersion",
+		"resourceId": "tmod:@turbot/turbot#/",
+	}
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error reading policy value: %s", err.Error())
 	}
 	// convert interface {} to string

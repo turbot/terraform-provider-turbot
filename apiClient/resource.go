@@ -24,11 +24,11 @@ func (client *Client) CreateResource(input map[string]interface{}) (*TurbotResou
 // properties is a map of terraform property name to turbot property path - it is used to add 'get' resolvers to the query
 func (client *Client) ReadResource(resourceAka string, properties map[string]string) (*Resource, error) {
 	var propertiesArray = []interface{}{properties}
-	query := readResourceQuery(resourceAka, propertiesArray)
+	query := readResourceQuery(propertiesArray)
 	var responseData = &ReadResourceResponse{}
 
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	if err := client.doRequest(query, map[string]interface{}{"id": resourceAka}, responseData); err != nil {
 		return nil, client.handleReadError(err, resourceAka, "resource")
 	}
 
@@ -41,11 +41,11 @@ func (client *Client) ReadResource(resourceAka string, properties map[string]str
 }
 
 func (client *Client) ReadFullResource(resourceAka string) (*Resource, error) {
-	query := readFullResourceQuery(resourceAka)
+	query := readFullResourceQuery()
 	var responseData = &ReadResourceResponse{}
 
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	if err := client.doRequest(query, map[string]interface{}{"id": resourceAka}, responseData); err != nil {
 		return nil, client.handleReadError(err, resourceAka, "resource")
 	}
 
@@ -68,11 +68,11 @@ func (client *Client) ReadSerializableResource(resourceAka string) (*Serializabl
 		},
 	}
 
-	query := readResourceQuery(resourceAka, properties)
+	query := readResourceQuery(properties)
 	var responseData = &ReadSerializableResourceResponse{}
 
 	// execute api call
-	err := client.doRequest(query, nil, responseData)
+	err := client.doRequest(query, map[string]interface{}{"id": resourceAka}, responseData)
 	if err != nil {
 		return nil, client.handleReadError(err, resourceAka, "resource")
 	}
@@ -105,11 +105,12 @@ func (client *Client) ReadSerializableResource(resourceAka string) (*Serializabl
 }
 
 func (client *Client) ReadResourceList(filter string, properties map[string]string) ([]Resource, error) {
-	query := readResourceListQuery(filter, properties)
+	query := readResourceListQuery(properties)
 	var responseData = &ReadResourceListResponse{}
+	variables := map[string]interface{}{"filter": []string{filter}}
 
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error fetching resource list: %s", err.Error())
 	}
 

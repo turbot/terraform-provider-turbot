@@ -24,11 +24,11 @@ var samlDirectoryProperties = []interface{}{
 
 func (client *Client) ReadSamlDirectory(id string) (*SamlDirectory, error) {
 
-	query := readResourceQuery(id, samlDirectoryProperties)
+	query := readResourceQuery(samlDirectoryProperties)
 	responseData := &SamlDirectoryResponse{}
 
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	if err := client.doRequest(query, map[string]interface{}{"id": id}, responseData); err != nil {
 		return nil, client.handleReadError(err, id, "saml directory")
 	}
 	return &responseData.Resource, nil

@@ -1,3 +1,17 @@
+## 1.13.5 (Unreleased)
+
+ENHANCEMENTS:
+
+* `provider`: New `request_timeout` argument bounds each Guardrails API request (a Go duration string such as `"30s"` or `"10m"`, default `15m`). Previously `doRequest` used `context.Background()` with no deadline, so a hung connection hung the whole apply indefinitely — and after the per-target attachment serialisation added in #246, a hung call also held that target's lock and stalled every sibling write to the same resource. The default is deliberately generous, since Guardrails harvest and control operations can be legitimately slow; raise it for resources whose operations run long. ([#250](https://github.com/turbot/terraform-provider-turbot/issues/250))
+
+BUG FIXES:
+
+* `errors`: `NotFoundError` no longer matches the substring `not found` anywhere in an error. It matched `(?i)not found` against the whole message, so an unrelated error that merely mentioned a missing dependency (for example `"policy type not found"`, which the provider itself generates in the policy setting resource) could be read as "the resource is gone" and drop a live resource from Terraform state. It now matches only the not-found shapes observed live against a workspace — the structured `Not Found:` prefix and the provider's own `resource not found:` wrapping. This is a strictly narrower match, so it cannot introduce new false positives (it never newly classifies an unrelated error as not-found); an unrecognised shape degrades to a loud refresh error rather than a silent state drop, and is logged under `TF_LOG=DEBUG` so it is discoverable. ([#250](https://github.com/turbot/terraform-provider-turbot/issues/250))
+
+SECURITY:
+
+* Hardened GraphQL query construction: every query builder that interpolated a caller-supplied value into the query document now passes it as a GraphQL variable instead, matching what the mutations in this client already do. This covers the twelve read/delete builders that took an identifier plus the five that took a config-reachable `uri`/`resourceId`, `filter`, or `orgName`/`modName` (`readPolicyValueQuery`, `readResourceListQuery`, `modVersionsQuery`, `findPolicySettingQuery`, `findPolicyTypeQuery`), closing the class rather than a subset of it. A source scan over `queries.go` now fails the build if any future builder reintroduces the pattern. Each argument's GraphQL type was confirmed by schema introspection before conversion. ([#250](https://github.com/turbot/terraform-provider-turbot/issues/250))
+
 ## 1.13.4 (August 17, 2026)
 
 BUG FIXES:

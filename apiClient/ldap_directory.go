@@ -61,11 +61,11 @@ func (client *Client) CreateLdapDirectory(input map[string]interface{}) (*LdapDi
 
 func (client *Client) ReadLdapDirectory(id string) (*LdapDirectory, error) {
 	// create a map of the properties we want the graphql query to return
-	query := readResourceQuery(id, getLdapDirectoryReadProperties())
+	query := readResourceQuery(getLdapDirectoryReadProperties())
 	responseData := &LdapDirectoryResponse{}
 
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	if err := client.doRequest(query, map[string]interface{}{"id": id}, responseData); err != nil {
 		return nil, client.handleReadError(err, id, "ldap directory")
 	}
 	return &responseData.Resource, nil

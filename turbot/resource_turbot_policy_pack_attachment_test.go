@@ -5,7 +5,6 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/turbot/terraform-provider-turbot/apiClient"
-	"github.com/turbot/terraform-provider-turbot/errors"
 	"regexp"
 	"strconv"
 	"testing"
@@ -133,15 +132,26 @@ func testAccCheckPolicyPackAttachmentDetached(policyPack, resource string) resou
 func testAccCheckPolicyPackAttachmentDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*apiClient.Client)
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "policyPack" {
+		// rs.Type is the TERRAFORM type name (e.g. "turbot_policy_pack_attachment"), never the
+		// Guardrails type. The previous guard compared against "policyPack", which rs.Type never
+		// holds, so the loop body never ran and destruction was never actually verified.
+		if rs.Type != "turbot_policy_pack_attachment" {
 			continue
 		}
-		_, err := client.ReadSmartFolder(rs.Primary.ID)
-		if err == nil {
-			return fmt.Errorf("alert still exists")
+		// The attachment id is "<policyPackId>_<resource>". Check from the resource side, which is
+		// also what Exists does and what the caller is entitled to read.
+		policyPackId, resource := parsePolicyPackId(rs.Primary.ID)
+		attached, err := client.PolicyPackAttached(resource, policyPackId)
+		if err != nil {
+			// The target resource is destroyed alongside the attachment, taking its attachments
+			// with it - that is a successful destroy, not a failure.
+			if apiClient.IsTargetNotFound(err) {
+				continue
+			}
+			return fmt.Errorf("error checking policy pack attachment destroy: %s", err)
 		}
-		if !errors.NotFoundError(err) {
-			return fmt.Errorf("expected 'not found' error, got %s", err)
+		if attached {
+			return fmt.Errorf("policy pack %s is still attached to resource %s after destroy", policyPackId, resource)
 		}
 	}
 	return nil
