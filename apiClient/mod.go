@@ -71,11 +71,12 @@ func (client *Client) UninstallMod(modId string) error {
 }
 
 func (client *Client) GetModVersions(org, mod string) ([]ModRegistryVersion, error) {
-	query := modVersionsQuery(org, mod)
+	query := modVersionsQuery()
 	responseData := &ModVersionResponse{}
+	variables := map[string]interface{}{"orgName": org, "modName": mod}
 
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error fetching mod versions mod: %s", err.Error())
 	}
 

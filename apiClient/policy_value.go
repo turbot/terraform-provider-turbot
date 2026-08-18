@@ -1,10 +1,11 @@
 package apiClient
 
 func (client *Client) ReadPolicyValue(policyTypeUri, resourceAka string) (*PolicyValue, error) {
-	query := readPolicyValueQuery(policyTypeUri, resourceAka)
+	query := readPolicyValueQuery()
 	responseData := &PolicyValueResponse{}
+	variables := map[string]interface{}{"uri": policyTypeUri, "resourceId": resourceAka}
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, client.handleReadError(err, policyTypeUri, "policy setting")
 	}
 

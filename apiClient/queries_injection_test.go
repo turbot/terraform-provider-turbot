@@ -1,6 +1,7 @@
 package apiClient
 
 import (
+	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -81,6 +82,34 @@ func TestReadResourceQueryIsConstantRegardlessOfInput(t *testing.T) {
 	payload := `x") { turbot { id } } exfiltrated: resource(id:"12345`
 	assert.NotContains(t, first, payload)
 	assert.NotContains(t, first, "exfiltrated")
+}
+
+// interpolatedIntoQuotedArg matches a `%s` that lands inside a double-quoted GraphQL argument value
+// — the whole injection class, not just an argument literally named `id`. It catches `uri:"%s"`,
+// `filter:"policyType:%s ..."`, `orgName: "%s"`, and so on. `[^"\n]*` lets the `%s` sit anywhere
+// inside the quoted value, so filter-embedded interpolation is caught too (the hand-list guard above
+// and its \bid regex do not catch those).
+var interpolatedIntoQuotedArg = regexp.MustCompile(`[A-Za-z_]+\s*:\s*\\?"[^"\n]*%s`)
+
+// A structural, self-updating guard: instead of a hand-maintained list, scan the builder source
+// itself, so a NEW builder that interpolates a caller value into a quoted argument fails this test
+// without anyone remembering to register it. The only permitted interpolation into a quoted arg is
+// the internal field selection `get(path: "%s")`, whose alias and path come from static slices or
+// internally-built property maps — never from a config identifier (confirmed on the PR review). Any
+// such exception must be explicit here, so the default stays "no interpolation".
+func TestNoBuilderInterpolatesIntoQuotedArg(t *testing.T) {
+	src, err := os.ReadFile("queries.go")
+	assert.NoError(t, err, "must be able to read queries.go")
+	for i, line := range strings.Split(string(src), "\n") {
+		for _, m := range interpolatedIntoQuotedArg.FindAllString(line, -1) {
+			// Allowlisted exception: the internal property selection. Not config-reachable.
+			if strings.Contains(line, "get(path:") {
+				continue
+			}
+			t.Errorf("queries.go:%d interpolates a caller value into a quoted GraphQL argument (%q) — pass it as a variable instead:\n\t%s",
+				i+1, m, strings.TrimSpace(line))
+		}
+	}
 }
 
 // buildResourceProperties output is still interpolated (it is an internal field list, never caller

@@ -105,11 +105,12 @@ func (client *Client) ReadSerializableResource(resourceAka string) (*Serializabl
 }
 
 func (client *Client) ReadResourceList(filter string, properties map[string]string) ([]Resource, error) {
-	query := readResourceListQuery(filter, properties)
+	query := readResourceListQuery(properties)
 	var responseData = &ReadResourceListResponse{}
+	variables := map[string]interface{}{"filter": []string{filter}}
 
 	// execute api call
-	if err := client.doRequest(query, nil, responseData); err != nil {
+	if err := client.doRequest(query, variables, responseData); err != nil {
 		return nil, fmt.Errorf("error fetching resource list: %s", err.Error())
 	}
 
