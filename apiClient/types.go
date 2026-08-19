@@ -143,6 +143,11 @@ type FindPolicySettingResponse struct {
 type PolicySetting struct {
 	Type struct {
 		Uri string
+		// Secret and SecretLevel are only populated by the without-secrets fallback read (see
+		// ReadPolicySetting); the primary query does not request them. SecretLevel is one of
+		// SECRET, CONFIDENTIAL or NONE; Secret (true) is equivalent to CONFIDENTIAL.
+		Secret      bool
+		SecretLevel string
 	}
 	Value              interface{}
 	ValueSource        string

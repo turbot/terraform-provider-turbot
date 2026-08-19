@@ -59,6 +59,25 @@ func NotFoundError(err error) bool {
 	return false
 }
 
+// forbiddenRegex matches the structured prefix Guardrails returns for an authorization denial,
+// verified live against a workspace: "graphql: Forbidden: Insufficient permissions for resource
+// <id>". As with notFoundRegex above, the colon is the load-bearing anchor: an incidental mention
+// of the word "forbidden" in some other error must not be classified as an authorization denial.
+//
+// The trade-off direction is safe in both cases. A false negative means a Forbidden is treated as
+// a plain error — exactly the pre-fallback behavior, a loud hard failure. A false positive merely
+// triggers one extra read that requests strictly fewer fields; if that read fails the original
+// error is surfaced unchanged.
+var forbiddenRegex = regexp.MustCompile(`(?i)forbidden:`)
+
+// ForbiddenError reports whether err is a Guardrails authorization denial.
+func ForbiddenError(err error) bool {
+	if err == nil {
+		return false
+	}
+	return forbiddenRegex.MatchString(err.Error())
+}
+
 func FailedValidationError(err error) bool {
 	dataValidationError := "(?i)data validation failed"
 	expectedErr := regexp.MustCompile(dataValidationError)

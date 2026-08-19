@@ -163,3 +163,36 @@ func TestNotFoundErrorIsStrictSubsetOfOldMatcher(t *testing.T) {
 		}
 	}
 }
+
+// ForbiddenError anchors on the "Forbidden:" prefix Guardrails returns for an authorization
+// denial (observed live: "graphql: Forbidden: Insufficient permissions for resource <id>").
+// A false negative is safe (the caller hard-fails, the pre-fallback behavior); a false positive
+// costs one extra read requesting strictly fewer fields. The corpus below mixes the genuine
+// shape with near-misses that must not match.
+func TestForbiddenErrorMatchesGenuineDenial(t *testing.T) {
+	genuine := []string{
+		"graphql: Forbidden: Insufficient permissions for resource 394355648135523",
+		"error reading policy setting: graphql: Forbidden: Insufficient permissions for resource 1 ",
+		"FORBIDDEN: nope",
+	}
+	for _, s := range genuine {
+		assert.True(t, ForbiddenError(errors.New(s)), "must match genuine denial: %q", s)
+	}
+}
+
+func TestForbiddenErrorRejectsUnrelated(t *testing.T) {
+	unrelated := []string{
+		"the bucket policy forbids public access", // no colon — incidental mention
+		"Not Found: Resource not found or not accessible",
+		"Bad Request: Policy data validation failed",
+		"graphql: server returned a non-200 status code: 403",
+		"",
+	}
+	for _, s := range unrelated {
+		assert.False(t, ForbiddenError(errors.New(s)), "must not match unrelated error: %q", s)
+	}
+}
+
+func TestForbiddenErrorNilIsSafe(t *testing.T) {
+	assert.False(t, ForbiddenError(nil))
+}

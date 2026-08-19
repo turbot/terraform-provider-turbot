@@ -29,7 +29,8 @@ var idArgLiteral = regexp.MustCompile(`(?i)\bid\s*:\s*"`)
 func allIdentifierBuilders() map[string]string {
 	props := []interface{}{map[string]string{"title": "title", "akas": "turbot.akas"}}
 	return map[string]string{
-		"readPolicySettingQuery":    readPolicySettingQuery(),
+		"readPolicySettingQuery":               readPolicySettingQuery(),
+		"readPolicySettingWithoutSecretsQuery": readPolicySettingWithoutSecretsQuery(),
 		"readWatchQuery":            readWatchQuery(),
 		"deleteWatchMutation":       deleteWatchMutation(),
 		"readSmartFolderQuery":      readSmartFolderQuery(),

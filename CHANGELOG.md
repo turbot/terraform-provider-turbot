@@ -1,3 +1,9 @@
+## 1.14.1 (Unreleased)
+
+BUG FIXES:
+
+* `resource/turbot_policy_setting`: Reading a policy setting no longer requires Turbot/Admin on the setting's target resource when the policy type holds no secret. The read query requested `secretValue`/`secretValueSource` unconditionally, and Guardrails guards those two fields with their own check — Turbot/Admin at the resource the setting is made on (Turbot/Owner at the Turbot root for SECRET-level types) — regardless of the policy type, so any identity below Admin failed every refresh with `Forbidden: Insufficient permissions for resource <id>`. On that Forbidden the provider now retries without the secret fields, which for non-secret policy types return identical data at Turbot/Metadata level (verified live). Identities that could read before take exactly the old single-query path. Settings whose policy type genuinely is secret are refused with an actionable error naming the missing grant, rather than silently storing a value the identity cannot decrypt — and writes are unaffected: Guardrails enforces Turbot/Admin on create/update/delete server-side as before. The same fallback applies to the duplicate-detection read in create, which previously surfaced a bare Forbidden instead of the correct "already exists, import it" error. ([#254](https://github.com/turbot/terraform-provider-turbot/issues/254))
+
 ## 1.14.0 (August 18, 2026)
 
 ENHANCEMENTS:
