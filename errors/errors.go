@@ -59,6 +59,36 @@ func NotFoundError(err error) bool {
 	return false
 }
 
+// forbiddenRegex matches the structured prefix Guardrails returns for an authorization denial,
+// verified live against a workspace: "graphql: Forbidden: Insufficient permissions for resource
+// <id>". As with notFoundRegex above, the colon is the load-bearing anchor: an incidental mention
+// of the word "forbidden" in some other error must not be classified as an authorization denial.
+//
+// The trade-off direction is safe in both cases. A false negative means a Forbidden is treated as
+// a plain error — exactly the pre-fallback behavior, a loud hard failure. A false positive merely
+// triggers one extra read that requests strictly fewer fields; if that read fails the original
+// error is surfaced unchanged.
+var forbiddenRegex = regexp.MustCompile(`(?i)forbidden:`)
+
+// ForbiddenError reports whether err is a Guardrails authorization denial.
+func ForbiddenError(err error) bool {
+	if err == nil {
+		return false
+	}
+	if forbiddenRegex.MatchString(err.Error()) {
+		return true
+	}
+	// The error mentions "forbidden" but not in a shape we recognise as a denial — a bare
+	// "Forbidden" with no colon, or an HTTP-shaped "403 Forbidden" from a proxy in front of the
+	// workspace, would land here. We treat it as a real error (the safe default: the caller
+	// hard-fails exactly as it did before the fallback existed), but log it so a shape we have
+	// not seen is discoverable under TF_LOG=DEBUG rather than silently skipping the fallback.
+	if strings.Contains(strings.ToLower(err.Error()), "forbidden") {
+		log.Printf("[DEBUG] error mentions 'forbidden' but does not match a known denial shape; not attempting the without-secrets fallback: %s", err)
+	}
+	return false
+}
+
 func FailedValidationError(err error) bool {
 	dataValidationError := "(?i)data validation failed"
 	expectedErr := regexp.MustCompile(dataValidationError)
