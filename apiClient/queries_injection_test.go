@@ -31,17 +31,17 @@ func allIdentifierBuilders() map[string]string {
 	return map[string]string{
 		"readPolicySettingQuery":               readPolicySettingQuery(),
 		"readPolicySettingWithoutSecretsQuery": readPolicySettingWithoutSecretsQuery(),
-		"readWatchQuery":            readWatchQuery(),
-		"deleteWatchMutation":       deleteWatchMutation(),
-		"readSmartFolderQuery":      readSmartFolderQuery(),
-		"deleteSmartFolderMutation": deleteSmartFolderMutation(),
-		"readModQuery":              readModQuery(),
-		"readResourceQuery":         readResourceQuery(props),
-		"getResourceTypeIdQuery":    getResourceTypeIdQuery(),
-		"readFullResourceQuery":     readFullResourceQuery(),
-		"readGoogleDirectoryQuery":  readGoogleDirectoryQuery(),
-		"readGrantQuery":            readGrantQuery(),
-		"readActiveGrantQuery":      readActiveGrantQuery(),
+		"readWatchQuery":                       readWatchQuery(),
+		"deleteWatchMutation":                  deleteWatchMutation(),
+		"readSmartFolderQuery":                 readSmartFolderQuery(),
+		"deleteSmartFolderMutation":            deleteSmartFolderMutation(),
+		"readModQuery":                         readModQuery(),
+		"readResourceQuery":                    readResourceQuery(props),
+		"getResourceTypeIdQuery":               getResourceTypeIdQuery(),
+		"readFullResourceQuery":                readFullResourceQuery(),
+		"readGoogleDirectoryQuery":             readGoogleDirectoryQuery(),
+		"readGrantQuery":                       readGrantQuery(),
+		"readActiveGrantQuery":                 readActiveGrantQuery(),
 	}
 }
 
