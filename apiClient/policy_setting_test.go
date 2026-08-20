@@ -114,23 +114,51 @@ func TestReadPolicySettingFallsBackWithoutSecretsOnForbidden(t *testing.T) {
 	assert.NotContains(t, stub.requests[1], "secretValue")
 }
 
-// A secret setting must not be silently read through the fallback: the plain fields do not carry
-// the real value, and storing them would corrupt state. The error must say what grant is missing.
-func TestReadPolicySettingRefusesSecretTypeOnFallback(t *testing.T) {
+// A secret setting must not be silently read through the fallback: the plain fields carry the
+// secret REFERENCE {"secret": {"id": "..."}} rather than the value, and storing that would leave a
+// permanent diff Terraform would try to "correct". The error must say what grant is missing.
+//
+// The `secret reference, no type metadata` case is the one that matters most, and is why the guard
+// cannot rest on the policy type fields: captured live, PolicyType.secretLevel is null on every
+// policy type on the workspace (5000 of 5000) and PolicyType.secret is null for all but a handful,
+// so a guard keyed on the metadata alone would let a secret through whenever that metadata is
+// absent. The returned value shape is the reliable signal; the metadata is a second one.
+func TestReadPolicySettingRefusesSecretOnFallback(t *testing.T) {
+	const secretRef = `{"secret":{"id":"387519256421702"}}`
 	for _, tc := range []struct {
 		name string
-		typ  string
+		body string
 	}{
-		{"secretLevel CONFIDENTIAL", `{"uri":"tmod:@turbot/aws#/policy/types/secretKey","secret":false,"secretLevel":"CONFIDENTIAL"}`},
-		{"secretLevel SECRET", `{"uri":"tmod:@turbot/aws#/policy/types/secretKey","secret":false,"secretLevel":"SECRET"}`},
-		{"legacy secret flag", `{"uri":"tmod:@turbot/aws#/policy/types/secretKey","secret":true,"secretLevel":""}`},
+		{
+			"secret reference in value, no type metadata (both fields null)",
+			`{"type":{"uri":"tmod:@turbot/azure#/policy/types/clientKey","secret":null,"secretLevel":null},
+			  "value":` + secretRef + `,"valueSource":` + secretRef + `,
+			  "turbot":{"id":"1","resourceId":"394355648135523"}}`,
+		},
+		{
+			"secret reference in valueSource only",
+			`{"type":{"uri":"tmod:@turbot/azure#/policy/types/clientKey"},
+			  "value":null,"valueSource":` + secretRef + `,
+			  "turbot":{"id":"1","resourceId":"394355648135523"}}`,
+		},
+		{
+			"type marked secret, value withheld entirely",
+			`{"type":{"uri":"tmod:@turbot/azure#/policy/types/clientKey","secret":true,"secretLevel":null},
+			  "turbot":{"id":"1","resourceId":"394355648135523"}}`,
+		},
+		{
+			"secretLevel CONFIDENTIAL",
+			`{"type":{"uri":"tmod:@turbot/aws#/policy/types/secretKey","secret":false,"secretLevel":"CONFIDENTIAL"},
+			  "turbot":{"id":"1","resourceId":"394355648135523"}}`,
+		},
+		{
+			"secretLevel SECRET",
+			`{"type":{"uri":"tmod:@turbot/aws#/policy/types/secretKey","secret":false,"secretLevel":"SECRET"},
+			  "turbot":{"id":"1","resourceId":"394355648135523"}}`,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			stub := &graphqlStub{
-				forbidden: true,
-				fallbackBody: `{"data":{"policySetting":{"type":` + tc.typ + `,
-					"turbot":{"id":"1","resourceId":"394355648135523"}}}}`,
-			}
+			stub := &graphqlStub{forbidden: true, fallbackBody: `{"data":{"policySetting":` + tc.body + `}}`}
 			client := stubClient(t, stub)
 
 			_, err := client.ReadPolicySetting("1")
@@ -141,6 +169,55 @@ func TestReadPolicySettingRefusesSecretTypeOnFallback(t *testing.T) {
 			assert.Contains(t, err.Error(), "394355648135523")
 		})
 	}
+}
+
+// The happy path must not be caught by the guard. A non-secret policy type reports null for both
+// secret markers (the norm, captured live), so "no metadata" must NOT by itself mean "secret" —
+// only an actual secret reference or an explicit marker does.
+func TestReadPolicySettingAllowsNonSecretWithNullMetadata(t *testing.T) {
+	stub := &graphqlStub{
+		forbidden: true,
+		fallbackBody: `{"data":{"policySetting":{
+			"type":{"uri":"tmod:@turbot/aws-s3#/policy/types/s3AccountPublicAccessBlockSettings","secret":null,"secretLevel":null},
+			"value":["Block Public ACLs"],"valueSource":"- \"Block Public ACLs\"\n","precedence":"REQUIRED",
+			"turbot":{"id":"394355651429758","resourceId":"394355648135523"}}}}`,
+	}
+	client := stubClient(t, stub)
+
+	setting, err := client.ReadPolicySetting("394355651429758")
+
+	assert.NoError(t, err, "a non-secret type reports null metadata and must still be readable")
+	assert.Equal(t, "394355651429758", setting.Turbot.Id)
+	assert.Equal(t, `- "Block Public ACLs"`+"\n", setting.ValueSource)
+}
+
+// A valueSource shape that is neither a string nor the known secret reference is refused rather
+// than dropped from state — failing closed on anything not understood.
+func TestReadPolicySettingRefusesUnexpectedValueSourceShape(t *testing.T) {
+	stub := &graphqlStub{
+		forbidden: true,
+		fallbackBody: `{"data":{"policySetting":{
+			"type":{"uri":"tmod:@turbot/aws-s3#/policy/types/x"},
+			"value":"ok","valueSource":{"something":"unexpected","and":"another"},
+			"turbot":{"id":"1","resourceId":"394355648135523"}}}}`,
+	}
+	client := stubClient(t, stub)
+
+	_, err := client.ReadPolicySetting("1")
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "unexpected valueSource shape")
+}
+
+func TestIsSecretReference(t *testing.T) {
+	assert.True(t, isSecretReference(map[string]interface{}{"secret": map[string]interface{}{"id": "1"}}),
+		"the live shape must be recognised")
+	// a legitimate policy value that merely contains a secret key alongside others is data, not a
+	// reference - the live envelope has exactly one key
+	assert.False(t, isSecretReference(map[string]interface{}{"secret": "x", "other": "y"}))
+	assert.False(t, isSecretReference("a plain string"))
+	assert.False(t, isSecretReference([]interface{}{"Block Public ACLs"}))
+	assert.False(t, isSecretReference(nil))
 }
 
 // If the fallback fails too, the denial is on the setting itself (identity below Metadata, or a
@@ -205,7 +282,7 @@ func TestFindPolicySettingFallsBackOnForbidden(t *testing.T) {
 	stub := &graphqlStub{
 		forbidden: true,
 		fallbackBody: `{"data":{"policySettings":{"items":[{
-			"value":"Check: Enabled","precedence":"REQUIRED","default":true,
+			"value":"Check: Enabled","valueSource":"Check: Enabled","precedence":"REQUIRED","default":true,
 			"turbot":{"id":"394355651429758"}}]}}}`,
 	}
 	client := stubClient(t, stub)
@@ -216,4 +293,26 @@ func TestFindPolicySettingFallsBackOnForbidden(t *testing.T) {
 	assert.Equal(t, "394355651429758", setting.Turbot.Id)
 	assert.Len(t, stub.requests, 2)
 	assert.NotContains(t, stub.requests[1], "secretValue")
+}
+
+// Unlike the read, the find path must NOT refuse a secret type — it only answers "does a setting
+// already exist". For a secret type the plain fields carry the secret reference, an object: it
+// must decode (PolicySetting.ValueSource is a string, so the tolerant type is required) and Value
+// must come back non-nil, because the caller's existence check is `Value != nil`. If this returned
+// a nil Value, Create would conclude no setting exists and proceed against one that does.
+func TestFindPolicySettingDetectsExistingSecretSetting(t *testing.T) {
+	const secretRef = `{"secret":{"id":"387519256421702"}}`
+	stub := &graphqlStub{
+		forbidden: true,
+		fallbackBody: `{"data":{"policySettings":{"items":[{
+			"value":` + secretRef + `,"valueSource":` + secretRef + `,"precedence":"REQUIRED","default":true,
+			"turbot":{"id":"387519256437064"}}]}}}`,
+	}
+	client := stubClient(t, stub)
+
+	setting, err := client.FindPolicySetting("tmod:@turbot/azure#/policy/types/clientKey", "387519252604383")
+
+	assert.NoError(t, err, "an object-shaped value must decode, not fail with a JSON error")
+	assert.NotNil(t, setting.Value, "an existing secret setting must read as existing")
+	assert.Equal(t, "387519256437064", setting.Turbot.Id)
 }

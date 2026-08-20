@@ -75,7 +75,18 @@ func ForbiddenError(err error) bool {
 	if err == nil {
 		return false
 	}
-	return forbiddenRegex.MatchString(err.Error())
+	if forbiddenRegex.MatchString(err.Error()) {
+		return true
+	}
+	// The error mentions "forbidden" but not in a shape we recognise as a denial — a bare
+	// "Forbidden" with no colon, or an HTTP-shaped "403 Forbidden" from a proxy in front of the
+	// workspace, would land here. We treat it as a real error (the safe default: the caller
+	// hard-fails exactly as it did before the fallback existed), but log it so a shape we have
+	// not seen is discoverable under TF_LOG=DEBUG rather than silently skipping the fallback.
+	if strings.Contains(strings.ToLower(err.Error()), "forbidden") {
+		log.Printf("[DEBUG] error mentions 'forbidden' but does not match a known denial shape; not attempting the without-secrets fallback: %s", err)
+	}
+	return false
 }
 
 func FailedValidationError(err error) bool {

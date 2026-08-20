@@ -221,8 +221,15 @@ func findPolicySettingQuery() string {
 // findPolicySettingWithoutSecretsQuery is the fallback shape for FindPolicySetting — the same
 // document minus the secretValue/secretValueSource aliases, for the same reason as
 // readPolicySettingWithoutSecretsQuery: requesting those fields on any matched item demands
-// Turbot/Admin at the item's target resource, even for non-secret policy types. The find only
-// feeds duplicate detection in Create, so the plain fields are sufficient whatever the type.
+// Turbot/Admin at the item's target resource, even for non-secret policy types.
+//
+// Unlike the read fallback this document does not select the policy type's secret markers,
+// because this path does not refuse a secret type. Its only caller checks whether a setting
+// already EXISTS, and for a secret type the plain value field carries the secret reference
+// {"secret": {"id": "..."}} — not the value, but non-nil, which is all an existence check needs.
+// No part of this result reaches Terraform state. (The read fallback stores its result, so there
+// the reference has to be refused rather than written.)
+//
 // The filter is passed as a GraphQL variable — see findPolicySettingQuery.
 func findPolicySettingWithoutSecretsQuery() string {
 	return `query FindPolicySettingWithoutSecrets($filter: [String!]) {
