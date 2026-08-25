@@ -110,6 +110,46 @@ policySetting(id: $id) {
 }`
 }
 
+// readPolicySettingWithoutSecretsQuery is the fallback shape for ReadPolicySetting.
+//
+// The primary query aliases `value: secretValue` and `valueSource: secretValueSource`, and
+// Guardrails guards those two FIELDS with their own permission check — Turbot/Admin at the
+// resource the setting is made on (Turbot/Owner at the Turbot root for SECRET-level policy
+// types) — regardless of whether the policy type actually holds a secret. An identity that is
+// allowed to read the setting itself (Turbot/Metadata or above) is therefore Forbidden the
+// moment the query mentions secretValue. For non-secret policy types the plain `value` and
+// `valueSource` fields return identical data with no Admin requirement (verified live against
+// a workspace), so on a Forbidden the caller retries with this document. `type { secret
+// secretLevel }` lets the caller refuse — with an actionable error — a setting whose policy
+// type genuinely is secret, rather than silently storing a value the identity cannot decrypt.
+//
+// The id is passed as a GraphQL variable, never interpolated — see readPolicySettingQuery.
+func readPolicySettingWithoutSecretsQuery() string {
+	return `query ReadPolicySettingWithoutSecrets($id: ID!) {
+policySetting(id: $id) {
+	type {
+		uri
+		secret
+		secretLevel
+	}
+	value
+	valueSource
+	template
+	default
+	precedence
+	templateInput
+	input
+	note
+	validFromTimestamp
+	validToTimestamp
+	turbot {
+		id
+		resourceId
+	}
+}
+}`
+}
+
 func updatePolicySettingMutation() string {
 	return `mutation UpdatePolicySetting($input: UpdatePolicySettingInput!) {
 	policySetting: updatePolicySetting(input: $input ) {
@@ -162,6 +202,41 @@ func findPolicySettingQuery() string {
     items {
       	value: secretValue
 		valueSource: secretValueSource
+		template
+		precedence
+		templateInput
+		input
+		note
+		validFromTimestamp
+		validToTimestamp
+		turbot {
+			id
+		}
+    }
+  }
+}
+`
+}
+
+// findPolicySettingWithoutSecretsQuery is the fallback shape for FindPolicySetting — the same
+// document minus the secretValue/secretValueSource aliases, for the same reason as
+// readPolicySettingWithoutSecretsQuery: requesting those fields on any matched item demands
+// Turbot/Admin at the item's target resource, even for non-secret policy types.
+//
+// Unlike the read fallback this document does not select the policy type's secret markers,
+// because this path does not refuse a secret type. Its only caller checks whether a setting
+// already EXISTS, and for a secret type the plain value field carries the secret reference
+// {"secret": {"id": "..."}} — not the value, but non-nil, which is all an existence check needs.
+// No part of this result reaches Terraform state. (The read fallback stores its result, so there
+// the reference has to be refused rather than written.)
+//
+// The filter is passed as a GraphQL variable — see findPolicySettingQuery.
+func findPolicySettingWithoutSecretsQuery() string {
+	return `query FindPolicySettingWithoutSecrets($filter: [String!]) {
+  policySettings: policySettingList(filter: $filter) {
+    items {
+      	value
+		valueSource
 		template
 		precedence
 		templateInput
