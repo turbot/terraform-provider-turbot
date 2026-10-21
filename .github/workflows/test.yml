@@ -36,7 +36,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@bfdd3570ce990073878bf10f6b2d79082de49492 # v2
         with:
-          go-version: "1.24"
+          go-version: "1.26.10"
 
       - name: Checkout code
         uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
@@ -59,7 +59,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@bfdd3570ce990073878bf10f6b2d79082de49492 # v2
         with:
-          go-version: "1.24"
+          go-version: "1.26.10"
 
       - name: Checkout code
         uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
