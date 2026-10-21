@@ -1,3 +1,13 @@
+## 1.14.2 (October 21, 2026)
+
+BREAKING CHANGES:
+
+* The provider now requires macOS 12 Monterey or later on macOS. Go 1.25 dropped support for macOS 10.15 Catalina and macOS 11 Big Sur.
+
+SECURITY:
+
+* Rebuilt with Go 1.26.10, which refuses TLS certificate chains through the eight compromised eMudhra intermediate CAs ([golang/go#82345](https://go.dev/issue/82345)). 1.14.1 was built with Go 1.22.12, so wherever the operating system's CA store still trusts the eMudhra root, anyone on the network path holding one of the leaked keys could impersonate the Guardrails API and capture the provider's access keys.
+
 ## 1.14.1 (August 25, 2026)
 
 BUG FIXES:
