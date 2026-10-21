@@ -2,7 +2,7 @@
 
 BREAKING CHANGES:
 
-* The provider now requires macOS 12 Monterey or later on macOS. Go 1.25 dropped support for macOS 10.15 Catalina and macOS 11 Big Sur.
+* The provider now requires macOS 12 Monterey or later on macOS. Go 1.23 dropped support for macOS 10.15 Catalina and Go 1.25 dropped macOS 11 Big Sur.
 
 SECURITY:
 
