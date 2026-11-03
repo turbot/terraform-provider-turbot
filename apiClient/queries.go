@@ -957,3 +957,93 @@ func deleteTypedFilterMutation() string {
 	}
 }`
 }
+
+func createGuardrailMutation() string {
+	return `mutation CreateGuardrail($input: CreateGuardrailInput!) {
+	guardrail: createGuardrail(input: $input) {
+		turbot {
+			id
+		}
+	}
+}`
+}
+
+const guardrailTypeFields = `uri
+		mode {
+			uri
+		}
+		action {
+			uri
+		}
+		policyTypes {
+			items {
+				uri
+				schema
+				defaultTemplate
+				defaultTemplateInput
+			}
+		}`
+
+// guardrail(id:) answers the id of any resource, returning a non-guardrail with a null type, so
+// the type is selected here and its absence read as not found.
+func readGuardrailQuery() string {
+	return `query ReadGuardrail($id: ID!) {
+	guardrail(id: $id, options: {notFound: RETURN_NULL}) {
+		title
+		description
+		gracePeriod
+		accountFilter
+		accountFilterId
+		resourceFilter
+		resourceFilterId
+		type {
+		` + guardrailTypeFields + `
+		}
+		settings {
+			items {
+				type {
+					uri
+				}
+				value
+				valueSource
+				isCalculated
+				template
+				templateInput
+			}
+		}
+		turbot {
+			id
+			akas
+			tags
+		}
+	}
+}`
+}
+
+func readGuardrailTypeQuery() string {
+	return `query ReadGuardrailType($id: ID!) {
+	guardrailType(id: $id, options: {notFound: RETURN_NULL}) {
+		` + guardrailTypeFields + `
+	}
+}`
+}
+
+func updateGuardrailMutation() string {
+	return `mutation UpdateGuardrail($input: UpdateGuardrailInput!) {
+	guardrail: updateGuardrail(input: $input) {
+		turbot {
+			id
+		}
+	}
+}`
+}
+
+func deleteGuardrailMutation() string {
+	return `mutation DeleteGuardrail($id: ID!) {
+	guardrail: deleteGuardrail(input: {id: $id}) {
+		turbot {
+			id
+		}
+	}
+}`
+}

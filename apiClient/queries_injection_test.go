@@ -44,6 +44,9 @@ func allIdentifierBuilders() map[string]string {
 		"readActiveGrantQuery":                 readActiveGrantQuery(),
 		"readTypedFilterQuery":                 readTypedFilterQuery(),
 		"deleteTypedFilterMutation":            deleteTypedFilterMutation(),
+		"readGuardrailQuery":                   readGuardrailQuery(),
+		"readGuardrailTypeQuery":               readGuardrailTypeQuery(),
+		"deleteGuardrailMutation":              deleteGuardrailMutation(),
 	}
 }
 
