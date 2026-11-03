@@ -39,10 +39,12 @@ func TestAccTypedFilter(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccTypedFilterConfig("tf-acc-account-filter-renamed", "title:tf-acc-no-such-account-2", "$.Name:tf-acc-no-such-bucket-2", "tf-acc-resource-filter-renamed"),
+				Config: testAccTypedFilterConfigWithTags("tf-acc-account-filter-renamed", "title:tf-acc-no-such-account-2", "$.Name:tf-acc-no-such-bucket-2", "tf-acc-resource-filter-renamed", ""),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTypedFilterExists(accountName, "Account"),
 					testAccCheckTypedFilterExists(resourceName, "Resource"),
+					resource.TestCheckNoResourceAttr(accountName, "tags.drop"),
+					resource.TestCheckResourceAttr(accountName, "tags.keep", "a"),
 					resource.TestCheckResourceAttr(accountName, "title", "tf-acc-account-filter-renamed"),
 					resource.TestCheckResourceAttr(accountName, "filter", "title:tf-acc-no-such-account-2"),
 					resource.TestCheckResourceAttr(resourceName, "title", "tf-acc-resource-filter-renamed"),
@@ -62,7 +64,7 @@ func TestAccTypedFilter(t *testing.T) {
 			},
 			{
 				PreConfig: func() { testAccDeleteTypedFilter(t, originalAccountId) },
-				Config:    testAccTypedFilterConfig("tf-acc-account-filter-renamed", "title:tf-acc-no-such-account-2", "$.Name:tf-acc-no-such-bucket-2", "tf-acc-resource-filter-renamed"),
+				Config:    testAccTypedFilterConfigWithTags("tf-acc-account-filter-renamed", "title:tf-acc-no-such-account-2", "$.Name:tf-acc-no-such-bucket-2", "tf-acc-resource-filter-renamed", ""),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTypedFilterExists(accountName, "Account"),
 					testAccCheckDifferentId(accountName, &originalAccountId),
@@ -73,6 +75,10 @@ func TestAccTypedFilter(t *testing.T) {
 }
 
 func testAccTypedFilterConfig(accountTitle, accountFilter, resourceFilter, resourceTitle string) string {
+	return testAccTypedFilterConfigWithTags(accountTitle, accountFilter, resourceFilter, resourceTitle, "\t\tdrop = \"b\"\n")
+}
+
+func testAccTypedFilterConfigWithTags(accountTitle, accountFilter, resourceFilter, resourceTitle, extraTags string) string {
 	return fmt.Sprintf(`
 resource "turbot_typed_filter" "account" {
 	title       = "%s"
@@ -81,8 +87,7 @@ resource "turbot_typed_filter" "account" {
 	description = "acceptance test account filter"
 	tags = {
 		keep = "a"
-		drop = "b"
-	}
+%s	}
 }
 
 resource "turbot_typed_filter" "resource" {
@@ -90,7 +95,7 @@ resource "turbot_typed_filter" "resource" {
 	type   = "Resource"
 	filter = "%s"
 }
-`, accountTitle, accountFilter, resourceTitle, resourceFilter)
+`, accountTitle, accountFilter, extraTags, resourceTitle, resourceFilter)
 }
 
 func testAccCheckTypedFilterExists(name, wantType string) resource.TestCheckFunc {

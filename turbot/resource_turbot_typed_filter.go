@@ -8,7 +8,7 @@ import (
 )
 
 var typedFilterCreateProperties = []interface{}{"title", "description", "filter", "type", "tags", "akas"}
-var typedFilterUpdateProperties = []interface{}{"title", "filter", "tags", "akas"}
+var typedFilterUpdateProperties = []interface{}{"title", "filter", "akas"}
 
 func resourceTurbotTypedFilter() *schema.Resource {
 	return &schema.Resource{
@@ -72,6 +72,9 @@ func resourceTurbotTypedFilterUpdate(d *schema.ResourceData, meta interface{}) e
 	input := mapFromResourceData(d, typedFilterUpdateProperties)
 	input["id"] = d.Id()
 	input["description"] = d.Get("description")
+	if tags := typedFilterTagsUpdate(d); len(tags) > 0 {
+		input["tags"] = tags
+	}
 
 	if err := client.UpdateTypedFilter(input); err != nil {
 		return err
@@ -125,4 +128,20 @@ func validateTypedFilterType(v interface{}, k string) ([]string, []error) {
 		return nil, []error{fmt.Errorf("%q must be either \"Account\" or \"Resource\", got %q", k, s)}
 	}
 	return nil, nil
+}
+
+// updateTypedFilter merges tags, and a key sent as null is removed, so a tag dropped from the
+// configuration has to be sent explicitly as null.
+func typedFilterTagsUpdate(d *schema.ResourceData) map[string]interface{} {
+	oldTags, newTags := d.GetChange("tags")
+	tags := map[string]interface{}{}
+	for key, value := range newTags.(map[string]interface{}) {
+		tags[key] = value
+	}
+	for key := range oldTags.(map[string]interface{}) {
+		if _, kept := tags[key]; !kept {
+			tags[key] = nil
+		}
+	}
+	return tags
 }
