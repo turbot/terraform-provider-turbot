@@ -22,7 +22,7 @@ resource "turbot_typed_filter" "production_accounts" {
   title       = "Production accounts"
   type        = "Account"
   filter      = "title:production"
-  description = "Accounts tagged as production"
+  description = "Accounts with production in their title"
 }
 
 resource "turbot_typed_filter" "example_bucket" {

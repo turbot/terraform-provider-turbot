@@ -83,7 +83,7 @@ The following arguments are supported:
 - `title` - (Required) Short display name for the guardrail.
 - `mode` - (Required) The enforcement mode, one of the type's modes: `Skip`, `Draft`, `Check`, `Enforce if new` or `Enforce all`. A static value; the API rejects a calculated mode.
 - `description` - (Optional) Brief description of the guardrail.
-- `akas` - (Optional) Unique identifiers of the guardrail.
+- `akas` - (Optional) Unique identifiers of the guardrail. Removing all `akas` from the configuration does not remove them from the guardrail.
 - `tags` - (Optional) Tags for the guardrail.
 - `grace_period` - (Optional) How long to wait before enforcing, for example `14d`.
 - `action` - (Optional) The action the guardrail takes, as one block holding either `value`, the full URI of one of the type's action types, or `template` and `template_input` for an action calculated per resource. Once a guardrail has an action the API cannot remove it, so removing this block is an error at plan time.
