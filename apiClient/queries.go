@@ -905,3 +905,55 @@ func readAttachedPolicyPacksQuery() string {
 	}
 }`
 }
+
+func createTypedFilterMutation() string {
+	return `mutation CreateTypedFilter($input: CreateTypedFilterInput!) {
+	typedFilter: createTypedFilter(input: $input) {
+		title
+		filter
+		type
+		turbot {
+			id
+			akas
+		}
+	}
+}`
+}
+
+// notFound: RETURN_NULL makes a missing filter arrive as `typedFilter: null` instead of an error, so
+// "gone" is decided by the response shape and never by error text.
+func readTypedFilterQuery() string {
+	return `query ReadTypedFilter($id: ID!) {
+	typedFilter(id: $id, options: {notFound: RETURN_NULL}) {
+		title
+		description
+		filter
+		type
+		turbot {
+			id
+			akas
+			tags
+		}
+	}
+}`
+}
+
+func updateTypedFilterMutation() string {
+	return `mutation UpdateTypedFilter($input: UpdateTypedFilterInput!) {
+	typedFilter: updateTypedFilter(input: $input) {
+		turbot {
+			id
+		}
+	}
+}`
+}
+
+func deleteTypedFilterMutation() string {
+	return `mutation DeleteTypedFilter($id: ID!) {
+	typedFilter: deleteTypedFilter(input: {id: $id}) {
+		turbot {
+			id
+		}
+	}
+}`
+}

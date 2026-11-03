@@ -564,3 +564,15 @@ type AttachedPolicyPacksResponse struct {
 		}
 	}
 }
+
+type TypedFilterResponse struct {
+	TypedFilter *TypedFilter
+}
+
+type TypedFilter struct {
+	Turbot      TurbotResourceMetadata
+	Title       string
+	Description string
+	Filter      string
+	Type        string
+}
