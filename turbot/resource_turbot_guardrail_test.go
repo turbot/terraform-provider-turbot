@@ -1,10 +1,13 @@
 package turbot
 
 import (
+	"fmt"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/turbot/terraform-provider-turbot/apiClient"
@@ -471,4 +474,303 @@ func TestGuardrailPlanRejectsARepeatedSetting(t *testing.T) {
 	if err == nil || !strings.Contains(err.Error(), "more than once") {
 		t.Fatalf("expected a repeated setting to be rejected, got %v", err)
 	}
+}
+
+const testAccGuardrailNoAccount = "title:tf-acc-no-such-account"
+const testAccGuardrailNoBucket = "$.Name:tf-acc-no-such-bucket"
+const testAccGuardrailEncryptionAction = "tmod:@turbot/aws-s3#/action/types/bucketUpdateEncryptionAtRest"
+
+// Every guardrail here is in mode Check (Draft for the mode-change step, which runs no action
+// either) and targets an account filter that matches no account, so no control is made.
+func TestAccGuardrail(t *testing.T) {
+	name := "turbot_guardrail.test"
+	var originalId string
+	calculated := `
+	setting {
+		type           = "acceptStrongerEncryption"
+		template       = "false"
+		template_input = "{ resource { turbot { id } } }"
+	}
+	action {
+		template       = "'` + testAccGuardrailEncryptionAction + `'"
+		template_input = "{ resource { turbot { id } } }"
+	}`
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckGuardrailDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccGuardrailConfig("tf-acc-guardrail", "Check", "14d", `
+	account_filter  = "`+testAccGuardrailNoAccount+`"
+	resource_filter = "`+testAccGuardrailNoBucket+`"
+	setting {
+		type  = "encryptionLevel"
+		value = "S3 managed key"
+	}`, "\t\tdrop = \"b\"\n"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(name, "title", "tf-acc-guardrail"),
+					resource.TestCheckResourceAttr(name, "mode", "Check"),
+					resource.TestCheckResourceAttr(name, "grace_period", "14d"),
+					resource.TestCheckResourceAttr(name, "account_filter", testAccGuardrailNoAccount),
+					resource.TestCheckResourceAttr(name, "resource_filter", testAccGuardrailNoBucket),
+					resource.TestCheckResourceAttr(name, "tags.drop", "b"),
+					resource.TestCheckResourceAttr(name, "setting.#", "1"),
+					resource.TestCheckResourceAttr(name, "action.#", "0"),
+					testAccCheckGuardrailRow(name, "EncryptionLevel", false, "S3 managed key"),
+					testAccCheckGuardrailRow(name, "AcceptStrongerEncryption", false, "true"),
+					testAccCheckGuardrailRow(name, "CustomerManagedKey", true, "{{ $.defaultKey }}"),
+					testAccCheckGuardrailNoRow(name, "Action"),
+					testAccRememberId(name, &originalId),
+				),
+			},
+			{
+				Config: testAccGuardrailConfig("tf-acc-guardrail-renamed", "Draft", "7d", `
+	account_filter  = "`+testAccGuardrailNoAccount+`"
+	resource_filter = "`+testAccGuardrailNoBucket+`"
+	setting {
+		type  = "encryptionLevel"
+		value = "None"
+	}`, ""),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSameId(name, &originalId),
+					resource.TestCheckResourceAttr(name, "title", "tf-acc-guardrail-renamed"),
+					resource.TestCheckResourceAttr(name, "mode", "Draft"),
+					resource.TestCheckResourceAttr(name, "grace_period", "7d"),
+					resource.TestCheckNoResourceAttr(name, "tags.drop"),
+					resource.TestCheckResourceAttr(name, "tags.keep", "a"),
+					testAccCheckGuardrailRow(name, "EncryptionLevel", false, "None"),
+					testAccCheckGuardrailRow(name, "Mode", false, "Draft"),
+				),
+			},
+			{
+				Config: testAccGuardrailConfig("tf-acc-guardrail-renamed", "Check", "7d", `
+	account_filter  = "`+testAccGuardrailNoAccount+`"
+	resource_filter = "`+testAccGuardrailNoBucket+`"`, ""),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSameId(name, &originalId),
+					resource.TestCheckResourceAttr(name, "setting.#", "0"),
+					testAccCheckGuardrailRow(name, "EncryptionLevel", false, "AWS managed key"),
+				),
+			},
+			{
+				Config: testAccGuardrailConfig("tf-acc-guardrail-renamed", "Check", "7d", `
+	account_filter  = "`+testAccGuardrailNoAccount+`"
+	resource_filter = "`+testAccGuardrailNoBucket+`"`+calculated, ""),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSameId(name, &originalId),
+					resource.TestCheckResourceAttr(name, "mode", "Check"),
+					resource.TestCheckResourceAttr(name, "action.#", "1"),
+					resource.TestCheckResourceAttr(name, "action.0.template", "'"+testAccGuardrailEncryptionAction+"'"),
+					testAccCheckGuardrailRow(name, "AcceptStrongerEncryption", true, "false"),
+					testAccCheckGuardrailRow(name, "Action", true, "'"+testAccGuardrailEncryptionAction+"'"),
+				),
+			},
+			{
+				ResourceName:      name,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: testAccGuardrailConfig("tf-acc-guardrail-renamed", "Check", "7d", `
+	account_filter  = "`+testAccGuardrailNoAccount+`"`+calculated, ""),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSameId(name, &originalId),
+					resource.TestCheckResourceAttr(name, "resource_filter", ""),
+					testAccCheckGuardrailFilters(name, testAccGuardrailNoAccount, ""),
+				),
+			},
+			{
+				Config:      testAccGuardrailConfig("tf-acc-guardrail-renamed", "Check", "7d", calculated, ""),
+				ExpectError: regexp.MustCompile("account_filter cannot be removed"),
+			},
+			{
+				PreConfig: func() { testAccDeleteGuardrail(t, originalId) },
+				Config: testAccGuardrailConfig("tf-acc-guardrail-renamed", "Check", "7d", `
+	account_filter  = "`+testAccGuardrailNoAccount+`"`+calculated, ""),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDifferentId(name, &originalId),
+					testAccCheckGuardrailFilters(name, testAccGuardrailNoAccount, ""),
+				),
+			},
+		},
+	})
+}
+
+func TestAccGuardrailTypedFilter(t *testing.T) {
+	name := "turbot_guardrail.test"
+	filters := `
+resource "turbot_typed_filter" "account" {
+	title  = "tf-acc-guardrail-accounts"
+	type   = "Account"
+	filter = "` + testAccGuardrailNoAccount + `"
+}
+
+resource "turbot_typed_filter" "resource" {
+	title  = "tf-acc-guardrail-buckets"
+	type   = "Resource"
+	filter = "` + testAccGuardrailNoBucket + `"
+}
+`
+	guardrail := func(targeting string) string {
+		return filters + `
+resource "turbot_guardrail" "test" {
+	type  = "tmod:@turbot/aws-s3#/guardrail/types/bucketVersioningGuardrail"
+	title = "tf-acc-guardrail-typed"
+	mode  = "Check"
+` + targeting + `
+	setting {
+		type  = "versioning"
+		value = "Disabled"
+	}
+}
+`
+	}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckGuardrailDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: guardrail(`	account_filter_id  = turbot_typed_filter.account.id
+	resource_filter_id = turbot_typed_filter.resource.id`),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair(name, "account_filter_id", "turbot_typed_filter.account", "id"),
+					resource.TestCheckResourceAttrPair(name, "resource_filter_id", "turbot_typed_filter.resource", "id"),
+					resource.TestCheckResourceAttr(name, "account_filter", ""),
+					resource.TestCheckResourceAttr(name, "resource_filter", ""),
+					testAccCheckGuardrailRow(name, "Versioning", false, "Disabled"),
+				),
+			},
+			{
+				ResourceName:      name,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: guardrail(`	account_filter  = "` + testAccGuardrailNoAccount + `"
+	resource_filter = "` + testAccGuardrailNoBucket + `"`),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(name, "account_filter_id", ""),
+					resource.TestCheckResourceAttr(name, "resource_filter_id", ""),
+					testAccCheckGuardrailFilters(name, testAccGuardrailNoAccount, testAccGuardrailNoBucket),
+				),
+			},
+			{
+				Config: guardrail(`	account_filter_id  = turbot_typed_filter.account.id
+	resource_filter_id = turbot_typed_filter.resource.id`),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair(name, "account_filter_id", "turbot_typed_filter.account", "id"),
+					resource.TestCheckResourceAttrPair(name, "resource_filter_id", "turbot_typed_filter.resource", "id"),
+				),
+			},
+		},
+	})
+}
+
+func testAccGuardrailConfig(title, mode, gracePeriod, body, extraTags string) string {
+	return fmt.Sprintf(`
+resource "turbot_guardrail" "test" {
+	type         = "%s"
+	title        = "%s"
+	description  = "acceptance test guardrail"
+	mode         = "%s"
+	grace_period = "%s"
+	tags = {
+		keep = "a"
+%s	}
+%s
+}
+`, testGuardrailEncryptionType, title, mode, gracePeriod, extraTags, body)
+}
+
+func testAccReadGuardrail(state *terraform.State, name string) (*apiClient.Guardrail, error) {
+	rs, ok := state.RootModule().Resources[name]
+	if !ok {
+		return nil, fmt.Errorf("not found: %s", name)
+	}
+	client := testAccProvider.Meta().(*apiClient.Client)
+	return client.ReadGuardrail(rs.Primary.ID)
+}
+
+func testAccGuardrailRow(guardrail *apiClient.Guardrail, suffix string) *apiClient.GuardrailSetting {
+	for i, row := range guardrail.Settings.Items {
+		if strings.HasSuffix(row.Type.Uri, "Guardrail"+suffix) {
+			return &guardrail.Settings.Items[i]
+		}
+	}
+	return nil
+}
+
+// testAccCheckGuardrailRow checks the setting row the API holds: its template when calculated,
+// otherwise its value.
+func testAccCheckGuardrailRow(name, suffix string, calculated bool, want string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		guardrail, err := testAccReadGuardrail(state, name)
+		if err != nil {
+			return err
+		}
+		row := testAccGuardrailRow(guardrail, suffix)
+		if row == nil {
+			return fmt.Errorf("guardrail %s has no %s setting", guardrail.Turbot.Id, suffix)
+		}
+		got := fmt.Sprintf("%v", row.Value)
+		if calculated {
+			got = row.Template
+		}
+		if row.IsCalculated != calculated || got != want {
+			return fmt.Errorf("%s setting: calculated %v, %q; want calculated %v, %q", suffix, row.IsCalculated, got, calculated, want)
+		}
+		return nil
+	}
+}
+
+func testAccCheckGuardrailNoRow(name, suffix string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		guardrail, err := testAccReadGuardrail(state, name)
+		if err != nil {
+			return err
+		}
+		if row := testAccGuardrailRow(guardrail, suffix); row != nil {
+			return fmt.Errorf("guardrail %s has a %s setting: %v", guardrail.Turbot.Id, suffix, row.Value)
+		}
+		return nil
+	}
+}
+
+func testAccCheckGuardrailFilters(name, wantAccount, wantResource string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		guardrail, err := testAccReadGuardrail(state, name)
+		if err != nil {
+			return err
+		}
+		if guardrail.AccountFilter != wantAccount || guardrail.ResourceFilter != wantResource {
+			return fmt.Errorf("targeting: account %q, resource %q; want %q, %q", guardrail.AccountFilter, guardrail.ResourceFilter, wantAccount, wantResource)
+		}
+		return nil
+	}
+}
+
+func testAccDeleteGuardrail(t *testing.T, id string) {
+	client := testAccProvider.Meta().(*apiClient.Client)
+	if err := client.DeleteGuardrail(id); err != nil {
+		t.Fatalf("deleting guardrail %s outside Terraform: %s", id, err)
+	}
+}
+
+func testAccCheckGuardrailDestroy(s *terraform.State) error {
+	client := testAccProvider.Meta().(*apiClient.Client)
+	for _, rs := range s.RootModule().Resources {
+		switch rs.Type {
+		case "turbot_guardrail":
+			if _, err := client.ReadGuardrail(rs.Primary.ID); !apiClient.IsGuardrailNotFound(err) {
+				return fmt.Errorf("expected guardrail %s to be gone, got %v", rs.Primary.ID, err)
+			}
+		case "turbot_typed_filter":
+			if _, err := client.ReadTypedFilter(rs.Primary.ID); !apiClient.IsTypedFilterNotFound(err) {
+				return fmt.Errorf("expected typed filter %s to be gone, got %v", rs.Primary.ID, err)
+			}
+		}
+	}
+	return nil
 }
