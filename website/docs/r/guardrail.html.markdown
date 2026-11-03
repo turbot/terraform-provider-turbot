@@ -100,7 +100,7 @@ The following arguments are supported:
 - `template` - (Optional) A Nunjucks template that calculates the value per resource. Set either `value`, or `template` and `template_input`.
 - `template_input` - (Optional) The GraphQL query whose result the template reads.
 
-A guardrail always has every setting its type defines. A setting with no `setting` block takes the type's default: creating the guardrail sends the default, and removing a block later writes the default back.
+A setting with no `setting` block takes the type's default: creating the guardrail sends the default, and removing a block later writes the default back. A setting whose type defines no default is left unset on create, and its block cannot be removed once set: give it a value instead.
 
 ## Attributes Reference
 

@@ -195,8 +195,9 @@ func resourceTurbotGuardrailImport(d *schema.ResourceData, meta interface{}) ([]
 	return []*schema.ResourceData{d}, nil
 }
 
-// The API ignores an empty or null account filter and an omitted action on update, so neither can
-// be removed from an existing guardrail; a plan that removes one would never converge.
+// A guardrail holds one value per setting type, so a type given in two blocks is rejected. On update
+// the API ignores an empty or null account filter and an omitted action, so neither can be removed
+// from an existing guardrail; a plan that removes one would never converge.
 func resourceTurbotGuardrailCustomizeDiff(d *schema.ResourceDiff, meta interface{}) error {
 	if settings, ok := d.Get("setting").(*schema.Set); ok {
 		seen := map[string]bool{}
