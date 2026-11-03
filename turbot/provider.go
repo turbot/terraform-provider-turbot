@@ -64,6 +64,7 @@ func Provider() terraform.ResourceProvider {
 			"turbot_smart_folder":            resourceTurbotSmartFolder(),
 			"turbot_smart_folder_attachment": resourceTurbotSmartFolderAttachemnt(),
 			"turbot_turbot_directory":        resourceTurbotTurbotDirectory(),
+			"turbot_typed_filter":            resourceTurbotTypedFilter(),
 			"turbot_watch":                   resourceTurbotWatch(),
 			//"turbot_group_profile":           resourceTurbotGroupProfile(),
 		},
