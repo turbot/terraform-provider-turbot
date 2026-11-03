@@ -612,13 +612,7 @@ type GuardrailTypeResponse struct {
 }
 
 type GuardrailType struct {
-	Uri  string
-	Mode *struct {
-		Uri string
-	}
-	Action *struct {
-		Uri string
-	}
+	Uri         string
 	PolicyTypes struct {
 		Items []GuardrailSettingType
 	}

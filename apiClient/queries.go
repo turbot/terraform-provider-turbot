@@ -969,12 +969,6 @@ func createGuardrailMutation() string {
 }
 
 const guardrailTypeFields = `uri
-		mode {
-			uri
-		}
-		action {
-			uri
-		}
 		policyTypes {
 			items {
 				uri

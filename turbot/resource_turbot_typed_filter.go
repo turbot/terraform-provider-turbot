@@ -72,7 +72,7 @@ func resourceTurbotTypedFilterUpdate(d *schema.ResourceData, meta interface{}) e
 	input := mapFromResourceData(d, typedFilterUpdateProperties)
 	input["id"] = d.Id()
 	input["description"] = d.Get("description")
-	if tags := typedFilterTagsUpdate(d); len(tags) > 0 {
+	if tags := mergedTagsUpdate(d); len(tags) > 0 {
 		input["tags"] = tags
 	}
 
@@ -130,9 +130,9 @@ func validateTypedFilterType(v interface{}, k string) ([]string, []error) {
 	return nil, nil
 }
 
-// updateTypedFilter merges tags, and a key sent as null is removed, so a tag dropped from the
+// Typed filter and guardrail updates merge tags, and a key sent as null is removed, so a tag dropped from the
 // configuration has to be sent explicitly as null.
-func typedFilterTagsUpdate(d *schema.ResourceData) map[string]interface{} {
+func mergedTagsUpdate(d *schema.ResourceData) map[string]interface{} {
 	oldTags, newTags := d.GetChange("tags")
 	tags := map[string]interface{}{}
 	for key, value := range newTags.(map[string]interface{}) {

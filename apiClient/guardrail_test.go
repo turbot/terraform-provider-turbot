@@ -38,7 +38,7 @@ func TestReadGuardrailOtherErrorIsNotNotFound(t *testing.T) {
 
 func TestReadGuardrailReturnsSettings(t *testing.T) {
 	client := typedFilterClient(t, func(string) string {
-		return `{"data":{"guardrail":{"title":"t","gracePeriod":null,"accountFilter":"title:x","type":{"uri":"tmod:@turbot/aws-s3#/guardrail/types/bucketVersioningGuardrail","mode":{"uri":"m"},"action":null,"policyTypes":{"items":[{"uri":"v","schema":{"default":"Enabled"},"defaultTemplate":null,"defaultTemplateInput":null}]}},"settings":{"items":[{"type":{"uri":"m"},"value":"Check","valueSource":"Check\n","isCalculated":false,"template":null,"templateInput":null}]},"turbot":{"id":"1","akas":null,"tags":{}}}}}`
+		return `{"data":{"guardrail":{"title":"t","gracePeriod":null,"accountFilter":"title:x","type":{"uri":"tmod:@turbot/aws-s3#/guardrail/types/bucketVersioningGuardrail","policyTypes":{"items":[{"uri":"v","schema":{"default":"Enabled"},"defaultTemplate":null,"defaultTemplateInput":null}]}},"settings":{"items":[{"type":{"uri":"m"},"value":"Check","valueSource":"Check\n","isCalculated":false,"template":null,"templateInput":null}]},"turbot":{"id":"1","akas":null,"tags":{}}}}}`
 	})
 
 	guardrail, err := client.ReadGuardrail("1")
