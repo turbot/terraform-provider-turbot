@@ -1,3 +1,10 @@
+## 1.15.0 (Unreleased)
+
+ENHANCEMENTS:
+
+* `resource/turbot_guardrail`: New resource that manages a Guardrails guardrail: an instance of a guardrail type with a mode, an optional action, a value for each of the type's settings, a grace period, and the accounts and resources it applies to (`account_filter` or `account_filter_id`, `resource_filter` or `resource_filter_id`). Settings are `setting` blocks holding a fixed `value` or a `template` and `template_input`; the `action` block takes the same. A setting with no `setting` block takes the guardrail type's default, so creating the guardrail sends every setting the type defines and removing a block later writes the default back. Removing the `action` block, `account_filter` or `account_filter_id` is an error at plan time, because the Guardrails API cannot clear them; removing `resource_filter` or `resource_filter_id` clears it. `mode` is a fixed value, as the API rejects a calculated mode. Requires Guardrails 5.61 or later. Import by id. ([#197](https://github.com/turbot/terraform-provider-turbot/issues/197))
+* `resource/turbot_typed_filter`: New resource that manages a saved `Account` or `Resource` filter. A guardrail targets it by reference with `account_filter_id = turbot_typed_filter.<name>.id` or `resource_filter_id`, so editing the filter changes every guardrail that uses it. The API refuses to delete a filter a guardrail still uses, so destroy the guardrail first. Requires Guardrails 5.61 or later. Import by id. ([#197](https://github.com/turbot/terraform-provider-turbot/issues/197))
+
 ## 1.14.2 (October 21, 2026)
 
 BREAKING CHANGES:
