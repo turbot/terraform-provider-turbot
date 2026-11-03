@@ -52,7 +52,7 @@ resource "turbot_typed_filter" "production_accounts" {
 resource "turbot_guardrail" "bucket_versioning" {
   type              = "tmod:@turbot/aws-s3#/guardrail/types/bucketVersioningGuardrail"
   title             = "Bucket versioning"
-  mode              = "Enforce all"
+  mode              = "Check"
   account_filter_id = turbot_typed_filter.production_accounts.id
 
   setting {
