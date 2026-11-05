@@ -42,6 +42,11 @@ func allIdentifierBuilders() map[string]string {
 		"readGoogleDirectoryQuery":             readGoogleDirectoryQuery(),
 		"readGrantQuery":                       readGrantQuery(),
 		"readActiveGrantQuery":                 readActiveGrantQuery(),
+		"readTypedFilterQuery":                 readTypedFilterQuery(),
+		"deleteTypedFilterMutation":            deleteTypedFilterMutation(),
+		"readGuardrailQuery":                   readGuardrailQuery(),
+		"readGuardrailTypeQuery":               readGuardrailTypeQuery(),
+		"deleteGuardrailMutation":              deleteGuardrailMutation(),
 	}
 }
 

@@ -564,3 +564,63 @@ type AttachedPolicyPacksResponse struct {
 		}
 	}
 }
+
+type TypedFilterResponse struct {
+	TypedFilter *TypedFilter
+}
+
+type TypedFilter struct {
+	Turbot      TurbotResourceMetadata
+	Title       string
+	Description string
+	Filter      string
+	Type        string
+}
+
+type GuardrailResponse struct {
+	Guardrail *Guardrail
+}
+
+type Guardrail struct {
+	Turbot           TurbotResourceMetadata
+	Title            string
+	Description      string
+	GracePeriod      string
+	AccountFilter    string
+	AccountFilterId  string
+	ResourceFilter   string
+	ResourceFilterId string
+	Type             *GuardrailType
+	Settings         struct {
+		Items []GuardrailSetting
+	}
+}
+
+type GuardrailSetting struct {
+	Type struct {
+		Uri string
+	}
+	Value         interface{}
+	ValueSource   string
+	IsCalculated  bool
+	Template      string
+	TemplateInput interface{}
+}
+
+type GuardrailTypeResponse struct {
+	GuardrailType *GuardrailType
+}
+
+type GuardrailType struct {
+	Uri         string
+	PolicyTypes struct {
+		Items []GuardrailSettingType
+	}
+}
+
+type GuardrailSettingType struct {
+	Uri                  string
+	Schema               map[string]interface{}
+	DefaultTemplate      string
+	DefaultTemplateInput interface{}
+}
