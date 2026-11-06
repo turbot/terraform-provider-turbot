@@ -34,6 +34,7 @@ type Client struct {
 	// RequestTimeout bounds every doRequest. Zero means no deadline; CreateClient installs
 	// DefaultRequestTimeout when the config leaves it unset.
 	RequestTimeout time.Duration
+	UserAgent      string
 }
 
 func CreateClient(config ClientConfig) (*Client, error) {
@@ -53,6 +54,7 @@ func CreateClient(config ClientConfig) (*Client, error) {
 		SecretKey:      credentials.SecretKey,
 		Graphql:        graphql.NewClient(credentials.Workspace),
 		RequestTimeout: timeout,
+		UserAgent:      config.UserAgent,
 	}, nil
 }
 
@@ -292,6 +294,9 @@ func (client *Client) doRequest(query string, vars map[string]interface{}, respo
 	// set header fields
 	req.Header.Set("Cache-Control", "no-cache")
 	req.Header.Set("Authorization", basicAuthHeader(client.AccessKey, client.SecretKey))
+	if client.UserAgent != "" {
+		req.Header.Set("User-Agent", client.UserAgent)
+	}
 
 	// Bound every request with a deadline. Without one, a hung connection hangs the whole apply
 	// indefinitely - and since attachment writes now serialise per target (see

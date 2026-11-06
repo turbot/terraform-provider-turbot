@@ -9,6 +9,7 @@ type ClientConfig struct {
 	// RequestTimeout bounds every GraphQL request. Zero leaves it to CreateClient, which
 	// installs DefaultRequestTimeout.
 	RequestTimeout time.Duration
+	UserAgent      string
 }
 
 type ClientCredentials struct {
