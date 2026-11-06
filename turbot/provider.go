@@ -85,9 +85,13 @@ func Provider() terraform.ResourceProvider {
 	return p
 }
 
-// userAgent names Terraform and this provider, so Guardrails can tell a Terraform change from
+// userAgent names Terraform and this provider, so Guardrails can tell a Terraform request from
 // any other client's.
 func userAgent(terraformVersion string) string {
+	// Terraform 0.11's plugin protocol never sends its version.
+	if terraformVersion == "" {
+		terraformVersion = "unknown"
+	}
 	return fmt.Sprintf("%s terraform-provider-turbot/%s", httpclient.TerraformUserAgent(terraformVersion), ProviderVersion)
 }
 
