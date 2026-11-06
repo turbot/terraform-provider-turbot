@@ -6,12 +6,16 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/httpclient"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/turbot/terraform-provider-turbot/apiClient"
 )
 
+// ProviderVersion is set from the release build's version.
+var ProviderVersion = "dev"
+
 func Provider() terraform.ResourceProvider {
-	return &schema.Provider{
+	p := &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"access_key": {
 				Type:     schema.TypeString,
@@ -74,13 +78,26 @@ func Provider() terraform.ResourceProvider {
 			"turbot_policy_value": dataSourceTurbotPolicyValue(),
 			"turbot_resource":     dataSourceTurbotResource(),
 		},
-
-		ConfigureFunc: providerConfigure,
 	}
+	p.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
+		return providerConfigure(d, userAgent(p.TerraformVersion))
+	}
+	return p
 }
 
-func providerConfigure(d *schema.ResourceData) (interface{}, error) {
+// userAgent names Terraform and this provider, so Guardrails can tell a Terraform request from
+// any other client's.
+func userAgent(terraformVersion string) string {
+	// Terraform 0.11's plugin protocol never sends its version.
+	if terraformVersion == "" {
+		terraformVersion = "unknown"
+	}
+	return fmt.Sprintf("%s terraform-provider-turbot/%s", httpclient.TerraformUserAgent(terraformVersion), ProviderVersion)
+}
+
+func providerConfigure(d *schema.ResourceData, userAgent string) (interface{}, error) {
 	config := apiClient.ClientConfig{
+		UserAgent: userAgent,
 		Credentials: apiClient.ClientCredentials{
 			AccessKey: d.Get("access_key").(string),
 			SecretKey: d.Get("secret_key").(string),
