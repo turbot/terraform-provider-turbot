@@ -87,8 +87,9 @@ func resourceTurbotSamlDirectory() *schema.Resource {
 				Optional: true,
 			},
 			"signature_private_key": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:      schema.TypeString,
+				Optional:  true,
+				Sensitive: true,
 			},
 			"signature_algorithm": {
 				Type:     schema.TypeString,

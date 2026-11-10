@@ -1,5 +1,14 @@
 ## 1.15.0 (Unreleased)
 
+BREAKING CHANGES:
+
+* `resource/turbot_google_directory`, `resource/turbot_saml_directory`: A root module `output` that refers to `client_secret` or `signature_private_key` must now set `sensitive = true`. Without it, Terraform 0.15 and later and OpenTofu stop with `Output refers to sensitive values`. Outputs in child modules are not affected.
+
+SECURITY:
+
+* `resource/turbot_google_directory`, `resource/turbot_saml_directory`: `client_secret` and `signature_private_key` are now marked sensitive, so `terraform plan` and `terraform apply` show `(sensitive value)` instead of the secret. Before, a secret set from a literal or from a variable without `sensitive = true` appeared in plan output, CI logs and saved plans. A value from a `sensitive = true` variable was already hidden. Upgrading causes no plan changes and no API calls. Terraform still writes both values to state in clear text, so protect the state file. The JSON plan (`terraform show -json`) also still holds the values; it now marks them in `after_sensitive`. Reported by [kta1kri](https://github.com/kta1kri). ([GHSA-7jmh-m2pr-47hj](https://github.com/turbot/terraform-provider-turbot/security/advisories/GHSA-7jmh-m2pr-47hj))
+* `provider`: `secret_key` is now marked sensitive. Terraform does not show provider arguments in plan output, so nothing visible changes. A unit test now fails the build if any attribute whose name contains `secret`, `password`, `private_key` or `token` is not marked sensitive.
+
 ENHANCEMENTS:
 
 * `resource/turbot_guardrail`: New resource that manages a Guardrails guardrail: an instance of a guardrail type with a mode, an optional action, a value for each of the type's settings, a grace period, and the accounts and resources it applies to (`account_filter` or `account_filter_id`, `resource_filter` or `resource_filter_id`). Settings are `setting` blocks holding a fixed `value` or a `template` and `template_input`; the `action` block takes the same. A setting with no `setting` block takes the guardrail type's default: creating the guardrail sends that default, and removing a block later writes it back. A setting whose type defines no default is left unset on create, and removing its block fails at apply. Removing the `action` block, `account_filter` or `account_filter_id` is an error at plan time, because the Guardrails API cannot clear them; removing `resource_filter` or `resource_filter_id` clears it. `mode` is a fixed value, as the API rejects a calculated mode. Requires Guardrails 5.61 or later. Import by id. ([#197](https://github.com/turbot/terraform-provider-turbot/issues/197))
