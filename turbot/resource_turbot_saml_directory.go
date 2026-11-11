@@ -1,6 +1,8 @@
 package turbot
 
 import (
+	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -82,18 +84,25 @@ func resourceTurbotSamlDirectory() *schema.Resource {
 				Optional: true,
 				Default:  "UNSPECIFIED",
 			},
+			// Guardrails takes and returns a Boolean, but sign_requests stays a string so that existing state keeps
+			// its type. Computed, as is signature_algorithm, because the console saves both on every edit.
 			"sign_requests": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateSignRequests,
 			},
+			// Guardrails stores the key as a secret and returns only a reference to it, so it is never read back.
 			"signature_private_key": {
 				Type:      schema.TypeString,
 				Optional:  true,
 				Sensitive: true,
 			},
 			"signature_algorithm": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateSignatureAlgorithm,
 			},
 			"allow_group_syncing": {
 				Type:     schema.TypeBool,
@@ -141,6 +150,7 @@ func resourceTurbotSamlDirectoryCreate(d *schema.ResourceData, meta interface{})
 	client := meta.(*apiClient.Client)
 
 	input := mapFromResourceData(d, samlDirectoryInputProperties)
+	setSignRequestsInput(input)
 	// set computed properties
 	input["status"] = "ACTIVE"
 	samlDirectory, err := client.CreateSamlDirectory(input)
@@ -159,6 +169,7 @@ func resourceTurbotSamlDirectoryCreate(d *schema.ResourceData, meta interface{})
 	d.Set("parent", samlDirectory.Parent)
 	d.Set("title", samlDirectory.Title)
 	d.Set("description", samlDirectory.Description)
+	setSigning(d, samlDirectory)
 	return nil
 }
 
@@ -188,9 +199,7 @@ func resourceTurbotSamlDirectoryRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("profile_id_template", samlDirectory.ProfileIdTemplate)
 	d.Set("entry_point", samlDirectory.EntryPoint)
 	d.Set("certificate", samlDirectory.Certificate)
-	d.Set("sign_requests", samlDirectory.SignRequests)
-	d.Set("signature_private_key", samlDirectory.SignaturePrivateKey)
-	d.Set("signature_algorithm", samlDirectory.SignatureAlgorithm)
+	setSigning(d, samlDirectory)
 	d.Set("allow_group_syncing", samlDirectory.AllowGroupSyncing)
 	d.Set("allow_idp_initiated_sso", samlDirectory.AllowIdpInitiatedSso)
 	d.Set("profile_groups_attribute", samlDirectory.ProfileGroupsAttribute)
@@ -203,6 +212,7 @@ func resourceTurbotSamlDirectoryUpdate(d *schema.ResourceData, meta interface{})
 	client := meta.(*apiClient.Client)
 
 	input := mapFromResourceData(d, getSamlDirectoryProperties())
+	setSignRequestsInput(input)
 	input["id"] = d.Id()
 
 	// update saml directory returns saml directory
@@ -215,6 +225,7 @@ func resourceTurbotSamlDirectoryUpdate(d *schema.ResourceData, meta interface{})
 	d.Set("parent", samlDirectory.Parent)
 	d.Set("title", samlDirectory.Title)
 	d.Set("description", samlDirectory.Description)
+	setSigning(d, samlDirectory)
 	// set parent_akas property by loading parent resource and fetching the akas
 	return storeAkas(samlDirectory.Turbot.ParentId, "parent_akas", d, meta)
 }
@@ -237,4 +248,38 @@ func resourceTurbotSamlDirectoryImport(d *schema.ResourceData, meta interface{})
 		return nil, err
 	}
 	return []*schema.ResourceData{d}, nil
+}
+
+// setSignRequestsInput converts sign_requests to the Boolean that Guardrails takes.
+func setSignRequestsInput(input map[string]interface{}) {
+	if v, ok := input["signRequests"]; ok {
+		input["signRequests"] = v.(string) == "true"
+	}
+}
+
+// setSigning stores the signing settings that Guardrails returns. Guardrails stores signatureAlgorithm as "SHA-256",
+// but the create and update inputs take "SHA256".
+func setSigning(d *schema.ResourceData, samlDirectory *apiClient.SamlDirectory) {
+	signRequests := ""
+	if samlDirectory.SignRequests != nil {
+		signRequests = strconv.FormatBool(*samlDirectory.SignRequests)
+	}
+	d.Set("sign_requests", signRequests)
+	d.Set("signature_algorithm", strings.ReplaceAll(samlDirectory.SignatureAlgorithm, "-", ""))
+}
+
+func validateSignRequests(v interface{}, k string) ([]string, []error) {
+	if s := v.(string); s != "true" && s != "false" {
+		return nil, []error{fmt.Errorf("%q must be true or false, got %q", k, s)}
+	}
+	return nil, nil
+}
+
+func validateSignatureAlgorithm(v interface{}, k string) ([]string, []error) {
+	switch s := v.(string); s {
+	case "SHA1", "SHA256", "SHA512":
+		return nil, nil
+	default:
+		return nil, []error{fmt.Errorf("%q must be one of SHA1, SHA256 or SHA512, got %q", k, s)}
+	}
 }
