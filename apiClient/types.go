@@ -390,8 +390,7 @@ type SamlDirectory struct {
 	Issuer                 string
 	GroupIdTemplate        string
 	NameIdFormat           string
-	SignRequests           string
-	SignaturePrivateKey    string
+	SignRequests           *bool
 	SignatureAlgorithm     string
 	PoolId                 string
 	ProfileGroupsAttribute string

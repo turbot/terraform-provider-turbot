@@ -13,7 +13,6 @@ var samlDirectoryProperties = []interface{}{
 	"issuer",
 	"nameIdFormat",
 	"signRequests",
-	"signaturePrivateKey",
 	"signatureAlgorithm",
 	"poolId",
 	"allowIdpInitiatedSso",
