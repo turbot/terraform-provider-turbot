@@ -37,9 +37,9 @@ The following arguments are supported:
 - `profile_id_template` - (Required) A template to generate profile id for users authenticated through this directory. For example, email id of the user.
 - `issuer` - (Optional) a URL that uniquely identifies your SAML identity provider.
 - `name_id_format` - (Optional) The name identifier format to request from the identity provider. Usually the Email Address is the accepted format.It accepts one of the two values - `UNSPECIFIED` and `EMAIL`. Defaults to `UNSPECIFIED`
-- `sign_requests` - (Optional) Signing request for SAML authentication. It accepts one of the two values - `Enabled` and `Disabled`. If enabled, requests will be signed using the specified private key and signature algorithm.
-- `signature_private_key` - (Optional) Private key used to sign authentication requests, in multiline PEM format starting with -----BEGIN PRIVATE KEY-----.
-- `signature_algorithm` - (Optional) If a private key has been provided, it determines the signature algorithm for signing requests. If not specified defaults to *SHA-1*.
+- `sign_requests` - (Optional) Whether to sign authentication requests: `true` or `false`. If `true`, requests are signed with `signature_private_key` and `signature_algorithm`.
+- `signature_private_key` - (Optional) Private key used to sign authentication requests, in multiline PEM format starting with -----BEGIN PRIVATE KEY-----. Guardrails stores the key as a secret and does not return it. Terraform therefore cannot detect a change to the key made outside Terraform, and removing the key from the configuration does not remove it from Guardrails.
+- `signature_algorithm` - (Optional) The algorithm used to sign requests: `SHA1`, `SHA256` or `SHA512`. Defaults to `SHA1`.
 - `allow_group_syncing` -  (Optional) Boolean value to indicate whether groups will be synchronized for SAML users. Defaults to `false`.
 - `allow_idp_initiated_sso` -  (Optional) Boolean value to indicate whether directory allows IDP-initiated SSO. Defaults to `false`.
 - `profile_groups_attribute` - (Optional) Attribute returning list of groups that a SAML user is a part of.
@@ -62,3 +62,5 @@ SAML Directories can be imported using the `id`. For example,
 ```
 terraform import turbot_saml_directory.my_saml_directory 123456789012
 ```
+
+Guardrails does not return `signature_private_key`, so it is not imported. If the configuration sets it, the first apply after the import writes the configured key.

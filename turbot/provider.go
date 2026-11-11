@@ -18,8 +18,9 @@ func Provider() terraform.ResourceProvider {
 				Optional: true,
 			},
 			"secret_key": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:      schema.TypeString,
+				Optional:  true,
+				Sensitive: true,
 			},
 			"workspace": {
 				Type:     schema.TypeString,
