@@ -65,6 +65,7 @@ func resourceGoogleDirectory() *schema.Resource {
 			"client_secret": {
 				Type:             schema.TypeString,
 				Required:         true,
+				Sensitive:        true,
 				DiffSuppressFunc: suppressIfClientSecretPresent,
 			},
 			"description": {

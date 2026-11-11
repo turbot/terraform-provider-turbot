@@ -1,3 +1,22 @@
+## 1.14.3 (November 11, 2026)
+
+BREAKING CHANGES:
+
+* `resource/turbot_google_directory`, `resource/turbot_saml_directory`: A root module `output` that refers to `client_secret` or `signature_private_key` must now set `sensitive = true`. Without it, Terraform 0.15 and later and OpenTofu stop with `Output refers to sensitive values`. Outputs in child modules are not affected.
+
+SECURITY:
+
+* `resource/turbot_google_directory`, `resource/turbot_saml_directory`: `client_secret` and `signature_private_key` are now marked sensitive, so `terraform plan` and `terraform apply` show `(sensitive value)` instead of the secret. Before, a secret set from a literal or from a variable without `sensitive = true` appeared in plan output, CI logs and saved plans. A value from a `sensitive = true` variable was already hidden. Upgrading causes no plan changes and no API calls. Terraform still writes both values to state in clear text, so protect the state file. The JSON plan (`terraform show -json`) also still holds the values; it now marks them in `after_sensitive`. Reported by [kta1kri](https://github.com/kta1kri). ([GHSA-7jmh-m2pr-47hj](https://github.com/turbot/terraform-provider-turbot/security/advisories/GHSA-7jmh-m2pr-47hj))
+* `provider`: `secret_key` is now marked sensitive. Terraform does not show provider arguments in plan output, so nothing visible changes. A unit test now fails the build if any attribute whose name contains `secret`, `password`, `private_key` or `token` is not marked sensitive.
+
+BUG FIXES:
+
+* `resource/turbot_saml_directory`: Request signing now works, and a directory saved in the Guardrails console can be read again. Every read, create and update failed with `cannot unmarshal bool into Go struct field SamlDirectory.Data.Resource.SignRequests of type string` once `signRequests` was set, and the console sets it on every save, so a directory that anyone saved in the console could no longer be refreshed or imported. A `signature_private_key` failed in the same way, because Guardrails returns a reference to the stored secret, not the key: the create made the directory in Guardrails and then failed, leaving it out of state. `sign_requests` sent its string to an input that takes a Boolean, so Guardrails refused every create that set it.
+* `resource/turbot_saml_directory`: `sign_requests` takes `true` or `false` and is sent to Guardrails as a Boolean. It stays a string attribute, so existing state needs no change, and `sign_requests = true` also works. `Enabled` and `Disabled`, which the documentation listed, never worked and are now refused at plan time.
+* `resource/turbot_saml_directory`: `signature_private_key` is no longer read back. State keeps the configured key, as for `client_secret` in `turbot_google_directory`.
+* `resource/turbot_saml_directory`: `signature_algorithm` takes `SHA1`, `SHA256` or `SHA512`. Guardrails stores `SHA-256`, which showed as a change on every plan; the stored form is now read as `SHA256`.
+* `resource/turbot_saml_directory`: `sign_requests` and `signature_algorithm` are now computed when not set, so a value saved in the console does not show as a change for a configuration that leaves them out.
+
 ## 1.14.2 (October 21, 2026)
 
 BREAKING CHANGES:
